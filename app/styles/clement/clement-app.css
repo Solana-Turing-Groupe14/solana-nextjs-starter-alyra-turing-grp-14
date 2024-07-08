@@ -1,0 +1,124 @@
+.AppClement {
+  text-align: center;
+  background-color: lightgrey;
+  min-height: 100vh;
+  color: black;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerClement {
+  padding: 20px;
+  background-color: darkgrey;
+  /* min-width: calc(100vw - 40px); */
+}
+
+.headerClement .walletClement {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+  margin: 25px 50px;
+}
+
+
+.button {
+  transition-duration: 0.4s;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.buttonClementInfo {
+  background-color: lightblue;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.buttonClementAction {
+  background-color: yellow;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.buttonClementActionDisabled {
+  background-color: red;
+  opacity: 0.6;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+
+.buttonClementSignOk {
+  background-color: green;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+  opacity: 0.6;
+  transition: 0.3s;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+
+
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.buttonClementSignKo {
+  background-color: #f4511e;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+  opacity: 0.6;
+  transition: 0.3s;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.buttonClementDecode {
+  background-color: blue;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+  opacity: 0.6;
+  transition: 0.3s;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.labelClement {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px;
+  padding: 10px;
+}
+
+.clementSmallP {
+  font-size: 10px;
+  color: grey;
+  font-weight: bolder;
+  font-style: italic;
+  overflow-wrap: anywhere;
+  margin: 10px 50px;
+}
+
+.clementOkP  {
+  color: green;
+}
+
+.clementKoP  {
+  color: red;
+}

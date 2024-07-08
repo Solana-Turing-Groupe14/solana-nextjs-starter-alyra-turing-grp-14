@@ -1,0 +1,36 @@
+
+{
+  "compilerOptions": {
+    "paths": {
+
+      "@components/*": ["components/*"],
+      "@ui/*": ["components/ui/*"],
+      "@helpers/*": ["helpers/*"],
+      "@imports/*": ["imports/*"],
+      "@pages/*": ["pages/*"],
+
+      "@clement-pages/*": ["pages/clement/pages/*"],
+      "@clement-utils/*": ["utils/clement/*"],
+      "@clement-styles/*": ["styles/clement/*"],
+
+      "@config/*": ["config/*"],
+      "@styles/*": ["styles/*"],
+      "@chakra-ui-theme/*": ["theme/chakra-ui/*"]
+
+      // "@hooks/*": ["components/hooks/*"],
+      // "@Tailwind/*": ["components/Tailwind/*"],
+      // "@Modals/*": ["components/Tailwind/UIElements/Modals/*"],
+      // "@Pages/*": ["components/Tailwind/Pages/*"],
+      // "@Toasts/*": ["components/Tailwind/UIElements/Toasts/*"],
+      // "@js/*": ["js/*"],
+      // "@jsui/*": ["js/ui/*"],
+      // "@jsi18n/*": ["js/ui/i18n/*"],
+      // "@Providers/*": ["js/providers/*"],
+      // "@MoralisDappProvider/*": ["js/providers/MoralisDappProvider/*"],
+      // "@jsDb/*": ["js/db/*"],
+      // "@web3Js/*": ["js/web3/*"],
+      // "@contracts/*": ["artifacts/contracts/*"],
+      // "@lotties/*": ["static/lotties/*"],
+    }
+  }
+}
