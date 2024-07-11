@@ -31,6 +31,10 @@ const MenuItems = [
     text: "Card",
     href: "/card",
   },
+  {
+    text: "NFT collection_test",
+    href: "/nft_collection_test",
+  }
 ]
 
 export default function Header() {
