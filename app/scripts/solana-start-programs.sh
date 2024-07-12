@@ -16,9 +16,22 @@ solana config get
 
 #--ledger /path/to/custom/ledger
 # Reset the ledger
-validator_options=(-r )
+validator_option_reset=--reset
+validator_option_reset=--reset
+#validator_option_help=--help
 
-solana-test-validator ${validator_options} \
+#validator_options="$validator_option_help $validator_option_reset"
+validator_options="$validator_option_reset"
+
+
+echo "Starting the validator with the following options:" $validator_options
+
+#exit 0
+
+
+
+# doc https://solana.com/developers/guides/getstarted/solana-test-validator
+solana-test-validator $validator_options \
   --bpf-program CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d ${dumps_dir_path}/core.so \
   --bpf-program CMACYFENjoBMHzapRXyo1JZkVS6EtaDDzkjMrmQLvr4J ${dumps_dir_path}/candy_machine_core.so \
   --bpf-program CMAGAKJ67e9hRZgfC5SFTbZH8MgEmtqazKXjmkaJjWTJ ${dumps_dir_path}/candy_guard.so

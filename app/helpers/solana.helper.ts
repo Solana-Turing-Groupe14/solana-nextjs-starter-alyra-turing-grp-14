@@ -3,6 +3,7 @@ import { AnchorWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, SendTransactionError, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { sign } from 'tweetnacl';
 import { IDL, USER_ACCOUNT_SEED, USER_DATA_PROGRAM_ID } from "../imports/consts";
+// import { Keypair } from "@solana/web3.js";
 
 if (!process.env.NEXT_PUBLIC_RPC_URL) {
     throw new Error("NEXT_PUBLIC_RPC_URL is required");
@@ -18,6 +19,10 @@ const program = new Program<Idl>(IDL as Idl, USER_DATA_PROGRAM_ID, {
   connection,
 });
 
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
+if (RPC_URL === undefined) {
+  throw new Error('RPC_URL not found')
+}
 
 export async function getSolanaBalance(publicKey: string): Promise<number> {
   try {
