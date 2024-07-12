@@ -3,6 +3,7 @@ import {
     addConfigLines, create,
     deleteCandyMachine,
     fetchCandyMachine,
+    GuardSetArgs,
     mintV1,
     // mplCandyMachine as mplCoreCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
@@ -26,6 +27,7 @@ import {
 
 
 import { getKeyPair, getUmi } from './mplx.helpers';
+// import { CandyGuardDataArgs } from '@metaplex-foundation/mpl-core-candy-machine/dist/src/hooked/candyGuardData.d';
 
 // const someRandomSecretKey_ = [40,  93,  83,  37,  31,  65,  52,  11,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19]
 
@@ -109,11 +111,12 @@ export async function main() {
 
     // Create a keypair from your private key
     // const TESTkeyPair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(secretKey))
-    const TESTkeyPair = await getKeyPair('random Key , TODO')
-    
+    // const TESTkeyPair = await getKeyPair('random Key , TODO')
+    const TESTkeyPair = await getKeyPair('TEST_SIGNER')
+
     // TODO .env
     // const keypair = generateSigner(umi);
-    const keypair = createSignerFromKeypair( umi, TESTkeyPair )
+    const creatorKeyPair = createSignerFromKeypair( umi, TESTkeyPair )
     const collectionMint_Signer = generateSigner(umi);
     // const collectionMint_Signer = generateSigner(umi);
     const treasury_Signer = generateSigner(umi);
@@ -121,26 +124,27 @@ export async function main() {
     const candyMachine = generateSigner(umi);
     // const candyMachine = generateSigner(umi);
     
-    umi.use(keypairIdentity(keypair));
+    umi.use(keypairIdentity(creatorKeyPair));
     
 
     console.log(`Testing Candy Machine Core...`);
     console.log(`Important account information:`)
     console.table({
-        keypair: keypair.publicKey.toString(),
+        keypair: creatorKeyPair.publicKey.toString(),
         collectionMint_Signer: collectionMint_Signer.publicKey.toString(),
         treasury_Signer: treasury_Signer.publicKey.toString(),
         candyMachine: candyMachine.publicKey.toString(),
     });
 
-    // 1. Airdrop 100 SOL to the keypair
-    // 1. Airdrop 100 SOL to the keypair
+    // 1. Airdrop 10 SOL to the keypair
+    // Skip this step if you already have SOL in the keypair
     try {
-        await umi.rpc.airdrop(keypair.publicKey, sol(100), options.confirm);
-        console.log(`1. ✅ - Airdropped 100 SOL to the ${keypair.publicKey.toString()}`)
+        await umi.rpc.airdrop(creatorKeyPair.publicKey, sol(10), options.confirm);
+        console.log(`1. ✅ - Airdropped SOL to the ${creatorKeyPair.publicKey.toString()}`)
     } catch (error) {
         console.log('1. ❌ - Error airdropping SOL to the wallet.');
     }
+
     // 2. Create a collection
     try {
         await createCollectionV1(umi, {
@@ -162,7 +166,7 @@ export async function main() {
     const millisecond = 0;
 
     const date1 = new Date(year, month, day, hour, minute, second, millisecond);
-    // const date2 = new Date(year+1, month, day, hour, minute, second, millisecond);
+    const date2 = new Date(year+1, month, day, hour, minute, second, millisecond);
 
     // const now = new Date( 2024, );
     // const now_ = Date.now();
@@ -172,35 +176,57 @@ export async function main() {
     // const startDateTimeS = dateTime('2023-04-04T16:00:00Z');
 
     const startDateTime = date1;
-    //const endDateTime = date2;
+    // const endDateTime = null;
+    const endDateTime = date2;
 
 
     // 3. Create a Candy Machine
     try {
-        const createIx = await create(umi, {
-            candyMachine,
-            collection: collectionMint_Signer.publicKey,
-            collectionUpdateAuthority: umi.identity,
-            itemsAvailable: 3,
-            authority: umi.identity.publicKey,
-            isMutable: false,
-            configLineSettings: some({
-                prefixName: 'Quick NFT #',
-                nameLength: 11,
-                prefixUri: 'https://example.com/metadata/',
-                uriLength: 29,
-                isSequential: false,
-            }),
+        const prefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
+        const prefixUriLength = prefixUri.length;
+
             // TODO: guards
-            guards: {
+            // let guards_rules = {
+            const guards_rules:GuardSetArgs = {
                 botTax: some({ lamports: sol(0.001), lastInstruction: true }),
                 solPayment: some({ lamports: sol(1.5), destination: treasury_Signer.publicKey }),
+
                 // The Candy Machine will only be able to mint NFTs after this date
-                startDate: some({ date: startDateTime }),
+                // startDate: some({ date: startDateTime }),
                 // The Candy Machine will stop minting NFTs after this date
                 // endDate: some({ date: endDateTime }),
                 // All other guards are disabled...
             }
+
+            // The Candy Machine will only be able to mint NFTs after this date
+            if (startDateTime) {
+                guards_rules.startDate = some({ date: startDateTime });
+            }
+            // The Candy Machine will stop minting NFTs after this date
+            if (endDateTime) {
+                guards_rules.endDate = some({ date: endDateTime });
+            }
+
+        console.debug('guards_rules');
+        console.dir(guards_rules);
+
+
+        const createIx = await create(umi, {
+            candyMachine,
+            collection: collectionMint_Signer.publicKey,
+            collectionUpdateAuthority: umi.identity,
+            itemsAvailable: 3, // TODO: change this
+            authority: umi.identity.publicKey,
+            isMutable: false,
+            configLineSettings: some({
+                prefixName: 'Quick NFT #', // TODO: change this
+                nameLength: 11, // TODO: change this
+                prefixUri: prefixUri,
+                uriLength: prefixUriLength, // 29, // TODO: change this
+                isSequential: false,
+            }),
+            // TODO: guards
+            guards: guards_rules,
         })
         await createIx.sendAndConfirm(umi, options);
         console.log(`3. ✅ - Created Candy Machine: ${candyMachine.publicKey.toString()}`)
