@@ -2,6 +2,11 @@
 
 dumps_dir_path=${PWD}/dumps
 
+if [ ! -d ${dumps_dir_path} ]
+then
+  mkdir ${dumps_dir_path}
+fi
+
 echo "Dumping Solana programs to ${dumps_dir_path}"
 
 # Mpl Core program
