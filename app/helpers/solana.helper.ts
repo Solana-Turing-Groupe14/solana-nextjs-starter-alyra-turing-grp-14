@@ -24,14 +24,14 @@ if (RPC_URL === undefined) {
   throw new Error('RPC_URL not found')
 }
 
-export async function getSolanaBalance(publicKey: string): Promise<number> {
+export async function getSolanaBalance(publicKey: string): Promise<number|undefined> {
   try {
     const balanceInLamports = await connection.getBalance(new PublicKey(publicKey));
     const balanceInSol = balanceInLamports / LAMPORTS_PER_SOL;
     return balanceInSol;
   } catch (error) {
     console.error(error);
-    return 0;
+    return undefined;
   }
 }
 

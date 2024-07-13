@@ -12,6 +12,7 @@ export default function MintTestPage() {
   const { connected, publicKey: connectedWalletPublicKey } = useWallet()
   const [isProcessingAirdrop, setIsProcessingAirdrop] = useState(false)
   const [isProcessingMint, setIsProcessingMint] = useState(false)
+  const [isProcessingCollectionCreation, setIsProcessingCollectionCreation] = useState(false)
 
 
   // const isConnected = connected && publicKey
@@ -67,7 +68,7 @@ export default function MintTestPage() {
       } else {
         console.warn('app/pages/mintTest.tsx:aidrop: response', response);
         toast({
-          title: 'Airdrop failed ?',
+          title: 'Airdrop failed',
           description: response?.error,
           status: 'error',
           duration: 15_000,
@@ -81,7 +82,7 @@ export default function MintTestPage() {
     } finally {
       setIsProcessingAirdrop(false)
     }
-  }
+  } // airdrop
 
   const mint = async () => {
     // Guard
@@ -90,7 +91,7 @@ export default function MintTestPage() {
     }
     try {
       setIsProcessingMint(true)
-      const res = await fetch('/api/mint-test', {
+      const res = await fetch('/api/global-mint-test', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
@@ -107,8 +108,53 @@ export default function MintTestPage() {
     } finally {
       setIsProcessingMint(false)
     }
-  }
+  } // mint
 
+  const createCollection = async () => {
+    // Guard
+    if (!isConnected) {
+      warnIsNotConnected(); return
+    }
+    try {
+      setIsProcessingCollectionCreation(true)
+      const res = await fetch('/api/collection-creation-test', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'signerName',
+          type: 'freeMint',
+        })
+      });
+      const response = await res.json();
+      if (response && response.success && response.amount) {
+        console.debug('app/pages/mintTest.tsx:mint: response', response);
+        toast({
+          title: 'Collection created.',
+          description: `xxxxxxxx`,
+          status: 'success',
+          duration: 5_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      } else {
+        console.warn('app/pages/mintTest.tsx:aidrop: response', response);
+        toast({
+          title: 'Collection creation failed',
+          description: response?.error,
+          status: 'error',
+          duration: 15_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsProcessingCollectionCreation(false)
+    }
+  } // mint
   return (
     <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">
 
@@ -118,23 +164,37 @@ export default function MintTestPage() {
  */}
       <Text fontSize='3xl'>Mint(s) test</Text>
       <div className="flex flex-col gap-4 ">
+
         <Button
           isDisabled={!connected}
           isLoading={isProcessingAirdrop}
           onClick={airdrop}
           colorScheme='green'
         >
-          Airdrop
+          Airdrop test
         </Button>
+
         <Button
           isDisabled={!connected}
           isLoading={isProcessingMint}
           onClick={mint}
-          colorScheme='blue'
+          colorScheme='purple'
         >
-          Mint
+          GLOBAL Mint test
         </Button>
+
+        <Button
+          isDisabled={!connected}
+          isLoading={isProcessingCollectionCreation}
+          onClick={createCollection}
+          colorScheme='orange'
+        >
+          Create collection
+        </Button>
+
+
       </div>
+
     </div>
   )
 }

@@ -11,8 +11,8 @@ export default function HomePage() {
 
     try {
       // main()
-
-      const res = await fetch('/api/mint-test', {
+/* 
+      const res = await fetch('/api/global-mint-test', {
         method: 'post',
         headers: {
         'Content-Type': 'application/json',
@@ -23,10 +23,11 @@ export default function HomePage() {
         name: 'signerName',
         type: 'freeMint',
       })
-    });
+    }); */
 
-    const response = await res.json();
-    console.debug('mplx.helpers.ts:getDataTEST_SIGNER_SEED_JSON: response', response);
+    // const response = await res.json();
+    // console.debug('mplx.helpers.ts:getDataTEST_SIGNER_SEED_JSON: response', response);
+    console.warn('NOTHING DONE')
 
 
     } catch (error) {

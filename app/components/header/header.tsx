@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Link } from '@chakra-ui/next-js'
-import { Button, Stack, Switch, useColorMode } from '@chakra-ui/react'
+// import { Button, Stack, Switch, useColorMode } from '@chakra-ui/react'
+import { useColorMode } from '@chakra-ui/react'
 // import { IconButton } from "./ui/icon-button"
 import { IconButton } from '@chakra-ui/react'
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -19,18 +20,22 @@ const MenuItems = [
     text: "Home",
     href: "/",
   },
+  {
+    text: "Mint test",
+    href: "/mintTest",
+  },
+  // {
+  //   text: "About",
+  //   href: "/about",
+  // },
+  // {
+  //   text: "Clément",
+  //   href: "/ClementApp",
+  // },
   // {
   //   text: "Transfer",
   //   href: "/transfer",
   // },
-  {
-    text: "Clément",
-    href: "/ClementApp",
-  },
-  {
-    text: "About",
-    href: "/about",
-  },
   // {
   //   text: "Card",
   //   href: "/card",
@@ -39,10 +44,6 @@ const MenuItems = [
   //   text: "NFT collection_test",
   //   href: "/nft_collection_test",
   // },
-  {
-    text: "Mint test",
-    href: "/mintTest",
-  }
 ]
 
 // type headerParams = {
@@ -58,12 +59,14 @@ export default function Header( ) {
   // const { asPath } = useRouter()
   const { colorMode, toggleColorMode } = useColorMode()
     const wallet = useWallet();
-  const [solanaBalance, setSolanaBalance] = useState<number | null>(null);
+  const [solanaBalance, setSolanaBalance] = useState<number | null | undefined>(null);
 
   useEffect(() => {
     if (wallet.publicKey) {
+      console.debug(`header.tsx: wallet.publicKey=${wallet.publicKey.toBase58()}`);
       getSolanaBalance(wallet.publicKey.toBase58())
-        .then((balance) => setSolanaBalance(balance));
+        .then((balance) => { console.debug(`header.tsx: balance=${balance}`) ; setSolanaBalance(balance)})
+        .catch((err) => { console.error(`header.tsx: getSolanaBalance error: ${err}`); } );
     } else {
       setSolanaBalance(null);
     }
@@ -75,6 +78,20 @@ export default function Header( ) {
   return (
     <header className="fixed left-0 top-0 z-20 w-full border-b border-gray-200">
       <div className="container mx-auto flex items-center p-4 md:px-6">
+
+        <div className='items-start mx-1 '>
+          <IconButton
+                isRound={true}
+                variant='solid'
+                colorScheme='teal'
+                aria-label='Switch Theme'
+                fontSize='20px'
+                icon={ colorMode === 'light' ? <Moon /> : <Sun />}
+                onClick={toggleColorMode}
+              />
+        </div>
+
+
         <a href="/" className="flex items-center">
           <img src="/assets/logo.png" className="mr-3 h-8" alt={siteConfig.name} />
           <Typography as="span" level="h6" className="hidden whitespace-nowrap font-semibold md:inline-block">
@@ -97,7 +114,6 @@ export default function Header( ) {
                 </Typography>
               </Link>
               <br/>
- */}
                <Link
                 href={item.href}
                 color='blue.400' _hover={{ color: 'blue.500' }}
@@ -107,11 +123,28 @@ export default function Header( ) {
                 </Typography>
               </Link>
 
+*/}
+               <Link
+                href={item.href}
+                color='blue.400' _hover={{ color: 'blue.500' }}
+               >
+                <Typography level="body4" className="font-semibold">
+                  {item.text}
+                </Typography>
+              </Link>
+
             </li>
           ))}
         </ul>
 
         <div className="flex flex-1 items-center justify-end gap-2">
+          <ConnectWalletButton />
+          <Balance balance={solanaBalance} />
+{/*           <IconButton className="md:hidden">
+            <MenuIcon />
+          </IconButton>
+ */}
+{/* 
           <Button onClick={toggleColorMode}>
             Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
           </Button>
@@ -119,7 +152,9 @@ export default function Header( ) {
             <Switch colorScheme='blue' onChange={toggleColorMode}/>
             <Switch colorScheme='blue' size='lg' onChange={toggleColorMode}/>
           </Stack>
-          <IconButton
+ */}
+{/* 
+           <IconButton
             isRound={true}
             variant='solid'
             colorScheme='teal'
@@ -128,12 +163,8 @@ export default function Header( ) {
             icon={ colorMode === 'light' ? <Moon /> : <Sun />}
             onClick={toggleColorMode}
           />
-          <ConnectWalletButton />
-          <Balance balance={solanaBalance} />
-{/*           <IconButton className="md:hidden">
-            <MenuIcon />
-          </IconButton>
- */}        </div>
+ */}
+         </div>
       </div>
     </header>
   )

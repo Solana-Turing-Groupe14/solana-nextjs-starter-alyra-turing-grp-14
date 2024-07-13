@@ -68,7 +68,7 @@ export const getKeyPair = async(signerName: string): Promise<Keypair> => {
   console.debug(`mplx.helpers.ts:getKeyPair: signerName = '${signerName}'`)
   // console.debug('mplx.helpers.ts:getKeyPair: TODO')
   const TEST_SIGNER_SEED_ = await getDataTEST_SIGNER_SEED(signerName);
-  if (!TEST_SIGNER_SEED_ || TEST_SIGNER_SEED_.length != 64) {
+  if (!TEST_SIGNER_SEED_ || TEST_SIGNER_SEED_.length !== 64) {
     console.error('mplx.helpers.ts:getKeyPair: TEST_SIGNER_SEED_ not found')
     // throw new Error('mplx.helpers.ts:getKeyPair: TEST_SIGNER_SEED_ not found')
     const someRandomSigner = generateSigner(mplx_umi);

@@ -2,7 +2,7 @@ import { Text } from '@chakra-ui/react';
 import React from 'react';
 
 interface BalanceProps {
-    balance: number | null;
+    balance: number | null | undefined;
 }
 
 const Balance: React.FC<BalanceProps> = ({ balance }) => {

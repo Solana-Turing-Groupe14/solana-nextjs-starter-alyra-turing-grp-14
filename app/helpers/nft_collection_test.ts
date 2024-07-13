@@ -14,12 +14,15 @@ import {
     generateSigner,
     keypairIdentity,
     PublicKey,
-    sol,
+    // sol,
     some,
     transactionBuilder,
-    TransactionBuilderSendAndConfirmOptions,
+    // TransactionBuilderSendAndConfirmOptions,
     Umi
 } from '@metaplex-foundation/umi';
+
+import { MPL_OPTIONS, MPL_SOL } from '@consts/mtplx';
+
 // import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 // import { RPC_URL } from '@helpers/solana.helper';
 
@@ -60,10 +63,10 @@ const candyMachine = generateSigner(umi);
 
 umi.use(keypairIdentity(keypair));
 */
-const options: TransactionBuilderSendAndConfirmOptions = {
-    send: { skipPreflight: true },
-    confirm: { commitment: 'processed' }
-};
+// const options: TransactionBuilderSendAndConfirmOptions = {
+//     send: { skipPreflight: true },
+//     confirm: { commitment: 'processed' }
+// };
 
 
 interface ExpectedCandyMachineState {
@@ -80,7 +83,7 @@ async function checkCandyMachine(
     step?: number
 ) {
     try {
-        const loadedCandyMachine = await fetchCandyMachine(umi, candyMachine, options.confirm);
+        const loadedCandyMachine = await fetchCandyMachine(umi, candyMachine, MPL_OPTIONS.confirm);
         const { itemsLoaded, itemsRedeemed, authority, collection } = expectedCandyMachineState;
         if (Number(loadedCandyMachine.itemsRedeemed) !== itemsRedeemed) {
             throw new Error('Incorrect number of items available in the Candy Machine.');
@@ -104,7 +107,7 @@ async function checkCandyMachine(
     }
 }
 
-export async function main() {
+export async function mainMint() {
 
 
     const umi = getUmi();
@@ -139,7 +142,7 @@ export async function main() {
     // 1. Airdrop 10 SOL to the keypair
     // Skip this step if you already have SOL in the keypair
     try {
-        await umi.rpc.airdrop(creatorKeyPair.publicKey, sol(10), options.confirm);
+        await umi.rpc.airdrop(creatorKeyPair.publicKey, MPL_SOL(10), MPL_OPTIONS.confirm);
         console.log(`1. ✅ - Airdropped SOL to the ${creatorKeyPair.publicKey.toString()}`)
     } catch (error) {
         console.log('1. ❌ - Error airdropping SOL to the wallet.');
@@ -151,7 +154,7 @@ export async function main() {
             collection: collectionMint_Signer,
             name: 'My Collection',
             uri: 'https://example.com/my-collection.json',
-        }).sendAndConfirm(umi, options);
+        }).sendAndConfirm(umi, MPL_OPTIONS);
         console.log(`2. ✅ - Created collection: ${collectionMint_Signer.publicKey.toString()}`)
     } catch (error) {
         console.log('2. ❌ - Error creating collection.');
@@ -188,8 +191,8 @@ export async function main() {
             // TODO: guards
             // let guards_rules = {
             const guards_rules:GuardSetArgs = {
-                botTax: some({ lamports: sol(0.001), lastInstruction: true }),
-                solPayment: some({ lamports: sol(1.5), destination: treasury_Signer.publicKey }),
+                botTax: some({ lamports: MPL_SOL(0.001), lastInstruction: true }),
+                solPayment: some({ lamports: MPL_SOL(1.5), destination: treasury_Signer.publicKey }),
 
                 // The Candy Machine will only be able to mint NFTs after this date
                 // startDate: some({ date: startDateTime }),
@@ -228,7 +231,7 @@ export async function main() {
             // TODO: guards
             guards: guards_rules,
         })
-        await createIx.sendAndConfirm(umi, options);
+        await createIx.sendAndConfirm(umi, MPL_OPTIONS);
         console.log(`3. ✅ - Created Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
         console.log('3. ❌ - Error creating Candy Machine.');
@@ -244,7 +247,7 @@ export async function main() {
                 { name: '2', uri: '2.json' },
                 { name: '3', uri: '3.json' },
             ],
-        }).sendAndConfirm(umi, options);
+        }).sendAndConfirm(umi, MPL_OPTIONS);
         console.log(`4. ✅ - Added items to the Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
         console.log('4. ❌ - Error adding items to the Candy Machine.');
@@ -275,7 +278,7 @@ export async function main() {
                         },
                     })
                 )
-                .sendAndConfirm(umi, options);
+                .sendAndConfirm(umi, MPL_OPTIONS);
             minted++;
         }
         console.log(`6. ✅ - Minted ${minted} NFTs.`);
@@ -295,7 +298,7 @@ export async function main() {
     try {
         await deleteCandyMachine(umi, {
             candyMachine: candyMachine.publicKey,
-        }).sendAndConfirm(umi, options);
+        }).sendAndConfirm(umi, MPL_OPTIONS);
         console.log(`8. ✅ - Deleted the Candy Machine: ${candyMachine.publicKey.toString()}`);
     } catch (error) {
         console.log('8. ❌ - Error deleting the Candy Machine.');
