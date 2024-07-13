@@ -1,4 +1,4 @@
-import { Highlight, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import React from 'react';
 
 interface BalanceProps {
@@ -12,13 +12,12 @@ const Balance: React.FC<BalanceProps> = ({ balance }) => {
                 <Text paddingRight={1}>Balance:</Text>
                 {
                     balance !== undefined ?
-                    <Text>{balance}</Text>
+                    <Text as="b">{balance}</Text>
                     :
                     <Text as='mark'>unavailable</Text>
                 }
             </>)
     };
-
     return (
         <div className="flex">{displayBalance()}</div>
     );
