@@ -9,19 +9,17 @@ import { useMemo, useState } from "react"
 
 export default function MintTestPage() {
 
-  const { connected, publicKey } = useWallet()
-  // const [loading, setLoading] = useState(false)
-  // const [isWorking, setIsWorking] = useState(false)
-  const [isWorkingAirdrop, setIsWorkingAirdrop] = useState(false)
-  const [isWorkingMint, setIsWorkingMint] = useState(false)
+  const { connected, publicKey: connectedWalletPublicKey } = useWallet()
+  const [isProcessingAirdrop, setIsProcessingAirdrop] = useState(false)
+  const [isProcessingMint, setIsProcessingMint] = useState(false)
 
 
   // const isConnected = connected && publicKey
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
-    return connected && publicKey
-  }, [connected, publicKey]);
+    return connected && connectedWalletPublicKey
+  }, [connected, connectedWalletPublicKey]);
 
   const toast = useToast()
 
@@ -45,22 +43,43 @@ export default function MintTestPage() {
       warnIsNotConnected(); return
     }
     try {
-      setIsWorkingAirdrop(true)
+      setIsProcessingAirdrop(true)
       const res = await fetch('/api/airdrop-test', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          publicKey: 'somePublicKey',
+          publicKey: connectedWalletPublicKey?.toBase58(),
         })
       });
       const response = await res.json();
-      console.debug('app/pages/mintTest.tsx:aidrop: response', response);
+      if (response && response.success && response.amount) {
+        console.debug('app/pages/mintTest.tsx:aidrop: response', response);
+        toast({
+          title: 'Wallet airdropped.',
+          description: `received ${response.amount} sol.`,
+          status: 'success',
+          duration: 5_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      } else {
+        console.warn('app/pages/mintTest.tsx:aidrop: response', response);
+        toast({
+          title: 'Airdrop failed ?',
+          description: response?.error,
+          status: 'error',
+          duration: 15_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
+
     } catch (error) {
       console.error(error)
     } finally {
-      setIsWorkingAirdrop(false)
+      setIsProcessingAirdrop(false)
     }
   }
 
@@ -70,7 +89,7 @@ export default function MintTestPage() {
       warnIsNotConnected(); return
     }
     try {
-      setIsWorkingMint(true)
+      setIsProcessingMint(true)
       const res = await fetch('/api/mint-test', {
         method: 'post',
         headers: {
@@ -86,7 +105,7 @@ export default function MintTestPage() {
     } catch (error) {
       console.error(error)
     } finally {
-      setIsWorkingMint(false)
+      setIsProcessingMint(false)
     }
   }
 
@@ -101,7 +120,7 @@ export default function MintTestPage() {
       <div className="flex flex-col gap-4 ">
         <Button
           isDisabled={!connected}
-          isLoading={isWorkingAirdrop}
+          isLoading={isProcessingAirdrop}
           onClick={airdrop}
           colorScheme='green'
         >
@@ -109,7 +128,7 @@ export default function MintTestPage() {
         </Button>
         <Button
           isDisabled={!connected}
-          isLoading={isWorkingMint}
+          isLoading={isProcessingMint}
           onClick={mint}
           colorScheme='blue'
         >

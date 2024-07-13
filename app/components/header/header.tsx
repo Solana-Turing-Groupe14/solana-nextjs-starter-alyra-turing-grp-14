@@ -7,12 +7,12 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { /* MenuIcon, */ Moon, Sun } from "lucide-react"
 // import { useRouter } from "next/router"
 // import { cn } from "@clement-utils/cn"
+import { useEffect, useState } from 'react';
 import ConnectWalletButton from "@components/connect-wallet-button"
 import { siteConfig } from "@config/site"
+import { getSolanaBalance } from '@helpers/solana.helper';
 import Balance from './balance'
 import { Typography } from "../ui/typography"
-import { useEffect, useState } from 'react';
-import { getSolanaBalance } from '@helpers/solana.helper';
 
 const MenuItems = [
   {
@@ -45,7 +45,16 @@ const MenuItems = [
   }
 ]
 
-export default function Header() {
+// type headerParams = {
+//   // colorMode: string;
+//   // toggleColorMode: () => void;
+//   // wallet: WalletContextState;
+//   // solanaBalance: number | null;
+//   refreshBalance: () => void;
+// }
+
+// export default function Header( { headerParams }: { headerParams: any } ) {
+export default function Header( ) {
   // const { asPath } = useRouter()
   const { colorMode, toggleColorMode } = useColorMode()
     const wallet = useWallet();
@@ -61,7 +70,7 @@ export default function Header() {
     return () => {
       //
     }
-  }, [wallet.publicKey]);
+  }, [wallet.publicKey, ]);
 
   return (
     <header className="fixed left-0 top-0 z-20 w-full border-b border-gray-200">
