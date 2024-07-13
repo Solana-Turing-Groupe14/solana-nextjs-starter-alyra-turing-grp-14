@@ -25,11 +25,14 @@
     "clean": "yarn run clean:build",
     "clean:build": "yarn run del-cli ./build/",
     "clean:all": "yarn run clean:build && yarn run clean:next && yarn run clean:node",
-    "clean:ALL": "yarn run clean:all && yarn run clean:npm",
+    "clean:ALL": "yarn run clean:scripts:ALL && yarn run clean:all && yarn run clean:npm",
     "clean:next": "yarn run del-cli .next",
     "clean:next:cache": "yarn run del-cli .next/.cache",
     "clean:node": "yarn run del-cli ./node_modules/",
-    "clean:npm": "npm cache clean --force && npm cache verify"
+    "clean:npm": "npm cache clean --force && npm cache verify",
+    "clean:scripts:ALL": "yarn run clean:scripts-dumps && yarn run clean:scripts-validator-data",
+    "clean:scripts-dumps": "yarn run del-cli ./scripts/dumps && yarn run del-cli ./scripts/test-ledger",
+    "clean:scripts-validator-data": "yarn run del-cli ./scripts/dumps && yarn run del-cli ./scripts/test-ledger"
   },
   "dependencies": {
     "@chakra-ui/next-js": "^2.2.0",
