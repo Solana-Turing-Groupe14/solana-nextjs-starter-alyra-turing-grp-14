@@ -30,6 +30,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
     [network]
   )
 
+
   return (
     <>
       <DefaultSeo

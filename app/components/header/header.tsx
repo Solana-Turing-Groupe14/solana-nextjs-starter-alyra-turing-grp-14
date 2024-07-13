@@ -3,22 +3,26 @@ import { Link } from '@chakra-ui/next-js'
 import { Button, Stack, Switch, useColorMode } from '@chakra-ui/react'
 // import { IconButton } from "./ui/icon-button"
 import { IconButton } from '@chakra-ui/react'
+import { useWallet } from '@solana/wallet-adapter-react';
 import { /* MenuIcon, */ Moon, Sun } from "lucide-react"
-import { useRouter } from "next/router"
-import { cn } from "@clement-utils/cn"
+// import { useRouter } from "next/router"
+// import { cn } from "@clement-utils/cn"
 import ConnectWalletButton from "@components/connect-wallet-button"
 import { siteConfig } from "@config/site"
-import { Typography } from "./ui/typography"
+import Balance from './balance'
+import { Typography } from "../ui/typography"
+import { useEffect, useState } from 'react';
+import { getSolanaBalance } from '@helpers/solana.helper';
 
 const MenuItems = [
   {
     text: "Home",
     href: "/",
   },
-  {
-    text: "Transfer",
-    href: "/transfer",
-  },
+  // {
+  //   text: "Transfer",
+  //   href: "/transfer",
+  // },
   {
     text: "Clément",
     href: "/ClementApp",
@@ -27,19 +31,38 @@ const MenuItems = [
     text: "About",
     href: "/about",
   },
+  // {
+  //   text: "Card",
+  //   href: "/card",
+  // },
+  // {
+  //   text: "NFT collection_test",
+  //   href: "/nft_collection_test",
+  // },
   {
-    text: "Card",
-    href: "/card",
-  },
-  {
-    text: "NFT collection_test",
-    href: "/nft_collection_test",
+    text: "Mint test",
+    href: "/mintTest",
   }
 ]
 
 export default function Header() {
-  const { asPath } = useRouter()
+  // const { asPath } = useRouter()
   const { colorMode, toggleColorMode } = useColorMode()
+    const wallet = useWallet();
+  const [solanaBalance, setSolanaBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (wallet.publicKey) {
+      getSolanaBalance(wallet.publicKey.toBase58())
+        .then((balance) => setSolanaBalance(balance));
+    } else {
+      setSolanaBalance(null);
+    }
+    return () => {
+      //
+    }
+  }, [wallet.publicKey]);
+
   return (
     <header className="fixed left-0 top-0 z-20 w-full border-b border-gray-200">
       <div className="container mx-auto flex items-center p-4 md:px-6">
@@ -53,7 +76,7 @@ export default function Header() {
         <ul className="ml-10 hidden items-center gap-6 md:flex">
           {MenuItems.map((item) => (
             <li key={item.text}>
-
+{/* 
                <Link
                 href={item.href}
                 className={cn("text-gray-600 hover:underline", {
@@ -65,6 +88,7 @@ export default function Header() {
                 </Typography>
               </Link>
               <br/>
+ */}
                <Link
                 href={item.href}
                 color='blue.400' _hover={{ color: 'blue.500' }}
@@ -96,6 +120,7 @@ export default function Header() {
             onClick={toggleColorMode}
           />
           <ConnectWalletButton />
+          <Balance balance={solanaBalance} />
 {/*           <IconButton className="md:hidden">
             <MenuIcon />
           </IconButton>

@@ -10,7 +10,7 @@ if (!programID) {
     throw new Error('NEXT_PUBLIC_USER_DATA_PROGRAM_ID is not set')
 }
 
-console.debug('NEXT_PUBLIC_USER_DATA_PROGRAM_ID', programID)
+// console.debug('NEXT_PUBLIC_USER_DATA_PROGRAM_ID', programID)
 
 export const USER_DATA_PROGRAM_ID = new PublicKey(programID);
 

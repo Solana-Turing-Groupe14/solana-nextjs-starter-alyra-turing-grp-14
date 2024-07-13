@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/react"
 import { Typography } from "@components/ui/typography"
 
-import {main} from "@helpers/nft_collection_test"
+// import {main} from "@helpers/nft_collection_test"
 
 export default function HomePage() {
 
@@ -10,7 +10,25 @@ export default function HomePage() {
     // if (!publicKey) throw new WalletNotConnectedError()
 
     try {
-      main()
+      // main()
+
+      const res = await fetch('/api/mint-test', {
+        method: 'post',
+        headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // customParameter: customParameter
+        // name: 'TEST_SIGNER'
+        name: 'signerName',
+        type: 'freeMint',
+      })
+    });
+
+    const response = await res.json();
+    console.debug('mplx.helpers.ts:getDataTEST_SIGNER_SEED_JSON: response', response);
+
+
     } catch (error) {
       console.error(error)
     } finally {
