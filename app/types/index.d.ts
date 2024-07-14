@@ -11,45 +11,45 @@ export type SiteConfig = {
 
 export type AirdropResponseData =
   | {
-      success: true;
-      message: string,
-      amount: number
+      success: true
+      // message: string
+      amount: number,
+      address: string
     }
   | {
-      success: false;
-      error: string;
+      success: false
+      error: string
     };
 
 export type CollectionCreationResponseData =
   | {
-      success: true;
-      // message: string,
+      success: true
       address: string
     }
   | {
-      success: false;
-      error: string;
+      success: false
+      error: string
     };
 
 
     export type mplhelp_T_AirdropResult =
   | {
-      success: true;
+      success: true
       amount: number
     }
   | {
-      success: false;
-      error: string;
+      success: false
+      error: string
     };
 
 
 
     export type mplhelp_T_CreateCollectionResult =
   | {
-      success: true;
-      address: string;
+      success: true
+      address: string
     }
   | {
-      success: false;
-      error: string;
+      success: false
+      error: string
     };

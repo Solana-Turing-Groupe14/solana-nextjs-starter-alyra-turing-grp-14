@@ -22,7 +22,7 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
     const AIRDROP_AMOUNT = 1
     const resAirdrop:mplhelp_T_AirdropResult = await airdrop(_publicKey, AIRDROP_AMOUNT)
     if (resAirdrop.success) {
-      res.status(200).json({ success: true, message: 'Airdrop success', amount: resAirdrop.amount })
+      res.status(200).json({ success: true, address: _publicKey, amount: resAirdrop.amount })
       return
     }
     // airdrop failed 
