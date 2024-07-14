@@ -44,10 +44,6 @@ const MenuItems = [
   //   text: "Card",
   //   href: "/card",
   // },
-  // {
-  //   text: "NFT collection_test",
-  //   href: "/nft_collection_test",
-  // },
 ]
 
 // type headerParams = {
