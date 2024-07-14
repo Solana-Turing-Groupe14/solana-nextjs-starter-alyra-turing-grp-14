@@ -9,7 +9,6 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { setComputeUnitLimit } from '@metaplex-foundation/mpl-toolbox';
 import {
-    createSignerFromKeypair,
     // dateTime,
     generateSigner,
     keypairIdentity,
@@ -20,8 +19,8 @@ import {
     // TransactionBuilderSendAndConfirmOptions,
     Umi
 } from '@metaplex-foundation/umi';
+import { MPL_f_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx';
 
-import { MPL_OPTIONS, MPL_SOL } from '@consts/mtplx';
 
 // import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 // import { RPC_URL } from '@helpers/solana.helper';
@@ -29,7 +28,7 @@ import { MPL_OPTIONS, MPL_SOL } from '@consts/mtplx';
 // import { TESTkeyPair } from '@helpers/solana.helper';
 
 
-import { getKeyPair, getUmi } from './mplx.helpers';
+import { getUmi } from './mplx.helpers';
 // import { CandyGuardDataArgs } from '@metaplex-foundation/mpl-core-candy-machine/dist/src/hooked/candyGuardData.d';
 
 // const someRandomSecretKey_ = [40,  93,  83,  37,  31,  65,  52,  11,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19]
@@ -83,7 +82,7 @@ async function checkCandyMachine(
     step?: number
 ) {
     try {
-        const loadedCandyMachine = await fetchCandyMachine(umi, candyMachine, MPL_OPTIONS.confirm);
+        const loadedCandyMachine = await fetchCandyMachine(umi, candyMachine, MPL_TX_BUILDR_OPTIONS.confirm);
         const { itemsLoaded, itemsRedeemed, authority, collection } = expectedCandyMachineState;
         if (Number(loadedCandyMachine.itemsRedeemed) !== itemsRedeemed) {
             throw new Error('Incorrect number of items available in the Candy Machine.');
@@ -107,7 +106,7 @@ async function checkCandyMachine(
     }
 }
 
-export async function mainMint() {
+export async function globalMint() {
 
 
     const umi = getUmi();
@@ -115,11 +114,11 @@ export async function mainMint() {
     // Create a keypair from your private key
     // const TESTkeyPair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(secretKey))
     // const TESTkeyPair = await getKeyPair('random Key , TODO')
-    const TESTkeyPair = await getKeyPair('TEST_SIGNER')
+    // const TESTkeyPair = await getKeyPair('TEST_SIGNER')
 
     // TODO .env
-    // const keypair = generateSigner(umi);
-    const creatorKeyPair = createSignerFromKeypair( umi, TESTkeyPair )
+    const creatorKeyPair = generateSigner(umi);
+    // const creatorKeyPair = createSignerFromKeypair( umi, TESTkeyPair )
     const collectionMint_Signer = generateSigner(umi);
     // const collectionMint_Signer = generateSigner(umi);
     const treasury_Signer = generateSigner(umi);
@@ -142,7 +141,7 @@ export async function mainMint() {
     // 1. Airdrop 10 SOL to the keypair
     // Skip this step if you already have SOL in the keypair
     try {
-        await umi.rpc.airdrop(creatorKeyPair.publicKey, MPL_SOL(10), MPL_OPTIONS.confirm);
+        await umi.rpc.airdrop(creatorKeyPair.publicKey, MPL_f_sol(10), MPL_TX_BUILDR_OPTIONS.confirm);
         console.log(`1. ✅ - Airdropped SOL to the ${creatorKeyPair.publicKey.toString()}`)
     } catch (error) {
         console.log('1. ❌ - Error airdropping SOL to the wallet.');
@@ -154,7 +153,7 @@ export async function mainMint() {
             collection: collectionMint_Signer,
             name: 'My Collection',
             uri: 'https://example.com/my-collection.json',
-        }).sendAndConfirm(umi, MPL_OPTIONS);
+        }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
         console.log(`2. ✅ - Created collection: ${collectionMint_Signer.publicKey.toString()}`)
     } catch (error) {
         console.log('2. ❌ - Error creating collection.');
@@ -191,8 +190,8 @@ export async function mainMint() {
             // TODO: guards
             // let guards_rules = {
             const guards_rules:GuardSetArgs = {
-                botTax: some({ lamports: MPL_SOL(0.001), lastInstruction: true }),
-                solPayment: some({ lamports: MPL_SOL(1.5), destination: treasury_Signer.publicKey }),
+                botTax: some({ lamports: MPL_f_sol(0.001), lastInstruction: true }),
+                solPayment: some({ lamports: MPL_f_sol(1.5), destination: treasury_Signer.publicKey }),
 
                 // The Candy Machine will only be able to mint NFTs after this date
                 // startDate: some({ date: startDateTime }),
@@ -231,7 +230,7 @@ export async function mainMint() {
             // TODO: guards
             guards: guards_rules,
         })
-        await createIx.sendAndConfirm(umi, MPL_OPTIONS);
+        await createIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
         console.log(`3. ✅ - Created Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
         console.log('3. ❌ - Error creating Candy Machine.');
@@ -247,7 +246,7 @@ export async function mainMint() {
                 { name: '2', uri: '2.json' },
                 { name: '3', uri: '3.json' },
             ],
-        }).sendAndConfirm(umi, MPL_OPTIONS);
+        }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
         console.log(`4. ✅ - Added items to the Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
         console.log('4. ❌ - Error adding items to the Candy Machine.');
@@ -278,7 +277,7 @@ export async function mainMint() {
                         },
                     })
                 )
-                .sendAndConfirm(umi, MPL_OPTIONS);
+                .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
             minted++;
         }
         console.log(`6. ✅ - Minted ${minted} NFTs.`);
@@ -298,7 +297,7 @@ export async function mainMint() {
     try {
         await deleteCandyMachine(umi, {
             candyMachine: candyMachine.publicKey,
-        }).sendAndConfirm(umi, MPL_OPTIONS);
+        }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
         console.log(`8. ✅ - Deleted the Candy Machine: ${candyMachine.publicKey.toString()}`);
     } catch (error) {
         console.log('8. ❌ - Error deleting the Candy Machine.');

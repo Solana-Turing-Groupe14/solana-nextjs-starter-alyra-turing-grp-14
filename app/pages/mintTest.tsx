@@ -1,21 +1,18 @@
 import { Button, Text, useToast } from "@chakra-ui/react"
-// import { Typography } from "@components/ui/typography"
-import { /* useConnection, */ useWallet } from "@solana/wallet-adapter-react"
+import { useWallet } from "@solana/wallet-adapter-react"
 import { useMemo, useState } from "react"
-// import { WalletNotConnectedError } from "@solana/wallet-adapter-base"
-// import React from "react"
-
-
+import { createMyCollection as mplxH_createMyCollection } from "@helpers/mplx.helpers"
+import { AirdropResponseData,
+  CollectionCreationResponseData
+} from "types"
 
 export default function MintTestPage() {
 
-  const { connected, publicKey: connectedWalletPublicKey } = useWallet()
+  const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingAirdrop, setIsProcessingAirdrop] = useState(false)
-  const [isProcessingMint, setIsProcessingMint] = useState(false)
-  const [isProcessingCollectionCreation, setIsProcessingCollectionCreation] = useState(false)
-
-
-  // const isConnected = connected && publicKey
+  const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
+  const [isProcessingSponsoredCollectionCreation, setIsProcessingSponsoredCollectionCreation] = useState(false)
+  const [isProcessingMyCollectionCreation, setIsProcessingMyCollectionCreation] = useState(false)
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -38,25 +35,26 @@ export default function MintTestPage() {
   }
 
 
-  const airdrop = async () => {
+  const airdropConnectedWallet = async () => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
     }
     try {
       setIsProcessingAirdrop(true)
+      const address:string = connectedWalletPublicKey?.toBase58()||''
       const res = await fetch('/api/airdrop-test', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          publicKey: connectedWalletPublicKey?.toBase58(),
+          publicKey: address,
         })
       });
-      const response = await res.json();
+      const response:AirdropResponseData = await res.json();
+      console.debug('app/pages/mintTest.tsx:aidrop: response', response);
       if (response && response.success && response.amount) {
-        console.debug('app/pages/mintTest.tsx:aidrop: response', response);
         toast({
           title: 'Wallet airdropped.',
           description: `received ${response.amount} sol.`,
@@ -66,10 +64,10 @@ export default function MintTestPage() {
           position: 'top-right',
         })
       } else {
-        console.warn('app/pages/mintTest.tsx:aidrop: response', response);
+        const error = (response && response.success === false ? response.error : 'Unknown error') 
         toast({
           title: 'Airdrop failed',
-          description: response?.error,
+          description: error,
           status: 'error',
           duration: 15_000,
           isClosable: true,
@@ -84,13 +82,13 @@ export default function MintTestPage() {
     }
   } // airdrop
 
-  const mint = async () => {
+  const globalMint = async () => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
     }
     try {
-      setIsProcessingMint(true)
+      setIsProcessingGlobalMint(true)
       const res = await fetch('/api/global-mint-test', {
         method: 'post',
         headers: {
@@ -106,18 +104,18 @@ export default function MintTestPage() {
     } catch (error) {
       console.error(error)
     } finally {
-      setIsProcessingMint(false)
+      setIsProcessingGlobalMint(false)
     }
-  } // mint
+  } // globalMint
 
-  const createCollection = async () => {
+  const createSponsoredCollection = async () => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
     }
     try {
-      setIsProcessingCollectionCreation(true)
-      const res = await fetch('/api/collection-creation-test', {
+      setIsProcessingSponsoredCollectionCreation(true)
+      const res = await fetch('/api/collection-creation-sponsored-test', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
@@ -127,14 +125,15 @@ export default function MintTestPage() {
           type: 'freeMint',
         })
       });
-      const response = await res.json();
-      if (response && response.success && response.amount) {
+      const response:CollectionCreationResponseData = await res.json();
+      console.debug('app/pages/mintTest.tsx:mint: response', response);
+      if (response && response.success) {
         console.debug('app/pages/mintTest.tsx:mint: response', response);
         toast({
           title: 'Collection created.',
-          description: `xxxxxxxx`,
+          description: `address: ${response.address}`,
           status: 'success',
-          duration: 5_000,
+          duration: 60_000,
           isClosable: true,
           position: 'top-right',
         })
@@ -152,9 +151,51 @@ export default function MintTestPage() {
     } catch (error) {
       console.error(error)
     } finally {
-      setIsProcessingCollectionCreation(false)
+      setIsProcessingSponsoredCollectionCreation(false)
     }
   } // mint
+
+  const createMyCollection = async () => {
+    // Guard
+    if (!isConnected) {
+      warnIsNotConnected(); return
+    }
+    try {
+      setIsProcessingMyCollectionCreation(true)
+      if (!wallet) {
+        console.error('app/pages/mintTest.tsx:createMyCollection: Wallet not found')
+        return
+      }
+      const r = await mplxH_createMyCollection(wallet.adapter)
+      console.debug('app/pages/mintTest.tsx:createMyCollection: response', r);
+      if (r && r.success) {
+        toast({
+          title: '(my)Collection created.',
+          description: `address: ${r.address}`,
+          status: 'success',
+          duration: 60_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      } else {
+        console.warn('app/pages/mintTest.tsx:createMyCollection: response', r);
+        toast({
+          title: '(my)Collection creation failed',
+          description: r?.error,
+          status: 'error',
+          duration: 15_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
+
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsProcessingMyCollectionCreation(false)
+    }
+  } // mint
+
   return (
     <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">
 
@@ -168,16 +209,16 @@ export default function MintTestPage() {
         <Button
           isDisabled={!connected}
           isLoading={isProcessingAirdrop}
-          onClick={airdrop}
+          onClick={airdropConnectedWallet}
           colorScheme='green'
         >
-          Airdrop test
+          Airdrop connected wallet
         </Button>
 
         <Button
           isDisabled={!connected}
-          isLoading={isProcessingMint}
-          onClick={mint}
+          isLoading={isProcessingGlobalMint}
+          onClick={globalMint}
           colorScheme='purple'
         >
           GLOBAL Mint test
@@ -185,11 +226,20 @@ export default function MintTestPage() {
 
         <Button
           isDisabled={!connected}
-          isLoading={isProcessingCollectionCreation}
-          onClick={createCollection}
+          isLoading={isProcessingSponsoredCollectionCreation}
+          onClick={createSponsoredCollection}
           colorScheme='orange'
         >
-          Create collection
+          Create sponsored collection (fees paid by the app)
+        </Button>
+
+        <Button
+          isDisabled={!connected}
+          isLoading={isProcessingMyCollectionCreation}
+          onClick={createMyCollection}
+          colorScheme='red'
+        >
+          Create My own collection (fees paid by wallet owner)
         </Button>
 
 

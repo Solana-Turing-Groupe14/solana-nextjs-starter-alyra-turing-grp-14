@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { mainMint } from '@helpers/nft_collection_test';
+import { globalMint } from '@helpers/nft_collection_test';
 
 type ResponseData =
   | {
@@ -21,21 +21,7 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
       res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
     }
     // Process POST request
-    // console.log('POST req.body', req.body)
-    // const { publicKey: _publicKey } = req.body
-    // console.debug(`app/pages/api/mint-test.ts: publicKey = ${ _publicKey }`)
-
-    // throw new Error('mint failed') // test error handling
-
-    // Do something
-    // Do something
-    // Do something
-    // Do something
-    // Do something
-    // Do something
-    // Do something
-    // Do something
-    mainMint()
+    globalMint()
 
     // wait 5 seconds
     await new Promise((resolve) => setTimeout(resolve, 5_000))

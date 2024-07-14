@@ -1,20 +1,8 @@
-import {PublicKey as soljsweb3PublicKey} from '@solana/web3.js'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { MPL_OPTIONS, MPL_SOL } from '@consts/mtplx';
-import { getUmi } from '../../helpers/mplx.helpers';
+import { airdrop } from '@helpers/mplx.helpers';
+import { AirdropResponseData, mplhelp_T_AirdropResult } from 'types';
 
-type ResponseData =
-  | {
-      success: true;
-      message: string,
-      amount: number
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-export default async function airdropHandler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
+export default async function airdropHandler(req: NextApiRequest, res: NextApiResponse<AirdropResponseData>) {
   try {
     // console.debug(`app/pages/api/airdrop-test.ts: req.method=${ req.method }`)
     // Accept only POST request
@@ -30,39 +18,20 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
 
     // throw new Error('airdrop failed') // test error handling
 
-    // check address validity
-    const isValid = soljsweb3PublicKey.isOnCurve(new soljsweb3PublicKey(_publicKey))
-    if (!isValid) {
-      // throw new Error('Invalid public key')
-      res.status(200).json({ success: false, error: 'Invalid public key' })
-    }
-
     // Airdrop some SOL
     const AIRDROP_AMOUNT = 1
-    const umi = getUmi()
-    try {
-      await umi.rpc.airdrop(_publicKey, MPL_SOL(AIRDROP_AMOUNT), MPL_OPTIONS.confirm);
-      console.log(`✅ - Airdropped ${AIRDROP_AMOUNT} SOL to the ${_publicKey}`)
-      } catch (error) {
-        console.log(`❌ - Error airdropping SOL to ${_publicKey}`);
-        // throw new Error('Error airdropping SOL')
-
-        const response: ResponseData = { success: false, error: '' };
-        if (error instanceof Error) {
-          console.log('error', error)
-          response.error = `Error airdropping SOL to ${_publicKey} : ${error.message}`
-        } else {
-          // response.error = 'Error'
-          response.error = `Error airdropping SOL to ${_publicKey}`
-        }
-        // res.status(200).json({ success: false, error: `Error airdropping SOL to ${_publicKey}` })
-        res.status(200).json(response)
+    const resAirdrop:mplhelp_T_AirdropResult = await airdrop(_publicKey, AIRDROP_AMOUNT)
+    if (resAirdrop.success) {
+      res.status(200).json({ success: true, message: 'Airdrop success', amount: resAirdrop.amount })
+      return
     }
-    // wait 5 seconds
-    // await new Promise((resolve) => setTimeout(resolve, 5_000))
-    res.status(200).json({ success: true, message: 'Mint success', amount: AIRDROP_AMOUNT })
+    // airdrop failed 
+    if (!resAirdrop.success) {
+      res.status(200).json({ success: false, error: resAirdrop.error })
+      return
+    }
   } catch (error) {
-    const response: ResponseData = { success: false, error: '' };
+    const response: AirdropResponseData = { success: false, error: '' };
     if (error instanceof Error) {
       console.log('error', error)
       response.error = error.message

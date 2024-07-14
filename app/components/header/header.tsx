@@ -63,9 +63,9 @@ export default function Header( ) {
 
   useEffect(() => {
     if (wallet.publicKey) {
-      console.debug(`header.tsx: wallet.publicKey=${wallet.publicKey.toBase58()}`);
+      // console.debug(`header.tsx: wallet.publicKey=${wallet.publicKey.toBase58()}`);
       getSolanaBalance(wallet.publicKey.toBase58())
-        .then((balance) => { console.debug(`header.tsx: balance=${balance}`) ; setSolanaBalance(balance)})
+        .then((balance) => { /* console.debug(`header.tsx: balance=${balance}`) ; */ setSolanaBalance(balance)})
         .catch((err) => { console.error(`header.tsx: getSolanaBalance error: ${err}`); } );
     } else {
       setSolanaBalance(null);

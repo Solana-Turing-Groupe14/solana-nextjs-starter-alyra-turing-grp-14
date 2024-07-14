@@ -8,3 +8,48 @@ export type SiteConfig = {
     github: string
   }
 }
+
+export type AirdropResponseData =
+  | {
+      success: true;
+      message: string,
+      amount: number
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+export type CollectionCreationResponseData =
+  | {
+      success: true;
+      // message: string,
+      address: string
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+
+    export type mplhelp_T_AirdropResult =
+  | {
+      success: true;
+      amount: number
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+
+
+    export type mplhelp_T_CreateCollectionResult =
+  | {
+      success: true;
+      address: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
