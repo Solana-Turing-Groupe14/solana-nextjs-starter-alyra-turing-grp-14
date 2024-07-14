@@ -1,5 +1,6 @@
-import { Button, Text, useToast } from "@chakra-ui/react"
+import { Box, Button, Center, Stack, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { AirdropResponseData } from "types"
 
@@ -136,41 +137,55 @@ export default function MintTestPage() {
       <Text fontSize='3xl'>Tool(s)</Text>
       <div className="flex flex-col gap-4 ">
 
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingConnectedWalletAirdrop}
-          onClick={airdropConnectedWallet}
-          colorScheme='green'
-        >
-          Airdrop connected wallet
-        </Button>
+      <Box bg='' w='100%' p={4} color=''>
 
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingApp1AddressAirdrop}
-          onClick={airdropApp1Wallet}
-          colorScheme='orange'
-        >
-          Airdrop APP 1 wallet
-        </Button>
+      <Center w='100%' h='100%' bg='' color=''>
+        <SendIcon size='64' />
+      </Center>
+        
 
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingApp2AddressAirdrop}
-          onClick={airdropApp2Wallet}
-          colorScheme='purple'
-        >
-          Airdrop APP 2 wallet
-        </Button>
+        <Stack direction='column' spacing={4} align='center'>
 
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingAppDefaultAddressAirdrop}
-          onClick={airdropAppDefaultWallet}
-          colorScheme='red'
-        >
-          Airdrop APP Default wallet
-        </Button>
+          <Button
+            isDisabled={!connected}
+            isLoading={isProcessingConnectedWalletAirdrop}
+            onClick={airdropConnectedWallet}
+            colorScheme='green' variant='outline'
+          >
+            Airdrop connected wallet
+          </Button>
+
+          <Button
+            isDisabled={!connected}
+            isLoading={isProcessingApp1AddressAirdrop}
+            onClick={airdropApp1Wallet}
+            colorScheme='orange' variant='outline'
+          >
+            Airdrop APP 1 wallet
+          </Button>
+
+          <Button
+            isDisabled={!connected}
+            isLoading={isProcessingApp2AddressAirdrop}
+            onClick={airdropApp2Wallet}
+            colorScheme='purple' variant='outline'
+          >
+            Airdrop APP 2 wallet
+          </Button>
+
+          <Button
+            isDisabled={!connected}
+            isLoading={isProcessingAppDefaultAddressAirdrop}
+            onClick={airdropAppDefaultWallet}
+            colorScheme='red' variant='outline'
+          >
+            Airdrop APP Default wallet
+          </Button>
+
+        </Stack>
+</Box>
+
+
 
       </div>
 
