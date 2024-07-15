@@ -1,24 +1,53 @@
-import { CheckCircleIcon } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, Link, Text, useToast } from "@chakra-ui/react"
+import { AddIcon, AtSignIcon, CheckCircleIcon, SmallAddIcon, } from '@chakra-ui/icons'
+import { Box, Button, CloseButton, Input, InputGroup, InputLeftElement, Link, Stack, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { ExternalLinkIcon } from "lucide-react"
-import { useMemo, useState } from "react"
+import { ExternalLinkIcon,  } from "lucide-react"
+import { SetStateAction, useMemo, useState } from "react"
 import {
-  createMyCollection as mplxH_createMyCollection,
-  createMyFullNftCollection as mplxH_createMyFullNftCollection
+  mintNftFromCM  as mplxH_mintNftFromCM,
 } from "@helpers/mplx.helpers"
-import { getTxUri } from "@helpers/solana.helper"
-import { CollectionCreationResponseData } from "types"
+import { getAddressUri, getTxUri } from "@helpers/solana.helper"
+import { mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types"
+import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
 
 
 
 export default function MintTestPage() {
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
-  const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
-  const [isProcessingSponsoredCollectionCreation, setIsProcessingSponsoredCollectionCreation] = useState(false)
-  const [isProcessingMyCollectionCreation, setIsProcessingMyCollectionCreation] = useState(false)
-  const [isProcessingMyNftCollectionCreation, setIsProcessingMyNftCollectionCreation] = useState(false)
+  const [isProcessingMint, setIsProcessingMint] = useState(false)
+
+  const [candyMachineAddress, setCandyMachineAddress] = useState('')
+  const [collectionAddress, setcollectionAddress] = useState('')
+
+  const handleChangeCandyMachineAddress = (event: { target: { value: SetStateAction<string> } }) => setCandyMachineAddress(event.target.value)
+  const isValidCandyMachineInput = useMemo(() => {
+    let isValid = false
+    // TODO: Implement validation
+    if (candyMachineAddress.length > 0) {
+      try {
+        const solPubKey = new soljsweb3PublicKey(candyMachineAddress)
+        isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+      } catch (error) {
+      }
+    }
+    return isValid
+  }, [candyMachineAddress])
+
+  const handleChangeCollectionAddress = (event: { target: { value: SetStateAction<string> } }) => setcollectionAddress(event.target.value)
+
+  const isValidCollectionInput = useMemo(() => {
+    let isValid = false
+    // TODO: Implement validation
+    if (collectionAddress.length > 0) {
+      try {
+        const solPubKey = new soljsweb3PublicKey(collectionAddress)
+        isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+      } catch (error) {
+      }
+    }
+    return isValid
+  }, [collectionAddress])
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -38,300 +67,92 @@ export default function MintTestPage() {
       position: 'top-right',
     })
   }
-  const globalMint = async () => {
+  const mint = async () => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
     }
     try {
-      setIsProcessingGlobalMint(true)
-      const res = await fetch('/api/global-mint-test', {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: 'signerName',
-          type: 'freeMint',
-        })
-      });
-      const response = await res.json();
-      console.debug('app/pages/mintTest.tsx:mint: response', response);
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsProcessingGlobalMint(false)
-    }
-  } // globalMint
+      setIsProcessingMint(true)
 
-  const createSponsoredCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
-    try {
-      setIsProcessingSponsoredCollectionCreation(true)
-      const res = await fetch('/api/collection-creation-sponsored-test', {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: 'signerName',
-          type: 'freeMint',
-        })
-      });
-      const response:CollectionCreationResponseData = await res.json();
-      console.debug('app/pages/mintTest.tsx:mint: response', response);
-      if (response && response.success) {
+      // TODO: Implement mint
+      if (!wallet?.adapter) {
+        console.error('app/pages/mintTest.tsx:mint: Wallet adapter not found')
+        return
+      }
 
-        // toast({
-        //   title: 'Collection created.',
-        //   description: `address: ${response.address}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
+      const mintIn: mplhelp_T_MintNftCMInput = {
+        walletAdapter: wallet.adapter,
+        collectionAddress,
+        candyMachineAddress,
+      }
+      const res = await mplxH_mintNftFromCM(
+        mintIn
+      )
 
-        const uri = getTxUri(response.address)
+      console.log('app/pages/mintTest.tsx:mint:res: ', res)
+
+
+      if (res.success) {
         toast({
-          duration: 15_000,
-          position: 'top-right',
-          render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-              <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >Collection (only) created.</Text>
-                <CloseButton size='sm' onClick={onClose} />
-              </div>
-              <div className='m-2'>
-                {uri &&
-                  <Link href={uri} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      Transaction
-                    </div>
-                    <ExternalLinkIcon size='16px' />
-                  </Link>
-                }
-              </div>
-            </Box>
-          ),
-        })
-
-        // toast({
-        //   title: '(my)Collection created.',
-        //   description: `address: ${response.address}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        //   render: () => (
-        //     <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
-        //       <Text>(sponsored) Collection created.</Text>
-        //       {uri &&
-        //         <Link href={uri} isExternal className="flex text-end">
-        //           transaction <ExternalLinkIcon size='32px' />
-        //         </Link>
-        //       }
-        //     </Box>
-        //   ),
-        // })
-      } else {
-        console.warn('app/pages/mintTest.tsx:aidrop: response', response);
-        toast({
-          title: 'Collection creation failed',
-          description: response?.error,
-          status: 'error',
-          duration: 15_000,
+          title: 'Mint successful',
+          description: "NFT minted successfully.",
+          status: 'success',
+          duration: 5_000,
           isClosable: true,
           position: 'top-right',
         })
       }
+
     } catch (error) {
       console.error(error)
     } finally {
-      setIsProcessingSponsoredCollectionCreation(false)
+      setIsProcessingMint(false)
     }
   } // mint
 
-  const createMyCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
-    try {
-      setIsProcessingMyCollectionCreation(true)
-      if (!wallet) {
-        console.error('app/pages/mintTest.tsx:createMyCollection: Wallet not found')
-        return
-      }
-      const response = await mplxH_createMyCollection(wallet.adapter)
-      console.debug('app/pages/mintTest.tsx:createMyCollection: response', response);
-      if (response && response.success) {
-
-        // toast({
-        //   title: '(my)Collection created.',
-        //   // description: `address: ${response.address}`,
-        //   description: `tx: ${getTxUri(response.address)}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
-        const uri = getTxUri(response.address)
-        toast({
-          duration: 15_000,
-          position: 'top-right',
-          render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-                <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >(own) Collection (only) created.</Text>
-                <CloseButton size='sm' onClick={onClose} />
-              </div>
-              <div className='m-2'>
-                {uri &&
-                  <Link href={uri} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      Transaction
-                    </div>
-                    <ExternalLinkIcon size='16px' />
-                  </Link>
-                }
-              </div>
-            </Box>
-          ),
-        })
-      } else {
-        console.warn('app/pages/mintTest.tsx:createMyCollection: response', response);
-        toast({
-          title: '(my)Collection creation failed',
-          description: response?.error,
-          status: 'error',
-          duration: 15_000,
-          isClosable: true,
-          position: 'top-right',
-        })
-      }
-
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsProcessingMyCollectionCreation(false)
-    }
-  } // createMyCollection
-
-  const createMyNftCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
-    try {
-      setIsProcessingMyNftCollectionCreation(true)
-      if (!wallet) {
-        console.error('app/pages/mintTest.tsx:createMyNftCollection: Wallet not found')
-        return
-      }
-      const response = await mplxH_createMyFullNftCollection(wallet.adapter)
-      console.debug('app/pages/mintTest.tsx:createMyNftCollection: response', response);
-      if (response && response.success) {
-
-        // toast({
-        //   title: '(my)Collection created.',
-        //   // description: `address: ${response.address}`,
-        //   description: `TODO`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
-        // const uri = getTxUri(response.address)
-        toast({
-          duration: 15_000,
-          position: 'top-right',
-          render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-              <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >(own) (full) NFT Collection created.</Text>
-                <CloseButton size='sm' onClick={onClose} />
-              </div>
-              <div className='m-2'>
-{/* 
-                {uri &&
-                  <Link href={uri} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      Transaction
-                    </div>
-                    <ExternalLinkIcon size='16px' />
-                  </Link>
-                }
-                 */}
-              </div>
-            </Box>
-          ),
-        })
-      } else {
-        console.warn('app/pages/mintTest.tsx:createMyNftCollection: response', response);
-        toast({
-          title: '(my)Collection creation failed',
-          description: response?.error,
-          status: 'error',
-          duration: 15_000,
-          isClosable: true,
-          position: 'top-right',
-        })
-      }
-
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsProcessingMyNftCollectionCreation(false)
-    }
-  } // createMyNftCollection
 
   return (
     <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
       <Text fontSize='3xl'>Mint(s) test</Text>
       <div className="flex flex-col gap-4 ">
 
+        <Stack spacing={4}>
+
+          <InputGroup>
+            <InputLeftElement pointerEvents='none'>
+              <AtSignIcon color='gray.300' />
+            </InputLeftElement>
+            <Input
+              type='text'
+              placeholder='Collection address'
+              value={collectionAddress}
+              onChange={handleChangeCollectionAddress}
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <InputLeftElement pointerEvents='none'>
+              <AtSignIcon color='gray.300' />
+            </InputLeftElement>
+            <Input
+              type='text'
+              placeholder='Candy Machine address'
+              value={candyMachineAddress}
+              onChange={handleChangeCandyMachineAddress}
+            />
+          </InputGroup>
+
+        </Stack>
+
         <Button
-          isDisabled={!connected}
-          isLoading={isProcessingGlobalMint}
-          onClick={globalMint}
+          isDisabled={!connected || !isValidCandyMachineInput || !isValidCollectionInput}
+          isLoading={isProcessingMint}
+          onClick={mint}
           colorScheme='purple'
         >
-          GLOBAL Mint test
-        </Button>
-
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingSponsoredCollectionCreation}
-          onClick={createSponsoredCollection}
-          colorScheme='green'
-        >
-          Create sponsored collection (fees paid by the app)
-        </Button>
-
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingMyCollectionCreation}
-          onClick={createMyCollection}
-          colorScheme='orange'
-        >
-          Create My own collection (fees paid by wallet owner)
-        </Button>
-
-        <Button
-          isDisabled={!connected}
-          isLoading={isProcessingMyNftCollectionCreation}
-          onClick={createMyNftCollection}
-          colorScheme='red'
-        >
-          Create My own NFT collection (fees paid by wallet owner)
+        <AddIcon className='pr-1' />
+          Mint test
         </Button>
 
 

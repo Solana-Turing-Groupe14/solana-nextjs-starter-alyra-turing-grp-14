@@ -6,7 +6,7 @@ import { AirdropResponseData } from "types"
 
 export default function MintTestPage() {
 
-  const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
+  const { connected, publicKey: connectedWalletPublicKey } = useWallet()
   const [isProcessingConnectedWalletAirdrop, setIsProcessingConnectedWalletAirdrop] = useState(false)
   const [isProcessingApp1AddressAirdrop, setIsProcessingApp1AddressAirdrop] = useState(false)
   const [isProcessingApp2AddressAirdrop, setIsProcessingApp2AddressAirdrop] = useState(false)

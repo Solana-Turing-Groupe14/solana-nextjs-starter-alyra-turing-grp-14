@@ -3,7 +3,6 @@ import { AnchorWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, SendTransactionError, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { sign } from 'tweetnacl';
 import { IDL, USER_ACCOUNT_SEED, USER_DATA_PROGRAM_ID } from "../imports/consts";
-// import { Keypair } from "@solana/web3.js";
 
 if (!process.env.NEXT_PUBLIC_RPC_URL) {
     throw new Error("NEXT_PUBLIC_RPC_URL is required");
@@ -56,7 +55,7 @@ export const verifyEncodedMessage = async (wallet: WalletContextState, message: 
         return false;
       }
       const messageEncoded = new TextEncoder().encode(`${message}`);
-  
+
       return sign.detached.verify(messageEncoded, encodedMessage, wallet.publicKey.toBytes());
     } catch (error) {
       console.error(error);
@@ -249,18 +248,34 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
 
   //
 
-  export const getTxUri = (txId: string): string | null => {
+  export const getTxUri = (_txId: string): string | null => {
     try {
 
-      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${txId}`);
-      if (!txId) return null;
+      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${_txId}`);
+      if (!_txId) return null;
 
-      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
       return url;
 
     } catch (error) {
       console.error(error);
       return null;
     }
-  };
-  
+  }
+
+  //
+
+  export const getAddressUri = (_address: string): string | null => {
+    try {
+
+      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${_address}`);
+      if (!_address) return null;
+
+      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_address}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+      return url;
+
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }

@@ -1,25 +1,42 @@
 // MetaPlex TypeScript types, plugins and functions
 // prefixes: MPL_
-// MPL_f_ - MetaPlex functions
+// MPL_F_ - MetaPlex functions
 // MPL_P_ - MetaPlex plugins
 // MPL_T_ - MetaPlex types
+// MPL_C - MetaPlex consts
+// MPL_CLS - MetaPlex class
 
-import {
-  createCollectionV1 as MPL_f_createCollectionV1,
+  import {
+  createCollectionV1 as MPL_F_createCollectionV1,
 } from '@metaplex-foundation/mpl-core';
 import {
-  createSignerFromKeypair as MPL_f_createSignerFromKeypair,
-  generateSigner as MPL_f_generateSigner,
-  isSigner as MPL_f_isSigner,
-  publicKey as MPL_f_publicKey,
-  sol as MPL_f_sol,
+  emptyDefaultGuardSetArgs as MPL_C_emptyDefaultGuardSetArgs,
+  addConfigLines as MPL_F_addConfigLines,
+  create as MPL_F_create,
+  deleteCandyMachine as MPL_F_deleteCandyMachine,
+  fetchCandyMachine as MPL_F_fetchCandyMachine,
+  mintV1 as MPL_F_mintV1,
+  GuardSetArgs as MPL_T_GuardSetArgs,
+} from '@metaplex-foundation/mpl-core-candy-machine';
+import {
+  setComputeUnitLimit as MPL_F_setComputeUnitLimit,
+}
+from '@metaplex-foundation/mpl-toolbox';
+import {
+  createSignerFromKeypair as MPL_F_createSignerFromKeypair,
+  generateSigner as MPL_F_generateSigner,
+  isSigner as MPL_F_isSigner,
+  publicKey as MPL_F_publicKey,
+  sol as MPL_F_sol,
+  some as MPL_F_some,
+  transactionBuilder as MPL_F_transactionBuilder,
   Keypair as MPL_Keypair,
   keypairIdentity as MPL_P_KeypairIdentity,
   KeypairSigner as MPL_T_KeypairSigner,
   PublicKey as MPL_T_PublicKey,
   SolAmount as MPL_T_SolAmount,
   Umi as MPL_T_Umi,
-  TransactionBuilderSendAndConfirmOptions
+  TransactionBuilderSendAndConfirmOptions,
 } from '@metaplex-foundation/umi';
 import {
   walletAdapterIdentity as MPL_P_walletAdapterIdentity,
@@ -35,14 +52,23 @@ const MPL_TX_BUILDR_OPTIONS: TransactionBuilderSendAndConfirmOptions = {
 export {
   MPL_TX_BUILDR_OPTIONS,
   MPL_P_KeypairIdentity,
-  MPL_f_sol,
-  MPL_f_createSignerFromKeypair,
-  MPL_f_publicKey,
-  MPL_f_createCollectionV1,
-  MPL_f_generateSigner,
-  MPL_f_isSigner,
+  MPL_F_sol,
+  MPL_F_createSignerFromKeypair,
+  MPL_F_publicKey,
+  MPL_F_createCollectionV1,
+  MPL_F_generateSigner,
+  MPL_F_isSigner,
   MPL_P_walletAdapterIdentity,
   MPL_P_walletAdapterPayer,
+  MPL_C_emptyDefaultGuardSetArgs,
+  MPL_F_some,
+  MPL_F_addConfigLines,
+  MPL_F_fetchCandyMachine,
+  MPL_F_create,
+  MPL_F_transactionBuilder,
+  MPL_F_setComputeUnitLimit,
+  MPL_F_mintV1,
+  MPL_F_deleteCandyMachine,
 };
 export type {
   MPL_Keypair,
@@ -51,5 +77,6 @@ export type {
   MPL_T_SolAmount,
   MPL_T_Umi,
   MPL_T_WalletAdapter,
+  MPL_T_GuardSetArgs,
 };
 

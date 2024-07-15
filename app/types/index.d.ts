@@ -1,3 +1,5 @@
+// import { mintNftFromCM } from "@helpers/mplx.helpers"
+
 export type SiteConfig = {
   name: string
   description: string
@@ -21,7 +23,7 @@ export type AirdropResponseData =
       error: string
     };
 
-export type CollectionCreationResponseData =
+  export type CollectionCreationResponseData =
   | {
       success: true
       address: string
@@ -32,7 +34,7 @@ export type CollectionCreationResponseData =
     };
 
 
-    export type mplhelp_T_AirdropResult =
+  export type mplhelp_T_AirdropResult =
   | {
       success: true
       amount: number
@@ -44,7 +46,7 @@ export type CollectionCreationResponseData =
 
 
 
-    export type mplhelp_T_CreateCollectionResult =
+  export type mplhelp_T_CreateCollectionResult =
   | {
       success: true
       address: string
@@ -55,12 +57,33 @@ export type CollectionCreationResponseData =
     };
 
 
-    export type mplhelp_T_CreateNftCollectionResult =
+  export type mplhelp_T_CreateNftCollectionResult =
   | {
       success: true
       collectionAddress: string
       candyMachineAddress: string
       // mintAddress: string
+    }
+  | {
+      success: false
+      error: string
+    };
+
+
+  export type mplhelp_T_MintNftCMInput =
+ {
+    walletAdapter: MPL_T_WalletAdapter,
+    candyMachineAddress: string,
+    collectionAddress: string,
+  }
+
+  // type mplhelp_T_MintNftCMInput = Parameters<typeof mintNftFromCM>
+
+
+  export type mplhelp_T_MintNftCMResult =
+  | {
+      success: true
+      mintAddress: string
     }
   | {
       success: false

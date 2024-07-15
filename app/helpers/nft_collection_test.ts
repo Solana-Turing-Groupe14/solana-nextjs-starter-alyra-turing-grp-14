@@ -19,7 +19,7 @@ import {
     // TransactionBuilderSendAndConfirmOptions,
     Umi
 } from '@metaplex-foundation/umi';
-import { MPL_f_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx';
+import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx';
 
 
 // import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
@@ -141,7 +141,7 @@ export async function globalMint() {
     // 1. Airdrop 10 SOL to the keypair
     // Skip this step if you already have SOL in the keypair
     try {
-        await umi.rpc.airdrop(creatorKeyPair.publicKey, MPL_f_sol(10), MPL_TX_BUILDR_OPTIONS.confirm);
+        await umi.rpc.airdrop(creatorKeyPair.publicKey, MPL_F_sol(10), MPL_TX_BUILDR_OPTIONS.confirm);
         console.log(`1. ✅ - Airdropped SOL to the ${creatorKeyPair.publicKey.toString()}`)
     } catch (error) {
         console.log('1. ❌ - Error airdropping SOL to the wallet.');
@@ -190,8 +190,8 @@ export async function globalMint() {
             // TODO: guards
             // let guards_rules = {
             const guards_rules:GuardSetArgs = {
-                botTax: some({ lamports: MPL_f_sol(0.001), lastInstruction: true }),
-                solPayment: some({ lamports: MPL_f_sol(1.5), destination: treasury_Signer.publicKey }),
+                botTax: some({ lamports: MPL_F_sol(0.001), lastInstruction: true }),
+                solPayment: some({ lamports: MPL_F_sol(1.5), destination: treasury_Signer.publicKey }),
 
                 // The Candy Machine will only be able to mint NFTs after this date
                 // startDate: some({ date: startDateTime }),
