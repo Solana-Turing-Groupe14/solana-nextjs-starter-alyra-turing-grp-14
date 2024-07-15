@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+# if [ -z "$1" ]; then
+#   echo "Usage: $0 <reset> or $0 <no-reset>"
+#   exit 1
+# fi
+
 dumps_dir_path=${PWD}/dumps
 
 if [[ ! -f ${dumps_dir_path}/core.so \
@@ -17,12 +23,19 @@ solana config get
 #--ledger /path/to/custom/ledger
 # Reset the ledger
 validator_option_reset=--reset
-validator_option_reset=--reset
 #validator_option_help=--help
 
 #validator_options="$validator_option_help $validator_option_reset"
-validator_options="$validator_option_reset"
+#validator_options="$validator_option_reset"
 
+if [ "$1" == "reset" ]; then
+  validator_options="$validator_option_reset"
+elif [ "$1" == "no-reset" ]; then
+  validator_options=""
+else
+  echo "Usage: $0 <reset> or $0 <no-reset>"
+  exit 1
+fi
 
 echo "Starting the validator with the following options:" $validator_options
 
