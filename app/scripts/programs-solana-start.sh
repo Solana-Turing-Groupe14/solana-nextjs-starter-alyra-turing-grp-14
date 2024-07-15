@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # if [ -z "$1" ]; then
 #   echo "Usage: $0 <reset> or $0 <no-reset>"
 #   exit 1
