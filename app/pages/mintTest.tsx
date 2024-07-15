@@ -85,35 +85,58 @@ export default function MintTestPage() {
       console.debug('app/pages/mintTest.tsx:mint: response', response);
       if (response && response.success) {
 
-        toast({
-          title: 'Collection created.',
-          // description: `address: ${response.address}`,
-          description: `tx: ${getTxUri(response.address)}`,
-          status: 'success',
-          duration: 60_000,
-          isClosable: true,
-          position: 'top-right',
-        })
+        // toast({
+        //   title: 'Collection created.',
+        //   description: `address: ${response.address}`,
+        //   status: 'success',
+        //   duration: 60_000,
+        //   isClosable: true,
+        //   position: 'top-right',
+        // })
 
         const uri = getTxUri(response.address)
         toast({
-          title: '(my)Collection created.',
-          description: `address: ${response.address}`,
-          status: 'success',
-          duration: 60_000,
-          isClosable: true,
+          duration: 15_000,
           position: 'top-right',
-          render: () => (
-            <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
-              <Text>(sponsored) Collection created.</Text>
-              {uri &&
-                <Link href={uri} isExternal className="flex text-end">
-                  transaction <ExternalLinkIcon size='32px' />
-                </Link>
-              }
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+              <div className='flex'>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <Text fontWeight= "bold" >Collection (only) created.</Text>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='m-2'>
+                {uri &&
+                  <Link href={uri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      Transaction
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
             </Box>
           ),
         })
+
+        // toast({
+        //   title: '(my)Collection created.',
+        //   description: `address: ${response.address}`,
+        //   status: 'success',
+        //   duration: 60_000,
+        //   isClosable: true,
+        //   position: 'top-right',
+        //   render: () => (
+        //     <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
+        //       <Text>(sponsored) Collection created.</Text>
+        //       {uri &&
+        //         <Link href={uri} isExternal className="flex text-end">
+        //           transaction <ExternalLinkIcon size='32px' />
+        //         </Link>
+        //       }
+        //     </Box>
+        //   ),
+        // })
       } else {
         console.warn('app/pages/mintTest.tsx:aidrop: response', response);
         toast({
@@ -147,32 +170,37 @@ export default function MintTestPage() {
       console.debug('app/pages/mintTest.tsx:createMyCollection: response', response);
       if (response && response.success) {
 
-        toast({
-          title: '(my)Collection created.',
-          // description: `address: ${response.address}`,
-          description: `tx: ${getTxUri(response.address)}`,
-          status: 'success',
-          duration: 60_000,
-          isClosable: true,
-          position: 'top-right',
-        })
+        // toast({
+        //   title: '(my)Collection created.',
+        //   // description: `address: ${response.address}`,
+        //   description: `tx: ${getTxUri(response.address)}`,
+        //   status: 'success',
+        //   duration: 60_000,
+        //   isClosable: true,
+        //   position: 'top-right',
+        // })
 
         const uri = getTxUri(response.address)
         toast({
-          title: '(my)Collection created.',
-          description: `address: ${response.address}`,
-          status: 'success',
-          duration: 60_000,
-          isClosable: true,
+          duration: 15_000,
           position: 'top-right',
-          render: () => (
-            <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
-              <Text>(own) Collection created.</Text>
-              {uri &&
-                <Link href={uri} isExternal className="flex text-end">
-                  transaction <ExternalLinkIcon size='32px' />
-                </Link>
-              }
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+                <div className='flex'>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <Text fontWeight= "bold" >(own) Collection (only) created.</Text>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='m-2'>
+                {uri &&
+                  <Link href={uri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      Transaction
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
             </Box>
           ),
         })
@@ -210,43 +238,39 @@ export default function MintTestPage() {
       console.debug('app/pages/mintTest.tsx:createMyNftCollection: response', response);
       if (response && response.success) {
 
-        toast({
-          title: '(my)Collection created.',
-          // description: `address: ${response.address}`,
-          description: `TODO`,
-          status: 'success',
-          duration: 60_000,
-          isClosable: true,
-          position: 'top-right',
-        })
-
-        // function close() {
-        //   if (toastIdRef.current) {
-        //     toast.close(toastIdRef.current)
-        //   }
+        // toast({
+        //   title: '(my)Collection created.',
+        //   // description: `address: ${response.address}`,
+        //   description: `TODO`,
+        //   status: 'success',
+        //   duration: 60_000,
+        //   isClosable: true,
+        //   position: 'top-right',
+        // })
 
         // const uri = getTxUri(response.address)
         toast({
-          title: '(my)Collection created.',
-          // description: `address: ${response.address}`,
-          description: `TODO`,
-          status: 'success',
-          duration: 60_000,
-          // isClosable: true,
+          duration: 15_000,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >(own) NFT Collection created.</Text>
-                {/* <CloseButton size='sm' onClick={} /> */}
+                <Text fontWeight= "bold" >(own) (full) NFT Collection created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
-              {/* {uri &&
-                <Link href={uri} isExternal className="flex text-end">
-                  transaction <ExternalLinkIcon size='32px' />
-                </Link>
-              } */}
+              <div className='m-2'>
+{/* 
+                {uri &&
+                  <Link href={uri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      Transaction
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+                 */}
+              </div>
             </Box>
           ),
         })
