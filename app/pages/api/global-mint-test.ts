@@ -24,7 +24,7 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
     globalMint()
 
     // wait 5 seconds
-    await new Promise((resolve) => setTimeout(resolve, 5_000))
+    // await new Promise((resolve) => setTimeout(resolve, 5_000))
     res.status(200).json({ success: true, message: 'Mint success' })
 
   } catch (error) {
