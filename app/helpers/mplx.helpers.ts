@@ -18,7 +18,7 @@ import { MPL_f_createCollectionV1,
   MPL_TX_BUILDR_OPTIONS,
 } from '@helpers/mtplx';
 import { RPC_URL } from '@helpers/solana.helper';
-import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult } from "types";
+import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateNftCollectionResult } from "types";
 
 const filePath = "app/helpers/mplx.helpers.ts"
 
@@ -34,7 +34,6 @@ export const getUmi = ():MPL_T_Umi => {
 } // getUmi
 
 // --------------------------------------------------
-
 
 export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair|null => {
   try {
@@ -222,7 +221,7 @@ export async function createSponsoredCollection(
 } // createCollection
 
 
-  // --------------------------------------------------
+// --------------------------------------------------
 
 export async function createMyCollection(
   walletAdapter: MPL_T_WalletAdapter,
@@ -231,7 +230,6 @@ export async function createMyCollection(
   const LOGPREFIX = `${filePath}:createMyCollection: `
   try {
     const umi = mplx_umi
-
     // Set identity
     umi.use(MPL_P_walletAdapterIdentity(walletAdapter));
     // Set payer
@@ -385,3 +383,62 @@ export async function createCollection(
     return collectionResult
   } // catch
 } // createCollection
+
+// --------------------------------------------------
+
+
+export async function createMyFullNftCollection(
+  walletAdapter: MPL_T_WalletAdapter,
+  // umi:MPL_T_Umi,
+): Promise<mplhelp_T_CreateNftCollectionResult> {
+  const LOGPREFIX = `${filePath}:createFullNftCollection: `
+  try {
+
+    const umi = mplx_umi
+    // Set identity
+    umi.use(MPL_P_walletAdapterIdentity(walletAdapter));
+    // Set payer
+    umi.use(MPL_P_walletAdapterPayer(walletAdapter));
+
+    // Check if walletAdapter is a valid signer
+    if (!MPL_f_isSigner(umi.identity)) {
+      console.error(`${LOGPREFIX}❌ wallet ${walletAdapter.publicKey} is not a valid signer`)
+      const collectionResultError:mplhelp_T_CreateCollectionResult = {
+        success: false,
+        error: `Error creating collection: wallet is not a signer`
+      }
+      return collectionResultError
+    }
+
+    // TODO
+    // TODO
+    // TODO
+    // TODO
+    // TODO
+    // TODO
+
+    const collectionResult:mplhelp_T_CreateNftCollectionResult = {
+      success: true,
+      collectionAddress: '',
+      candyMachineAddress: '',
+    }
+    console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
+    return collectionResult
+
+  } catch (error) {
+    console.error(`${LOGPREFIX}`, error)
+
+    // const response: ResponseData = { success: false, error: '' };
+    const collectionResult:mplhelp_T_CreateNftCollectionResult = {
+      success: false,
+      error: ''
+    }
+    if (error instanceof Error) {
+      console.log('error', error)
+      collectionResult.error = error.message
+    } else {
+      collectionResult.error = 'Error'
+    }
+    return collectionResult
+  } // catch
+} // createNftCollection

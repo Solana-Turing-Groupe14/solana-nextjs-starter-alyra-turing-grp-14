@@ -1,10 +1,16 @@
-import { Box, Button, Link, Text, useToast } from "@chakra-ui/react"
+import { CheckCircleIcon } from '@chakra-ui/icons'
+import { Box, Button, CloseButton, Link, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { useMemo, useState } from "react"
-import { createMyCollection as mplxH_createMyCollection } from "@helpers/mplx.helpers"
-import { CollectionCreationResponseData } from "types"
-import { getTxUri } from "@helpers/solana.helper"
 import { ExternalLinkIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import {
+  createMyCollection as mplxH_createMyCollection,
+  createMyFullNftCollection as mplxH_createMyFullNftCollection
+} from "@helpers/mplx.helpers"
+import { getTxUri } from "@helpers/solana.helper"
+import { CollectionCreationResponseData } from "types"
+
+
 
 export default function MintTestPage() {
 
@@ -12,6 +18,7 @@ export default function MintTestPage() {
   const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
   const [isProcessingSponsoredCollectionCreation, setIsProcessingSponsoredCollectionCreation] = useState(false)
   const [isProcessingMyCollectionCreation, setIsProcessingMyCollectionCreation] = useState(false)
+  const [isProcessingMyNftCollectionCreation, setIsProcessingMyNftCollectionCreation] = useState(false)
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -77,6 +84,7 @@ export default function MintTestPage() {
       const response:CollectionCreationResponseData = await res.json();
       console.debug('app/pages/mintTest.tsx:mint: response', response);
       if (response && response.success) {
+
         toast({
           title: 'Collection created.',
           // description: `address: ${response.address}`,
@@ -138,6 +146,17 @@ export default function MintTestPage() {
       const response = await mplxH_createMyCollection(wallet.adapter)
       console.debug('app/pages/mintTest.tsx:createMyCollection: response', response);
       if (response && response.success) {
+
+        toast({
+          title: '(my)Collection created.',
+          // description: `address: ${response.address}`,
+          description: `tx: ${getTxUri(response.address)}`,
+          status: 'success',
+          duration: 60_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+
         const uri = getTxUri(response.address)
         toast({
           title: '(my)Collection created.',
@@ -174,10 +193,84 @@ export default function MintTestPage() {
     } finally {
       setIsProcessingMyCollectionCreation(false)
     }
-  } // mint
+  } // createMyCollection
+
+  const createMyNftCollection = async () => {
+    // Guard
+    if (!isConnected) {
+      warnIsNotConnected(); return
+    }
+    try {
+      setIsProcessingMyNftCollectionCreation(true)
+      if (!wallet) {
+        console.error('app/pages/mintTest.tsx:createMyNftCollection: Wallet not found')
+        return
+      }
+      const response = await mplxH_createMyFullNftCollection(wallet.adapter)
+      console.debug('app/pages/mintTest.tsx:createMyNftCollection: response', response);
+      if (response && response.success) {
+
+        toast({
+          title: '(my)Collection created.',
+          // description: `address: ${response.address}`,
+          description: `TODO`,
+          status: 'success',
+          duration: 60_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+
+        // function close() {
+        //   if (toastIdRef.current) {
+        //     toast.close(toastIdRef.current)
+        //   }
+
+        // const uri = getTxUri(response.address)
+        toast({
+          title: '(my)Collection created.',
+          // description: `address: ${response.address}`,
+          description: `TODO`,
+          status: 'success',
+          duration: 60_000,
+          // isClosable: true,
+          position: 'top-right',
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+              <div className='flex'>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <Text fontWeight= "bold" >(own) NFT Collection created.</Text>
+                {/* <CloseButton size='sm' onClick={} /> */}
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              {/* {uri &&
+                <Link href={uri} isExternal className="flex text-end">
+                  transaction <ExternalLinkIcon size='32px' />
+                </Link>
+              } */}
+            </Box>
+          ),
+        })
+      } else {
+        console.warn('app/pages/mintTest.tsx:createMyNftCollection: response', response);
+        toast({
+          title: '(my)Collection creation failed',
+          description: response?.error,
+          status: 'error',
+          duration: 15_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
+
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsProcessingMyNftCollectionCreation(false)
+    }
+  } // createMyNftCollection
 
   return (
-    <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">
+    <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
       <Text fontSize='3xl'>Mint(s) test</Text>
       <div className="flex flex-col gap-4 ">
 
@@ -194,7 +287,7 @@ export default function MintTestPage() {
           isDisabled={!connected}
           isLoading={isProcessingSponsoredCollectionCreation}
           onClick={createSponsoredCollection}
-          colorScheme='orange'
+          colorScheme='green'
         >
           Create sponsored collection (fees paid by the app)
         </Button>
@@ -203,9 +296,18 @@ export default function MintTestPage() {
           isDisabled={!connected}
           isLoading={isProcessingMyCollectionCreation}
           onClick={createMyCollection}
-          colorScheme='red'
+          colorScheme='orange'
         >
           Create My own collection (fees paid by wallet owner)
+        </Button>
+
+        <Button
+          isDisabled={!connected}
+          isLoading={isProcessingMyNftCollectionCreation}
+          onClick={createMyNftCollection}
+          colorScheme='red'
+        >
+          Create My own NFT collection (fees paid by wallet owner)
         </Button>
 
 

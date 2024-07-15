@@ -53,3 +53,16 @@ export type CollectionCreationResponseData =
       success: false
       error: string
     };
+
+
+    export type mplhelp_T_CreateNftCollectionResult =
+  | {
+      success: true
+      collectionAddress: string
+      candyMachineAddress: string
+      // mintAddress: string
+    }
+  | {
+      success: false
+      error: string
+    };
