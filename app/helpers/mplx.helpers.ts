@@ -6,7 +6,7 @@ import {PublicKey as soljsweb3PublicKey} from '@solana/web3.js'
 import { MPL_f_createCollectionV1,
   MPL_f_createSignerFromKeypair,
   MPL_f_generateSigner,
-  // MPL_f_isSigner,
+  MPL_f_isSigner,
   MPL_f_publicKey,
   MPL_f_sol, MPL_Keypair,
   MPL_P_KeypairIdentity,
@@ -135,6 +135,36 @@ export const airdrop = async (
 
 // --------------------------------------------------
 
+    // https://developers.metaplex.com/umi/public-keys-and-signers
+    // Umi interface stores two instances of Signer:
+    // - identity using the app and payer paying for transaction
+    // - payer paying for transaction
+
+    // Umi provides plugins to quickly assign new signers to these attributes.
+    // The signerIdentity and signerPayer plugins are available for this purpose.
+
+
+    // umi.use(signerIdentity(mySigner));
+    // // Is equivalent to:
+    // umi.identity = mySigner;
+    // umi.payer = mySigner;
+
+    // umi.use(signerIdentity(mySigner, false));
+    // // Is equivalent to:
+    // umi.identity = mySigner;
+
+    // umi.use(signerPayer(mySigner));
+    // // Is equivalent to:
+    // umi.payer = mySigner;
+
+    // Set identity & payer with the same signer: creator_Signer
+
+    // umi.use(MPL_P_KeypairIdentity(creator_Signer));
+
+    // umi = umi.use(walletAdapterIdentity(wallet));
+
+    // --------------------------------------------------
+
 export async function createSponsoredCollection(
 ): Promise<mplhelp_T_CreateCollectionResult> {
   const LOGPREFIX = `${filePath}:createSponsoredCollection: `
@@ -192,34 +222,60 @@ export async function createSponsoredCollection(
 } // createCollection
 
 
+  // --------------------------------------------------
 
-    // https://developers.metaplex.com/umi/public-keys-and-signers
-    // Umi interface stores two instances of Signer:
-    // - identity using the app and payer paying for transaction
-    // - payer paying for transaction
+export async function createMyCollection(
+  walletAdapter: MPL_T_WalletAdapter,
+  // umi:MPL_T_Umi,
+): Promise<mplhelp_T_CreateCollectionResult> {
+  const LOGPREFIX = `${filePath}:createMyCollection: `
+  try {
+    const umi = mplx_umi
 
-    // Umi provides plugins to quickly assign new signers to these attributes.
-    // The signerIdentity and signerPayer plugins are available for this purpose.
+    // Set identity
+    umi.use(MPL_P_walletAdapterIdentity(walletAdapter));
+    // Set payer
+    umi.use(MPL_P_walletAdapterPayer(walletAdapter));
+
+    // Check if walletAdapter is a valid signer
+    if (!MPL_f_isSigner(umi.identity)) {
+      console.error(`${LOGPREFIX}❌ wallet ${walletAdapter.publicKey} is not a valid signer`)
+      const collectionResultError:mplhelp_T_CreateCollectionResult = {
+        success: false,
+        error: `Error creating collection: wallet is not a signer`
+      }
+      return collectionResultError
+    }
+
+    // Create a NEW collection
+
+    const res = await createCollection(/* creator_Signer, */ umi)
+    console.debug(`${LOGPREFIX} createCollection result`, res)
+    return res
+
+    // const createCollectionResultSuccess:mplhelp_T_CreateCollectionResult = {
+    //   success: true,
+    //   address: "xxxxxxxxxxxxx" }
+    // return createCollectionResultSuccess
 
 
-    // umi.use(signerIdentity(mySigner));
-    // // Is equivalent to:
-    // umi.identity = mySigner;
-    // umi.payer = mySigner;
+  } catch (error) {
+    console.error(`${LOGPREFIX}`, error)
 
-    // umi.use(signerIdentity(mySigner, false));
-    // // Is equivalent to:
-    // umi.identity = mySigner;
+    const collectionResult:mplhelp_T_CreateCollectionResult = {
+      success: false,
+      error: ''
+    }
 
-    // umi.use(signerPayer(mySigner));
-    // // Is equivalent to:
-    // umi.payer = mySigner;
-
-    // Set identity & payer with the same signer: creator_Signer
-
-    // umi.use(MPL_P_KeypairIdentity(creator_Signer));
-
-    // umi = umi.use(walletAdapterIdentity(wallet));
+    if (error instanceof Error) {
+      console.log('error', error)
+      collectionResult.error = error.message
+    } else {
+      collectionResult.error = 'Error'
+    }
+    return collectionResult
+  } // catch
+} // createMyCollection
 
 
 export async function createCollection(
@@ -329,52 +385,3 @@ export async function createCollection(
     return collectionResult
   } // catch
 } // createCollection
-
-
-
-
-// --------------------------------------------------
-// import { walletAdapterIdentity } from "@metaplex-foundation/js";
-
-
-export async function createMyCollection(
-  walletAdapter: MPL_T_WalletAdapter,
-  // umi:MPL_T_Umi,
-): Promise<mplhelp_T_CreateCollectionResult> {
-  const LOGPREFIX = `${filePath}:createMyCollection: `
-  try {
-    const umi = mplx_umi
-    // Set identity
-    umi.use(MPL_P_walletAdapterIdentity(walletAdapter));
-    // Set payer
-    umi.use(MPL_P_walletAdapterPayer(walletAdapter));
-
-    // Create a NEW collection
-
-    const res = await createCollection(/* creator_Signer, */ umi)
-    console.debug(`${LOGPREFIX} createCollection result`, res)
-    return res
-
-    // const createCollectionResultSuccess:mplhelp_T_CreateCollectionResult = {
-    //   success: true,
-    //   address: "xxxxxxxxxxxxx" }
-    // return createCollectionResultSuccess
-
-
-  } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
-
-    const collectionResult:mplhelp_T_CreateCollectionResult = {
-      success: false,
-      error: ''
-    }
-
-    if (error instanceof Error) {
-      console.log('error', error)
-      collectionResult.error = error.message
-    } else {
-      collectionResult.error = 'Error'
-    }
-    return collectionResult
-  } // catch
-} // createMyCollection

@@ -1,8 +1,10 @@
-import { Button, Text, useToast } from "@chakra-ui/react"
+import { Box, Button, Link, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useMemo, useState } from "react"
 import { createMyCollection as mplxH_createMyCollection } from "@helpers/mplx.helpers"
 import { CollectionCreationResponseData } from "types"
+import { getTxUri } from "@helpers/solana.helper"
+import { ExternalLinkIcon } from "lucide-react"
 
 export default function MintTestPage() {
 
@@ -75,14 +77,34 @@ export default function MintTestPage() {
       const response:CollectionCreationResponseData = await res.json();
       console.debug('app/pages/mintTest.tsx:mint: response', response);
       if (response && response.success) {
-        console.debug('app/pages/mintTest.tsx:mint: response', response);
         toast({
           title: 'Collection created.',
+          // description: `address: ${response.address}`,
+          description: `tx: ${getTxUri(response.address)}`,
+          status: 'success',
+          duration: 60_000,
+          isClosable: true,
+          position: 'top-right',
+        })
+
+        const uri = getTxUri(response.address)
+        toast({
+          title: '(my)Collection created.',
           description: `address: ${response.address}`,
           status: 'success',
           duration: 60_000,
           isClosable: true,
           position: 'top-right',
+          render: () => (
+            <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
+              <Text>(sponsored) Collection created.</Text>
+              {uri &&
+                <Link href={uri} isExternal className="flex text-end">
+                  transaction <ExternalLinkIcon size='32px' />
+                </Link>
+              }
+            </Box>
+          ),
         })
       } else {
         console.warn('app/pages/mintTest.tsx:aidrop: response', response);
@@ -113,22 +135,33 @@ export default function MintTestPage() {
         console.error('app/pages/mintTest.tsx:createMyCollection: Wallet not found')
         return
       }
-      const r = await mplxH_createMyCollection(wallet.adapter)
-      console.debug('app/pages/mintTest.tsx:createMyCollection: response', r);
-      if (r && r.success) {
+      const response = await mplxH_createMyCollection(wallet.adapter)
+      console.debug('app/pages/mintTest.tsx:createMyCollection: response', response);
+      if (response && response.success) {
+        const uri = getTxUri(response.address)
         toast({
           title: '(my)Collection created.',
-          description: `address: ${r.address}`,
+          description: `address: ${response.address}`,
           status: 'success',
           duration: 60_000,
           isClosable: true,
           position: 'top-right',
+          render: () => (
+            <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
+              <Text>(own) Collection created.</Text>
+              {uri &&
+                <Link href={uri} isExternal className="flex text-end">
+                  transaction <ExternalLinkIcon size='32px' />
+                </Link>
+              }
+            </Box>
+          ),
         })
       } else {
-        console.warn('app/pages/mintTest.tsx:createMyCollection: response', r);
+        console.warn('app/pages/mintTest.tsx:createMyCollection: response', response);
         toast({
           title: '(my)Collection creation failed',
-          description: r?.error,
+          description: response?.error,
           status: 'error',
           duration: 15_000,
           isClosable: true,

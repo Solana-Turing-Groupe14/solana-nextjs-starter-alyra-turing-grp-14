@@ -246,3 +246,21 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
       return null;
     }
   };
+
+  //
+
+  export const getTxUri = (txId: string): string | null => {
+    try {
+
+      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${txId}`);
+      if (!txId) return null;
+
+      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+      return url;
+
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+  
