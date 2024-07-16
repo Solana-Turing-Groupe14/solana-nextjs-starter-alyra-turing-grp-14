@@ -40,41 +40,44 @@ if (!mplx_umi) {
 }
 
 export const getUmi = (): MPL_T_Umi => {
+  const LOGPREFIX = `${filePath}:getUmi: `
+  console.debug(`${LOGPREFIX}()`)
   return mplx_umi
 } // getUmi
 
 // --------------------------------------------------
 
 export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null => {
+  const LOGPREFIX = `${filePath}:getMplKeypair_fromENV: `
   try {
-    console.debug(`mplx.helpers.ts:getMplKeypair_fromENV: signerName = '${signerName}'`)
+    console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
     if (!signerName) {
-      console.warn('mplx.helpers.ts:getMplKeypair_fromENV: signerName not provided')
-      console.warn('mplx.helpers.ts:getMplKeypair_fromENV: using "MINT_APP_DEFAULT_KEYPAIR"')
+      console.warn(`${LOGPREFIX} signerName not provided`)
+      console.warn(`${LOGPREFIX} using "MINT_APP_DEFAULT_KEYPAIR"`)
     }
     const SIGNER_SEED_TEXT_from_env = (!signerName ? process.env.MINT_APP_DEFAULT_KEYPAIR || '' : process.env[signerName as string] || '')
     if (!SIGNER_SEED_TEXT_from_env) {
-      console.error('app/pages/api/collection-creation-test.ts: SIGNER_SEED_TEXT_from_env', 'Not Found')
+      console.error(`${LOGPREFIX} SIGNER_SEED_TEXT_from_env not found`)
       return null
     }
     const jsonSEED = JSON.parse(SIGNER_SEED_TEXT_from_env)
     const buf = Buffer.from(jsonSEED as string, 'utf8')
-    // console.debug('mplx.helpers.ts:getMplKeypair_fromENV: buf', buf)
+    // console.debug('${LOGPREFIX} buf', buf)
     const SIGNER_SEED: Uint8Array = Uint8Array.from(buf)
-    // console.debug('mplx.helpers.ts:getMplKeypair_fromENV: SIGNER_SEED', SIGNER_SEED)
+    // console.debug('${LOGPREFIX} SIGNER_SEED', SIGNER_SEED)
     const keyPair: MPL_Keypair = mplx_umi.eddsa.createKeypairFromSecretKey(SIGNER_SEED);
     // const keyPairPublicKeySTR = keyPair.publicKey.toString()
-    // console.debug('mplx.helpers.ts:getMplKeypair_fromENV: keyPairPublicKeySTR', keyPairPublicKeySTR)
+    // console.debug('${LOGPREFIX} keyPairPublicKeySTR', keyPairPublicKeySTR)
     return keyPair;
   } catch (error) {
-    console.error('mplx.helpers.ts:getMplKeypair_fromENV: error', error)
+    console.error(`${LOGPREFIX} error`, error)
     //   const response: ResponseData = { success: false, error: '' };
     if (error instanceof Error) {
-      console.error('error', error)
+      console.error(`error ${error}`)
       // response.error = error.message
     } else {
       // response.error = 'Error'
-      console.error('error', error)
+      console.error(`error ${error}`)
     }
   } // catch
   return null
@@ -95,30 +98,31 @@ async function checkCandyMachine(
   expectedCandyMachineState: ExpectedCandyMachineState,
   // step?: number
 ) {
+  const LOGPREFIX = `${filePath}:checkCandyMachine: `
   try {
     const loadedCandyMachine = await MPL_F_fetchCandyMachine(umi, candyMachine, MPL_TX_BUILDR_OPTIONS.confirm);
     const { itemsLoaded, itemsRedeemed, authority, collection } = expectedCandyMachineState;
     if (Number(loadedCandyMachine.itemsRedeemed) !== itemsRedeemed) {
-      throw new Error('Incorrect number of items available in the Candy Machine.');
+      throw new Error(`${LOGPREFIX} Incorrect number of items available in the Candy Machine.`);
     }
     if (loadedCandyMachine.itemsLoaded !== itemsLoaded) {
-      throw new Error('Incorrect number of items loaded in the Candy Machine.');
+      throw new Error(`${LOGPREFIX} Incorrect number of items loaded in the Candy Machine.`);
     }
     if (loadedCandyMachine.authority.toString() !== authority.toString()) {
-      throw new Error('Incorrect authority in the Candy Machine.');
+      throw new Error(`${LOGPREFIX} Incorrect authority in the Candy Machine.`);
     }
     if (loadedCandyMachine.collectionMint.toString() !== collection.toString()) {
-      throw new Error('Incorrect collection in the Candy Machine.');
+      throw new Error(`${LOGPREFIX} Incorrect collection in the Candy Machine.`);
     }
     // step && console.log(`${step}. ✅ - Candy Machine has the correct configuration.`);
-    console.log(` ✅ - Candy Machine has the correct configuration.`);
+    console.log(`${LOGPREFIX} ✅  Candy Machine has the correct configuration.`);
   } catch (error) {
     if (error instanceof Error) {
       // step && console.log(`${step}. ❌ - Candy Machine incorrect configuration: ${error.message}`);
-      console.log(` ❌ - Candy Machine incorrect configuration: ${error.message}`);
+      console.log(`${LOGPREFIX} ❌ Candy Machine incorrect configuration: ${error.message}`);
     } else {
       // step && console.log(`${step}. ❌ - Error fetching the Candy Machine.`);
-      console.log(` ❌ - Error fetching the Candy Machine.`);
+      console.log(`${LOGPREFIX} ❌ Error fetching the Candy Machine.`);
     }
   }
 }
@@ -131,10 +135,11 @@ export const airdrop = async (
   _publicKeyString: string,
   _amount: number = AIRDROP_DEFAULT_AMOUNT
 ): Promise<mplhelp_T_AirdropResult> => {
+  const LOGPREFIX = `${filePath}:airdrop: `
   try {
-    console.debug(`mplx.helpers.ts:airdrop: publicKey = '${_publicKeyString}'`)
+    console.debug(`${LOGPREFIX} publicKey = '${_publicKeyString}'`)
     if (!_publicKeyString) {
-      console.error('mplx.helpers.ts:getMplKeypair_fromENV: _publicKeyString not provided')
+      console.error(`${LOGPREFIX}  _publicKeyString not provided`)
       // throw new Error('Public key not provided')
       return { success: false, error: 'Public key not provided' }
     }
@@ -150,11 +155,11 @@ export const airdrop = async (
     try {
       const umi = getUmi()
       await umi.rpc.airdrop(mpl_publicKey, MPL_F_sol(_amount), MPL_TX_BUILDR_OPTIONS.confirm);
-      console.log(`✅ - Airdropped ${_amount} SOL to the ${mpl_publicKey}`)
+      console.log(`${LOGPREFIX} ✅ Airdropped ${_amount} SOL to the ${mpl_publicKey}`)
       const airdropResult: mplhelp_T_AirdropResult = { success: true, amount: _amount }
       return airdropResult
     } catch (error) {
-      console.log(`❌ - Error airdropping SOL to ${mpl_publicKey}`);
+      console.log(`${LOGPREFIX} ❌ Error airdropping SOL to ${mpl_publicKey}`);
       // throw new Error('Error airdropping SOL')
 
       const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
@@ -173,10 +178,10 @@ export const airdrop = async (
   } catch (error) {
     const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
     if (error instanceof Error) {
-      console.error('mplx.helpers.ts:airdrop: error', error)
+      console.error(`${LOGPREFIX} error ${error}`)
       airdropResult.error = error.message
     } else {
-      console.error('mplx.helpers.ts:airdrop: error', error)
+      console.error(`${LOGPREFIX} error ${error}`)
       airdropResult.error = `${error}`
     }
     return airdropResult
@@ -221,9 +226,7 @@ export async function createSponsoredCollection(
 ): Promise<mplhelp_T_CreateCollectionResult> {
   const LOGPREFIX = `${filePath}:createSponsoredCollection: `
   try {
-
     const umi = mplx_umi
-
     const APP_1_KEYPAIR_SIGNER = 'MINT_APP_01_KEYPAIR'
     const creator_keyPair: MPL_Keypair | null = getMplKeypair_fromENV(APP_1_KEYPAIR_SIGNER)
     if (!creator_keyPair) {
@@ -234,9 +237,7 @@ export async function createSponsoredCollection(
       }
       return collectionResultError
     }
-
     const creator_Signer = MPL_F_createSignerFromKeypair(umi, creator_keyPair)
-
     // Check if creator_Signer is a signer
     // if (!MPL_F_isSigner(creator_Signer)) {
     //   console.error(`${LOGPREFIX}❌ ${creator_Signer} is not a signer`)
@@ -247,7 +248,6 @@ export async function createSponsoredCollection(
     //   return collectionResultError
     // }
 
-
     // Set identity & payer with the same signer: creator_Signer
     umi.use(MPL_P_KeypairIdentity(creator_Signer));
 
@@ -256,7 +256,7 @@ export async function createSponsoredCollection(
     return res
 
   } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
+    console.error(`${LOGPREFIX} `, error)
 
     // const response: ResponseData = { success: false, error: '' };
     const collectionResultError: mplhelp_T_CreateCollectionResult = {
@@ -264,7 +264,7 @@ export async function createSponsoredCollection(
       error: ''
     }
     if (error instanceof Error) {
-      console.log('error', error)
+      console.error(`${LOGPREFIX} `, error)
       collectionResultError.error = error.message
     } else {
       collectionResultError.error = 'Error'
@@ -272,7 +272,6 @@ export async function createSponsoredCollection(
     return collectionResultError
   } // catch
 } // createCollection
-
 
 // --------------------------------------------------
 
