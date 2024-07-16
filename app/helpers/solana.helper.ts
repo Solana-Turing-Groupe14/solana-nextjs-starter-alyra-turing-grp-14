@@ -279,3 +279,19 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
       return null;
     }
   }
+
+  //
+
+  export const shortenAddress = (_address: string): string | null => {
+    try {
+      console.debug(`app/helpers/solana.helper.ts: shortenAddress address:${_address}`);
+      if (!_address) return null;
+
+      const shortAddress = `${_address.substring(0, 4)}...${_address.substring(_address.length - 4)}`;
+      return shortAddress;
+
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }

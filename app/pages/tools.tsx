@@ -1,7 +1,9 @@
-import { Box, Button, Center, Stack, Text, useToast } from "@chakra-ui/react"
+import { CheckCircleIcon } from '@chakra-ui/icons'
+import { Box, Button, Center, CloseButton, Link, Stack, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { SendIcon } from "lucide-react"
+import { ExternalLinkIcon, SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
+import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
 
 export default function MintTestPage() {
@@ -32,7 +34,7 @@ export default function MintTestPage() {
     })
   }
 
-  const airdropWallet = async (address:string) => {
+  const airdropWallet = async (address:string, name: string|null|undefined) => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -53,14 +55,64 @@ export default function MintTestPage() {
       const response:AirdropResponseData = await res.json();
       console.debug('app/pages/mintTest.tsx:aidrop: response', response);
       if (response && response.success && response.amount) {
+
+        
+        const addressUri = getAddressUri(address)
+        const shortenedAddress = shortenAddress(address)
+
+        // toast({
+        //   title: 'Wallet airdropped.',
+        //   description: `${response.address} received ${response.amount} sol.`,
+        //   status: 'success',
+        //   duration: 10_000,
+        //   isClosable: true,
+        //   position: 'top-right',
+        // })
+
+
         toast({
-          title: 'Wallet airdropped.',
-          description: `${response.address} received ${response.amount} sol.`,
-          status: 'success',
-          duration: 10_000,
-          isClosable: true,
+          duration: 15_000,
           position: 'top-right',
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+              <div className='flex justify-between'>
+                <div className='flex '>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                  <Text fontWeight= "bold" >Wallet airdropped</Text>
+                </div>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='px-2 py-1'>
+                {name?
+                  <div>
+                    {name} received {response.amount} sol.
+                  </div>
+                  :
+                  <div>
+                    <div>
+                      {address}
+                    </div>
+                    <div>
+                       received {response.amount} sol.
+                    </div>
+                  </div>
+                  }
+              </div>
+              <div className='m-2'>
+                {addressUri &&
+                  <Link href={addressUri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      {/* {name?name:shortenedAddress} */}
+                      {name?name:shortenedAddress}
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
+            </Box>
+          ),
         })
+
       } else {
         const error = (response && response.success === false ? response.error : 'Unknown error') 
         toast({
@@ -87,7 +139,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingConnectedWalletAirdrop(true)
       const address:string = connectedWalletPublicKey?.toBase58()||''
-      airdropWallet(address)
+      airdropWallet(address, null)
     } catch (error) {
       console.error(error)
     } finally {
@@ -99,7 +151,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp1AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP01||''
-      airdropWallet(address)
+      airdropWallet(address, 'App 1')
     } catch (error) {
       console.error(error)
     } finally {
@@ -111,7 +163,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp2AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP02||''
-      airdropWallet(address)
+      airdropWallet(address, 'App 2')
     } catch (error) {
       console.error(error)
     } finally {
@@ -123,7 +175,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingAppDefaultAddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINT_APP_DEFAULT||''
-      airdropWallet(address)
+      airdropWallet(address, 'App Default')
     } catch (error) {
       console.error(error)
     } finally {
