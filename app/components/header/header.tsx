@@ -26,7 +26,7 @@ const MenuItems = [
   },
   {
     text: "Mint test",
-    href: "/mintTest",
+    href: "/mint/",
   },
   {
     text: "Tools",

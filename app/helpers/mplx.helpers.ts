@@ -28,11 +28,22 @@ import {
   // MPL_F_deleteCandyMachine,
 } from '@helpers/mtplx';
 import { RPC_URL } from '@helpers/solana.helper';
-import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateNftCollectionResult, mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types";
+import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateMyFullNftCollectionInput, mplhelp_T_CreateNftCollectionResult, mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types";
+import { RpcConfirmTransactionResult } from "@metaplex-foundation/umi";
 
 const filePath = "app/helpers/mplx.helpers.ts"
 
-// --------------------------------------------------
+// ------------------------------------------------------------
+
+// balance(s)
+const MINIMUM_CREATOR_BALANCE = 1 // 1 SOL
+const LOW_CREATOR_BALANCE = 10 // 10 SOL
+
+const MINIMUM_CREATOR_BALANCE_SOL = MPL_F_sol(MINIMUM_CREATOR_BALANCE)
+const LOW_CREATOR_BALANCE_SOL = MPL_F_sol(LOW_CREATOR_BALANCE)
+
+// ------------------------------------------------------------
+
 
 const mplx_umi: MPL_T_Umi = createUmi(RPC_URL).use(mplCoreCandyMachine());
 if (!mplx_umi) {
@@ -45,7 +56,7 @@ export const getUmi = (): MPL_T_Umi => {
   return mplx_umi
 } // getUmi
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null => {
   const LOGPREFIX = `${filePath}:getMplKeypair_fromENV: `
@@ -83,7 +94,7 @@ export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null =>
   return null
 } // getMplKeypair_fromENV
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 interface ExpectedCandyMachineState {
   itemsLoaded: number;
@@ -127,7 +138,7 @@ async function checkCandyMachine(
   }
 }
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 const AIRDROP_DEFAULT_AMOUNT = 1
 
@@ -190,7 +201,7 @@ export const airdrop = async (
 } // getMplKeypair_fromENV
 
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 // https://developers.metaplex.com/umi/public-keys-and-signers
 // Umi interface stores two instances of Signer:
@@ -220,7 +231,7 @@ export const airdrop = async (
 
 // umi = umi.use(walletAdapterIdentity(wallet));
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 export async function createSponsoredCollection(
 ): Promise<mplhelp_T_CreateCollectionResult> {
@@ -273,7 +284,7 @@ export async function createSponsoredCollection(
   } // catch
 } // createCollection
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 export async function createMyCollection(
   walletAdapter: MPL_T_WalletAdapter,
@@ -328,6 +339,35 @@ export async function createMyCollection(
 } // createMyCollection
 
 
+
+export async function checkBalance(minAmount: MPL_T_SolAmount, _publicKey: MPL_T_PublicKey|undefined) :
+  // Promise<mplhelp_T_CheckBalanceResult>
+Promise<boolean>
+{
+  const LOGPREFIX = `${filePath}:checkBalance: `
+  try {
+    const umi = mplx_umi
+    const publicKey = _publicKey || umi.payer.publicKey
+    if (!publicKey) {
+      console.error(`${LOGPREFIX} publicKey not provided`)
+      // return { success: false, error: {missingPublicKey: true} }
+      return false
+    }
+    const balance:MPL_T_SolAmount = await umi.rpc.getBalance(publicKey);
+    console.debug(`${LOGPREFIX} balance `, balance);
+    if (balance.basisPoints < minAmount.basisPoints) {
+      console.warn(`${LOGPREFIX}❌ Insufficient balance : ${Number(balance.basisPoints) / (10 ** balance.decimals)} SOL`);
+      return false
+      // return { success: false, error: {missingPublicKey: false, minBalance: true} 
+    }
+    return true
+  } catch (error) {
+    console.error(`${LOGPREFIX}`, error)
+    return false
+  }
+} // checkBalance
+
+
 export async function createCollection(
   // creator_Signer: MPL_T_KeypairSigner,
   umi: MPL_T_Umi,
@@ -354,10 +394,6 @@ export async function createCollection(
     });
 
     // Check balance(s)
-    const MINIMUM_CREATOR_BALANCE = 1 // 1 SOL
-    const LOW_CREATOR_BALANCE = 10 // 10 SOL
-    const MINIMUM_CREATOR_BALANCE_SOL = MPL_F_sol(MINIMUM_CREATOR_BALANCE)
-    const LOW_CREATOR_BALANCE_SOL = MPL_F_sol(LOW_CREATOR_BALANCE)
     // const payerBalance:MPL_T_SolAmount = await umi.rpc.getBalance(creator_Signer.publicKey);
     const payerBalance: MPL_T_SolAmount = await umi.rpc.getBalance(umi.payer.publicKey);
 
@@ -366,6 +402,7 @@ export async function createCollection(
     if (payerBalance.basisPoints < LOW_CREATOR_BALANCE_SOL.basisPoints) {
       console.warn(`${LOGPREFIX}⚠️  Low (less than ${LOW_CREATOR_BALANCE} SOL) balance  : ${Number(payerBalance.basisPoints) / (10 ** payerBalance.decimals)} SOL`);
     }
+
     if (payerBalance.basisPoints < MINIMUM_CREATOR_BALANCE_SOL.basisPoints) {
       console.error(`${LOGPREFIX}❌ Insufficient (less than ${MINIMUM_CREATOR_BALANCE} SOL) balance : ${Number(payerBalance.basisPoints) / (10 ** payerBalance.decimals)} SOL`);
       const collectionResultError: mplhelp_T_CreateCollectionResult = {
@@ -437,28 +474,38 @@ export async function createCollection(
   } // catch
 } // createCollection
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 
 export async function createMyFullNftCollection(
-  _walletAdapter: MPL_T_WalletAdapter,
-  _collectionName: string,
-  _collectionUri: string,
-  _nftNamePrefix: string,
-  _itemsCount: number,
-  _metadataPrefixUri: string,
-  _startDateTime: Date | null,
-  _endDateTime: Date | null,
-  // umi:MPL_T_Umi,
+  // _walletAdapter: MPL_T_WalletAdapter,
+  // _collectionName: string,
+  // _collectionUri: string,
+  // _nftNamePrefix: string,
+  // _itemsCount: number,
+  // _metadataPrefixUri: string,
+  // _startDateTime: Date | null,
+  // _endDateTime: Date | null,
+  // // umi:MPL_T_Umi,
+  {
+    walletAdapter: _walletAdapter,
+    collectionName: _collectionName,
+    collectionUri: _collectionUri,
+    nftNamePrefix: _nftNamePrefix,
+    itemsCount: _itemsCount,
+    metadataPrefixUri: _metadataPrefixUri,
+    startDateTime: _startDateTime,
+    endDateTime: _endDateTime,
+  }: mplhelp_T_CreateMyFullNftCollectionInput
+
 ): Promise<mplhelp_T_CreateNftCollectionResult> {
   const LOGPREFIX = `${filePath}:createFullNftCollection: `
   try {
-
     const umi = mplx_umi
-    // Set identity
-    umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
-    // Set payer
-    umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+
+    // --------------------------------
+    // Check all input parameters
+    // --------------------------------
 
     // Check if walletAdapter is a valid signer
     if (!MPL_F_isSigner(umi.identity)) {
@@ -469,29 +516,102 @@ export async function createMyFullNftCollection(
       }
       return collectionResultError
     }
+    // Collection Name
+    if (!_collectionName|| _collectionName.trim().length < 1) {
+      console.error(`${LOGPREFIX}❌ collectionName not provided`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: collectionName not provided`
+      }
+      return collectionResultError
+    }
+    // Collection URI
+    if (!_collectionUri || _collectionUri.trim().length < 1) {
+      console.error(`${LOGPREFIX}❌ collectionUri not provided`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: collectionUri not provided`
+      }
+      return collectionResultError
+    }
+    // NFT Name Prefix
+    if (!_nftNamePrefix || _nftNamePrefix.trim().length < 1) {
+      console.error(`${LOGPREFIX}❌ nftNamePrefix not provided`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: nftNamePrefix not provided`
+      }
+      return collectionResultError
+    }
+    // Items Count
+    if (_itemsCount < 1) {
+      console.error(`${LOGPREFIX}❌ itemsCount < 1`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: itemsCount < 1`
+      }
+      return collectionResultError
+    }
+    // Metadata Prefix URI
+    if (!_metadataPrefixUri || _metadataPrefixUri.trim().length < 1) {
+      console.error(`${LOGPREFIX}❌ metadataPrefixUri not provided`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: metadataPrefixUri not provided`
+      }
+      return collectionResultError
+    }
+
+    // Payer / Minter = Wallet
+    // Set identity
+    umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+    // Set payer
+    umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+
+    // Basic Check balance(s)
+
+    console.debug(`${LOGPREFIX} _walletAdapter.publicKey : ${_walletAdapter.publicKey}`)
+
+    if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _walletAdapter.publicKey)) {
+      console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
+      const collectionResultError: mplhelp_T_MintNftCMResult = {
+        success: false,
+        error: `Error minting NFT: Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`
+      }
+      return collectionResultError
+    }
 
     // TODO
-    // --------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     const collection_Signer = MPL_F_generateSigner(umi) // NEW random signer
 
     // const collectionName = 'My Collection'
     // const collectionUri = 'https://example.com/my-collection.json'
-    const collectionName = _collectionName
-    const collectionUri = _collectionUri
-    // 2. Create a collection
+    // const collectionName = _collectionName
+    // const collectionUri = _collectionUri
+
+    // --------------------------------
+    // Create a collection
+    // --------------------------------
     try {
       await MPL_F_createCollectionV1(umi, {
         collection: collection_Signer,
-        name: collectionName,
-        uri: collectionUri,
+        name: _collectionName,
+        uri: _collectionUri,
       }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-      console.log(`2. ✅ - Created collection: ${collection_Signer.publicKey.toString()}`)
+      console.log(`${LOGPREFIX} ✅ Created collection: ${collection_Signer.publicKey.toString()}`)
     } catch (error) {
-      console.log('2. ❌ - Error creating collection.');
+      console.error(`${LOGPREFIX}❌ Error creating collection.`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: 'Error verifying the Candy Machine configuration.'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return collectionResultError
     }
-
-
 
     // try {
 
@@ -511,61 +631,38 @@ export async function createMyFullNftCollection(
     // } // catch
 
 
-
-
-    // const year = 2023;
-    // const month = 12;
-    // const day = 31;
-    // const hour = 16;
-    // const minute = 33;
-    // const second = 59;
-    // const millisecond = 0;
-
-    // const date1 = new Date(year, month, day, hour, minute, second, millisecond);
-    // const date2 = new Date(year+1, month, day, hour, minute, second, millisecond);
-
-    // const now = new Date( 2024, );
-    // const now_ = Date.now();
-    // const tempsEnMs = now
-    // console.log('tempsEnMs', tempsEnMs);
-
-    // const startDateTimeS = dateTime('2023-04-04T16:00:00Z');
-
-    // const startDateTime = date1;
-    // // const endDateTime = null;
-    // const endDateTime = date2;
-    const startDateTime = _startDateTime;
+    // const startDateTime = _startDateTime;
     // const endDateTime = null;
-    const endDateTime = _endDateTime;
+    // const endDateTime = _endDateTime;
 
 
-    // TODO
-    // TODO
-    // TODO : signers
+    // TODO : check signers
+    // TODO : check signers
+    // TODO : check signers
 
     const treasury_Signer = MPL_F_generateSigner(umi);
     const candyMachine = MPL_F_generateSigner(umi);
 
-    // TODO
-    // TODO
-    // TODO
-
     // const itemsAvailable = 3; // TODO: change this
-    const itemsAvailable = _itemsCount;
+    // const itemsAvailable = _itemsCount;
     // const nftNamePrefix = 'Quick NFT'; // TODO: change this
-    const nftNamePrefix = _nftNamePrefix;
+    // const nftNamePrefix = _nftNamePrefix;
+    const nftNamePrefix = 'Quick NFT ABCDE'; // Max. 16 ? <-----------------
 
     // const nftNameMaxLength = nftNamePrefix.length+1; // TODO: change this
-    const nftNameMaxLength = nftNamePrefix.length + _itemsCount.toString().length; // TODO: change this
+    const nftNameMaxLength = nftNamePrefix.length + _itemsCount.toString().length;
+    // const nftNameMaxLength = _nftNamePrefix.length + _itemsCount.toString().length;
 
-    // const metadataPrefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
-    const metadataPrefixUri = _metadataPrefixUri
+    const metadataPrefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
+    // const metadataPrefixUri = _metadataPrefixUri
     const metadataPrefixUriLength = metadataPrefixUri.length
+    // const metadataPrefixUriLength = _metadataPrefixUri.length
 
-    // 3. Create a Candy Machine
+    // --------------------------------
+    // Create a Candy Machine
+    // --------------------------------
     try {
-
-      // TODO: guards
+      // GUARDS
       // let guards_rules = {
       const guards_rules: MPL_T_GuardSetArgs = {
         botTax: MPL_F_some({ lamports: MPL_F_sol(0.001), lastInstruction: true }),
@@ -573,23 +670,35 @@ export async function createMyFullNftCollection(
         // All other guards are disabled...
       }
       // The Candy Machine will only be able to mint NFTs after this date
-      if (startDateTime) {
-        guards_rules.startDate = MPL_F_some({ date: startDateTime });
-      }
-      // The Candy Machine will stop minting NFTs after this date
-      if (endDateTime) {
-        guards_rules.endDate = MPL_F_some({ date: endDateTime });
-      }
+      // if (_startDateTime) {
+      //   guards_rules.startDate = MPL_F_some({ date: _startDateTime });
+      // }
+      // // The Candy Machine will stop minting NFTs after this date
+      // if (_endDateTime) {
+      //   guards_rules.endDate = MPL_F_some({ date: _endDateTime });
+      // }
 
-      console.debug('guards_rules');
+      console.debug(`${LOGPREFIX} guards_rules:`)
       console.dir(guards_rules);
 
+      console.table({
+        treasury: treasury_Signer.publicKey.toString(),
+        candyMachine: candyMachine.publicKey.toString(),
+        collection: collection_Signer.publicKey.toString(),
+
+        itemsAvailable: _itemsCount,
+
+        prefixName: nftNamePrefix,
+        nameLength: nftNameMaxLength,
+        prefixUri: metadataPrefixUri,
+        uriLength: metadataPrefixUriLength,
+      });
 
       const createIx = await MPL_F_create(umi, {
         candyMachine,
         collection: collection_Signer.publicKey, // create assets into this collection
         collectionUpdateAuthority: umi.identity,
-        itemsAvailable: itemsAvailable,
+        itemsAvailable: _itemsCount,
         authority: umi.identity.publicKey,
         isMutable: false,
         // https://developers.metaplex.com/core-candy-machine/create#config-line-settings
@@ -600,34 +709,42 @@ export async function createMyFullNftCollection(
           uriLength: metadataPrefixUriLength,
           isSequential: false,
         }),
-        // TODO: guards
+        // guards
         guards: guards_rules,
       })
-      await createIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-      console.log(`3. ✅ - Created Candy Machine: ${candyMachine.publicKey.toString()}`)
+      const candyMachineTxResult = await createIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+      console.debug(`${LOGPREFIX} createIx result`, candyMachineTxResult)
+      console.dir(candyMachineTxResult)
+
+      if (candyMachineTxResult.result.value.err !== null) {
+
+        console.error(`${LOGPREFIX}❌ Error creating Candy Machine.`)
+        const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+          success: false,
+          error: 'Error creating Candy Machine.'
+        }
+        return collectionResultError
+      }
+
+      console.log(`${LOGPREFIX} ✅ Created Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
-      // console.log('3. ❌ - Error creating Candy Machine.');
-      console.error(`${LOGPREFIX} ❌ - Error creating Candy Machine.`, error)
-      const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+      console.error(`${LOGPREFIX} ❌ Error creating Candy Machine.`, error)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
         success: false,
         error: 'Error creating Candy Machine.'
       }
-      if (error instanceof Error) {
-        console.log('error', error)
-        collectionResult.error += ` ${error.message}`
-      } else {
-        collectionResult.error = ` ${error}`
-      }
-      return collectionResult
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      return collectionResultError
     } // catch
 
-
-    // 4. Add items to the Candy Machine
-
+    // --------------------------------
+    // Add items to the Candy Machine
+    // --------------------------------
 
     try {
       const configLines = [];
-      for (let i = 1; i <= itemsAvailable; i++) {
+      for (let i = 1; i <= _itemsCount; i++) {
         configLines.push(
           {
             name: `${i}`,
@@ -644,45 +761,38 @@ export async function createMyFullNftCollection(
         //     { name: '3', uri: '3.json' },
         // ],
       }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-      console.log(`4. ✅ - Added items to the Candy Machine: ${candyMachine.publicKey.toString()}`)
+      console.log(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
-      // console.log('4. ❌ - Error adding items to the Candy Machine.');
-      console.error(`${LOGPREFIX} ❌ - Error adding items to the Candy Machine`, error)
+      console.error(`${LOGPREFIX} ❌ Error adding items to the Candy Machine`, error)
       const collectionResult: mplhelp_T_CreateNftCollectionResult = {
         success: false,
         error: 'Error adding items to the Candy Machine.'
       }
-      if (error instanceof Error) {
-        console.log('error', error)
-        collectionResult.error += ` ${error.message}`
-      } else {
-        collectionResult.error = ` ${error}`
-      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResult.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
       return collectionResult
     } // catch
 
     // 5. Verify the Candy Machine configuration
     try {
       await checkCandyMachine(umi, candyMachine.publicKey, {
-        itemsLoaded: itemsAvailable,
+        itemsLoaded: _itemsCount,
         authority: umi.identity.publicKey,
         collection: collection_Signer.publicKey,
         itemsRedeemed: 0,
       });
       // , 5);
     } catch (error) {
-      console.error(`${LOGPREFIX} ❌ - Error verifying the Candy Machine configuration`, error)
-      const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+      console.error(`${LOGPREFIX} ❌ Error verifying the Candy Machine configuration`, error)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
         success: false,
         error: 'Error verifying the Candy Machine configuration.'
       }
-      if (error instanceof Error) {
-        console.log('error', error)
-        collectionResult.error += ` ${error.message}`
-      } else {
-        collectionResult.error = ` ${error}`
-      }
-      return collectionResult
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return collectionResultError
     } // catch
 
 
@@ -705,7 +815,15 @@ export async function createMyFullNftCollection(
     // } // catch
 
 
-    // 6. Mint NFTs
+    // TODO : REMOVE ====>
+    // TODO : REMOVE ====>
+    // TODO : REMOVE ====>
+    // TODO : REMOVE ====>
+
+    // --------------------------------
+    // Mint NFTs
+    // --------------------------------
+    
     // try {
     //     const numMints = 3;
     //     let minted = 0;
@@ -725,9 +843,9 @@ export async function createMyFullNftCollection(
     //             .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
     //         minted++;
     //     }
-    //     console.log(`6. ✅ - Minted ${minted} NFTs.`);
+    //     console.log(`✅ - Minted ${minted} NFTs.`);
     // } catch (error) {
-    //     console.log('6. ❌ - Error minting NFTs.');
+    //     console.log('❌ - Error minting NFTs.');
     // }
 
     // 6. Mint ONE NFT
@@ -769,22 +887,23 @@ export async function createMyFullNftCollection(
           .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
         minted++;
       }
-      console.log(`6. ✅ - Minted ${minted} NFTs.`);
+      console.log(`${LOGPREFIX} ✅ Minted ${minted} NFTs.`)
     } catch (error) {
-      // console.log('6. ❌ - Error minting NFTs.');
-      console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)
+      console.error(`${LOGPREFIX} ❌ Error minting NFT`, error)
       const collectionResult: mplhelp_T_CreateNftCollectionResult = {
         success: false,
         error: 'Error minting NFT.'
       }
-      if (error instanceof Error) {
-        console.log('error', error)
-        collectionResult.error += ` ${error.message}`
-      } else {
-        collectionResult.error = ` ${error}`
-      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResult.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
       return collectionResult
     } // catch
+
+    // TODO : <===== REMOVE 
+    // TODO : <===== REMOVE 
+    // TODO : <===== REMOVE 
+    // TODO : <===== REMOVE 
 
     // 7. Verify the Candy Machine configuration
     // await checkCandyMachine(umi, candyMachine.publicKey, {
@@ -805,8 +924,7 @@ export async function createMyFullNftCollection(
     //     console.log('8. ❌ - Error deleting the Candy Machine.');
     // }
 
-    // --------------------------------------------------------------
-    // TODO
+    // ------------------------------------------------------------------------
 
 
     const collectionResult: mplhelp_T_CreateNftCollectionResult = {
@@ -820,23 +938,21 @@ export async function createMyFullNftCollection(
 
   } catch (error) {
     console.error(`${LOGPREFIX}`, error)
-    const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+    const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
       success: false,
-      error: ''
+      error: 'Global Error'
     }
-    if (error instanceof Error) {
-      console.log('error', error)
-      collectionResult.error = error.message
-    } else {
-      collectionResult.error = 'Error'
-    }
-    return collectionResult
+    const errorString = (error instanceof Error) ? error.message : `${error}`
+    collectionResultError.error += ` ${errorString}`
+    console.error(`${LOGPREFIX} error: ${errorString}`)
+
+    return collectionResultError
   } // catch
 
 } // createMyFullNftCollection
 
 
-// --------------------------------------------------
+// ------------------------------------------------------------
 
 export async function mintNftFromCM(
   // _walletAdapter: MPL_T_WalletAdapter,
@@ -851,6 +967,15 @@ export async function mintNftFromCM(
   try {
 
     const umi = mplx_umi
+
+    if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _walletAdapter.publicKey)) {
+      console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
+      const collectionResultError: mplhelp_T_MintNftCMResult = {
+        success: false,
+        error: `Error minting NFT: Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`
+      }
+      return collectionResultError
+    }
 
     // Set identity
     umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
