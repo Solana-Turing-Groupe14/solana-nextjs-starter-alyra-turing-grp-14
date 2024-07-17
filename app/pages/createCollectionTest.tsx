@@ -5,10 +5,10 @@ import { ExternalLinkIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import {
   createMyFullNftCollection as mplxH_createMyFullNftCollection
-} from "@helpers/mplx.helpers.dynamic"
+} from "@helpers/mplx.helper.dynamic"
 import {
   createMyCollection as mplxH_createMyCollection,
-} from "@helpers/mplx.helpers.static"
+} from "@helpers/mplx.helper.static"
 
 import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { CollectionCreationResponseData, mplhelp_T_CreateMyFullNftCollectionInput } from "types"
@@ -48,12 +48,17 @@ export default function MintTestPage() {
   }, [connected, connectedWalletPublicKey]);
 
   const isValidCollectionInput = useMemo(() => {
-    const isValid =
-      nftCount && nftCount >= minNftCount && nftCount <= maxNftCount &&
-      collectionName && collectionName.length > 0 &&
-      collectionDescription && collectionDescription.length > 0 &&
-      image
+    let isValid = false
+    try {
+      isValid = nftCount >= minNftCount &&
+      nftCount <= maxNftCount &&
+      collectionName.trim().length > 0 &&
+      collectionDescription.trim().length > 0 &&
+      image !== undefined
       ;
+    } catch (error) {
+      console.error(`${FILEPATH}:isValidCollectionInput: error: `, error)
+    }
     console.debug(`${FILEPATH}:isValidCollectionInput: ${isValid}`, )
     return isValid
   }, [nftCount, collectionName, collectionDescription, image]);
