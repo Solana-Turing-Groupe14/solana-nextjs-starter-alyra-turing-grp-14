@@ -1,6 +1,6 @@
 import {
   MPL_F_sol
-} from '@helpers/mtplx.exports';
+} from '@imports/mtplx.imports';
 
 // balance(s)
 const MINIMUM_CREATOR_BALANCE = 1 // 1 SOL

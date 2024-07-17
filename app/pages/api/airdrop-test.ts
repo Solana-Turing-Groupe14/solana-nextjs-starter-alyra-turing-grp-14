@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import {
   airdrop
-} from '@helpers/mplx.helpers.dynamic';
+} from '@helpers/mplx.helper.dynamic';
 import { AirdropResponseData, mplhelp_T_AirdropResult } from 'types';
 
 export default async function airdropHandler(req: NextApiRequest, res: NextApiResponse<AirdropResponseData>) {

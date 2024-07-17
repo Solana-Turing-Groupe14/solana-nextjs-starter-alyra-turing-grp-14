@@ -4,10 +4,10 @@ import {
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
 import { LOW_CREATOR_BALANCE, LOW_CREATOR_BALANCE_SOL, MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL } from "@consts/mtplx";
+import { RPC_URL } from '@helpers/solana.helper';
 import {
   MPL_F_createCollectionV1,
   MPL_F_createSignerFromKeypair,
-  MPL_F_fetchCandyMachine,
   MPL_F_generateSigner,
   MPL_F_isSigner,
   MPL_F_publicKey,
@@ -18,8 +18,7 @@ import {
   MPL_T_PublicKey,
   MPL_T_SolAmount, MPL_T_Umi, MPL_T_WalletAdapter,
   MPL_TX_BUILDR_OPTIONS,
-} from '@helpers/mtplx.exports';
-import { RPC_URL } from '@helpers/solana.helper';
+} from '@imports/mtplx.imports';
 import {
   mplhelp_T_AirdropResult,
   mplhelp_T_CreateCollectionResult,
@@ -78,50 +77,6 @@ export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null =>
   } // catch
   return null
 } // getMplKeypair_fromENV
-
-// ------------------------------------------------------------
-
-interface ExpectedCandyMachineState {
-  itemsLoaded: number;
-  itemsRedeemed: number;
-  authority: MPL_T_PublicKey;
-  collection: MPL_T_PublicKey;
-}
-
-async function checkCandyMachine(
-  umi: MPL_T_Umi,
-  candyMachine: MPL_T_PublicKey,
-  expectedCandyMachineState: ExpectedCandyMachineState,
-  // step?: number
-) {
-  const LOGPREFIX = `${filePath}:checkCandyMachine: `
-  try {
-    const loadedCandyMachine = await MPL_F_fetchCandyMachine(umi, candyMachine, MPL_TX_BUILDR_OPTIONS.confirm);
-    const { itemsLoaded, itemsRedeemed, authority, collection } = expectedCandyMachineState;
-    if (Number(loadedCandyMachine.itemsRedeemed) !== itemsRedeemed) {
-      throw new Error(`${LOGPREFIX} Incorrect number of items available in the Candy Machine.`);
-    }
-    if (loadedCandyMachine.itemsLoaded !== itemsLoaded) {
-      throw new Error(`${LOGPREFIX} Incorrect number of items loaded in the Candy Machine.`);
-    }
-    if (loadedCandyMachine.authority.toString() !== authority.toString()) {
-      throw new Error(`${LOGPREFIX} Incorrect authority in the Candy Machine.`);
-    }
-    if (loadedCandyMachine.collectionMint.toString() !== collection.toString()) {
-      throw new Error(`${LOGPREFIX} Incorrect collection in the Candy Machine.`);
-    }
-    // step && console.log(`${step}. ✅ - Candy Machine has the correct configuration.`);
-    console.log(`${LOGPREFIX} ✅  Candy Machine has the correct configuration.`);
-  } catch (error) {
-    if (error instanceof Error) {
-      // step && console.log(`${step}. ❌ - Candy Machine incorrect configuration: ${error.message}`);
-      console.log(`${LOGPREFIX} ❌ Candy Machine incorrect configuration: ${error.message}`);
-    } else {
-      // step && console.log(`${step}. ❌ - Error fetching the Candy Machine.`);
-      console.log(`${LOGPREFIX} ❌ Error fetching the Candy Machine.`);
-    }
-  }
-}
 
 // ------------------------------------------------------------
 

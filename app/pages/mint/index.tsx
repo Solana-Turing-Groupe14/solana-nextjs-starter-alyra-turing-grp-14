@@ -9,7 +9,7 @@ import { NextPage } from "next"
 import { SetStateAction, useMemo, useState } from "react"
 import {
   mintNftFromCM  as mplxH_mintNftFromCM,
-} from "@helpers/mplx.helpers"
+} from "@helpers/mplx.helper.dynamic"
 // import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types"

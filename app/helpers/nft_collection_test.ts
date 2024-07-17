@@ -19,7 +19,6 @@ import {
     // TransactionBuilderSendAndConfirmOptions,
     Umi
 } from '@metaplex-foundation/umi';
-import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx.exports.exports';
 
 
 // import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
@@ -28,7 +27,8 @@ import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx.exports.exports
 // import { TESTkeyPair } from '@helpers/solana.helper';
 
 
-import { getUmi } from './mplx.helpers';
+import { getUmi } from '@helpers/mplx.helper.static';
+import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@imports/mtplx.imports';
 // import { CandyGuardDataArgs } from '@metaplex-foundation/mpl-core-candy-machine/dist/src/hooked/candyGuardData.d';
 
 // const someRandomSecretKey_ = [40,  93,  83,  37,  31,  65,  52,  11,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19,  27,  92,  99,  33,  45,  97,  74,  19]

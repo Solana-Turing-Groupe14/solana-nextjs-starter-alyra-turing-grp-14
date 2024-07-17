@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { createSponsoredCollection } from '@helpers/mplx.helpers.static';
+import { createSponsoredCollection } from '@helpers/mplx.helper.static';
 import { CollectionCreationResponseData, mplhelp_T_CreateCollectionResult } from 'types';
 
 export default async function collectionCreationHandler(req: NextApiRequest, res: NextApiResponse<CollectionCreationResponseData>) {
