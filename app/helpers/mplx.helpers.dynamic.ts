@@ -27,22 +27,15 @@ import {
   MPL_F_mintV1,
   MPL_F_none,
   // MPL_F_deleteCandyMachine,
-} from '@helpers/mtplx';
+} from '@helpers/mtplx.exports';
 import { RPC_URL } from '@helpers/solana.helper';
 import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateMyFullNftCollectionInput, mplhelp_T_CreateNftCollectionResult, mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types";
+import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH } from "@consts/mtplx";
 
 const filePath = "app/helpers/mplx.helpers.ts"
 
 // ------------------------------------------------------------
 
-// balance(s)
-const MINIMUM_CREATOR_BALANCE = 1 // 1 SOL
-const LOW_CREATOR_BALANCE = 10 // 10 SOL
-
-const NFT_NAME_PREFIX_MAX_LENGTH = 32
-
-const MINIMUM_CREATOR_BALANCE_SOL = MPL_F_sol(MINIMUM_CREATOR_BALANCE)
-const LOW_CREATOR_BALANCE_SOL = MPL_F_sol(LOW_CREATOR_BALANCE)
 
 // ------------------------------------------------------------
 
@@ -235,113 +228,6 @@ export const airdrop = async (
 
 // ------------------------------------------------------------
 
-export async function createSponsoredCollection(
-): Promise<mplhelp_T_CreateCollectionResult> {
-  const LOGPREFIX = `${filePath}:createSponsoredCollection: `
-  try {
-    const umi = mplx_umi
-    const APP_1_KEYPAIR_SIGNER = 'MINT_APP_01_KEYPAIR'
-    const creator_keyPair: MPL_Keypair | null = getMplKeypair_fromENV(APP_1_KEYPAIR_SIGNER)
-    if (!creator_keyPair) {
-      console.error(`${LOGPREFIX} creator_keyPair (${APP_1_KEYPAIR_SIGNER}) Not Found`)
-      const collectionResultError: mplhelp_T_CreateCollectionResult = {
-        success: false,
-        error: ''
-      }
-      return collectionResultError
-    }
-    const creator_Signer = MPL_F_createSignerFromKeypair(umi, creator_keyPair)
-    // Check if creator_Signer is a signer
-    // if (!MPL_F_isSigner(creator_Signer)) {
-    //   console.error(`${LOGPREFIX}❌ ${creator_Signer} is not a signer`)
-    //   const collectionResultError:mplhelp_T_CreateCollectionResult = {
-    //     success: false,
-    //     error: `Error creating collection: not a signer`
-    //   }
-    //   return collectionResultError
-    // }
-
-    // Set identity & payer with the same signer: creator_Signer
-    umi.use(MPL_P_KeypairIdentity(creator_Signer));
-
-    const res = await createCollection(/* creator_Signer, */ umi)
-    console.debug(`${LOGPREFIX} createCollection result`, res)
-    return res
-
-  } catch (error) {
-    console.error(`${LOGPREFIX} `, error)
-
-    // const response: ResponseData = { success: false, error: '' };
-    const collectionResultError: mplhelp_T_CreateCollectionResult = {
-      success: false,
-      error: ''
-    }
-    if (error instanceof Error) {
-      console.error(`${LOGPREFIX} `, error)
-      collectionResultError.error = error.message
-    } else {
-      collectionResultError.error = 'Error'
-    }
-    return collectionResultError
-  } // catch
-} // createCollection
-
-// ------------------------------------------------------------
-
-export async function createMyCollection(
-  walletAdapter: MPL_T_WalletAdapter,
-  // umi:MPL_T_Umi,
-): Promise<mplhelp_T_CreateCollectionResult> {
-  const LOGPREFIX = `${filePath}:createMyCollection: `
-  try {
-    const umi = mplx_umi
-    // Set identity
-    umi.use(MPL_P_walletAdapterIdentity(walletAdapter));
-    // Set payer
-    umi.use(MPL_P_walletAdapterPayer(walletAdapter));
-
-    // Check if walletAdapter is a valid signer
-    if (!MPL_F_isSigner(umi.identity)) {
-      console.error(`${LOGPREFIX}❌ wallet ${walletAdapter.publicKey} is not a valid signer`)
-      const collectionResultError: mplhelp_T_CreateCollectionResult = {
-        success: false,
-        error: `Error creating collection: wallet is not a signer`
-      }
-      return collectionResultError
-    }
-
-    // Create a NEW collection
-
-    const res = await createCollection(/* creator_Signer, */ umi)
-    console.debug(`${LOGPREFIX} createCollection result`, res)
-    return res
-
-    // const createCollectionResultSuccess:mplhelp_T_CreateCollectionResult = {
-    //   success: true,
-    //   address: "xxxxxxxxxxxxx" }
-    // return createCollectionResultSuccess
-
-
-  } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
-
-    const collectionResult: mplhelp_T_CreateCollectionResult = {
-      success: false,
-      error: ''
-    }
-
-    if (error instanceof Error) {
-      console.log('error', error)
-      collectionResult.error = error.message
-    } else {
-      collectionResult.error = 'Error'
-    }
-    return collectionResult
-  } // catch
-} // createMyCollection
-
-
-
 export async function checkBalance(minAmount: MPL_T_SolAmount, _publicKey: MPL_T_PublicKey|undefined) :
   // Promise<mplhelp_T_CheckBalanceResult>
 Promise<boolean>
@@ -369,115 +255,7 @@ Promise<boolean>
   }
 } // checkBalance
 
-
-export async function createCollection(
-  // creator_Signer: MPL_T_KeypairSigner,
-  umi: MPL_T_Umi,
-): Promise<mplhelp_T_CreateCollectionResult> {
-  const LOGPREFIX = `${filePath}:createCollection: `
-  try {
-    // // Check if creator_Signer is a signer
-    // if (!MPL_F_isSigner(creator_Signer)) {
-    //   console.error(`${LOGPREFIX}❌ ${creator_Signer} is not a signer`)
-    //   const collectionResultError:mplhelp_T_CreateCollectionResult = {
-    //     success: false,
-    //     error: `Error creating collection: not a signer`
-    //   }
-    //   return collectionResultError
-    // }
-
-    // const collectionSigner = generateSigner(umi)
-    const collection_Signer = MPL_F_generateSigner(umi) // NEW random signer
-
-    console.log(`Account information:`)
-    console.table({
-      umi_payer: umi.payer,
-      umi_identity: umi.identity,
-    });
-
-    // Check balance(s)
-    // const payerBalance:MPL_T_SolAmount = await umi.rpc.getBalance(creator_Signer.publicKey);
-    const payerBalance: MPL_T_SolAmount = await umi.rpc.getBalance(umi.payer.publicKey);
-
-    // console.debug(`${LOGPREFIX}Creator balance `, balance);
-
-    if (payerBalance.basisPoints < LOW_CREATOR_BALANCE_SOL.basisPoints) {
-      console.warn(`${LOGPREFIX}⚠️  Low (less than ${LOW_CREATOR_BALANCE} SOL) balance  : ${Number(payerBalance.basisPoints) / (10 ** payerBalance.decimals)} SOL`);
-    }
-
-    if (payerBalance.basisPoints < MINIMUM_CREATOR_BALANCE_SOL.basisPoints) {
-      console.error(`${LOGPREFIX}❌ Insufficient (less than ${MINIMUM_CREATOR_BALANCE} SOL) balance : ${Number(payerBalance.basisPoints) / (10 ** payerBalance.decimals)} SOL`);
-      const collectionResultError: mplhelp_T_CreateCollectionResult = {
-        success: false,
-        error: `Error creating collection: Insufficient (less than ${MINIMUM_CREATOR_BALANCE} SOL) balance : ${Number(payerBalance.basisPoints) / (10 ** payerBalance.decimals)} SOL`
-      }
-      return collectionResultError
-    }
-
-    console.log(`Account information:`)
-    console.table({
-      // creator_Signer: creator_Signer.publicKey.toString(),
-      creator: umi.identity.publicKey.toString(),
-      payer: umi.payer.publicKey.toString(),
-      collection: collection_Signer.publicKey.toString(),
-    });
-
-    // Create a NEW collection
-    try {
-      await MPL_F_createCollectionV1(umi, {
-        collection: collection_Signer, // address of the new collection
-        name: 'My Collection',
-        uri: 'https://example.com/my-collection.json',
-        // plugins: []
-        // updateAuthority: creator_Signer.publicKey,
-
-      }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-      console.log(`✅ - Created collection: ${collection_Signer.publicKey.toString()}`)
-
-      const createCollectionResultSuccess: mplhelp_T_CreateCollectionResult = {
-        success: true,
-        address: collection_Signer.publicKey.toString()
-      }
-      return createCollectionResultSuccess
-
-    } catch (error) {
-      console.error('❌ - Error creating collection.');
-
-      const collectionResultError: mplhelp_T_CreateCollectionResult = {
-        success: false,
-        error: ''
-      }
-
-      if (error instanceof Error) {
-        console.error(`${LOGPREFIX}`, error)
-        collectionResultError.error = error.message
-      } else {
-        collectionResultError.error = 'Error'
-      }
-      return collectionResultError
-    } // catch
-
-
-  } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
-
-    // const response: ResponseData = { success: false, error: '' };
-    const collectionResult: mplhelp_T_CreateCollectionResult = {
-      success: false,
-      error: ''
-    }
-    if (error instanceof Error) {
-      console.log('error', error)
-      collectionResult.error = error.message
-    } else {
-      collectionResult.error = 'Error'
-    }
-    return collectionResult
-  } // catch
-} // createCollection
-
 // ------------------------------------------------------------
-
 
 export async function createMyFullNftCollection(
   // _walletAdapter: MPL_T_WalletAdapter,

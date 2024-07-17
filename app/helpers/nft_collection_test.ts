@@ -19,7 +19,7 @@ import {
     // TransactionBuilderSendAndConfirmOptions,
     Umi
 } from '@metaplex-foundation/umi';
-import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx';
+import { MPL_F_sol, MPL_TX_BUILDR_OPTIONS } from '@helpers/mtplx.exports.exports';
 
 
 // import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'

@@ -4,9 +4,12 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import {
-  createMyCollection as mplxH_createMyCollection,
   createMyFullNftCollection as mplxH_createMyFullNftCollection
-} from "@helpers/mplx.helpers"
+} from "@helpers/mplx.helpers.dynamic"
+import {
+  createMyCollection as mplxH_createMyCollection,
+} from "@helpers/mplx.helpers.static"
+
 import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { CollectionCreationResponseData, mplhelp_T_CreateMyFullNftCollectionInput } from "types"
 
