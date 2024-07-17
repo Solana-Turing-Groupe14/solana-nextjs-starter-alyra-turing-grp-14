@@ -19,6 +19,11 @@ const FILEPATH = 'app/pages/mint/index.tsx'
 // export default function MintTestPage() {
 const MintTestPage: NextPage = (/* props */) => {
 
+
+  const SUCCESS_DELAY = 60_000
+  const WARN_DELAY = 15_000
+  const ERROR_DELAY = 60_000
+
   const defaultCollectionAddress = `HwUY2vXuuvaximnpbmE6f8ds2TVmC2V4KnweQjAS5AaM`
   const defaultCandyMachineAddress = `2arDeYbysGvyKFbBzpzPSXuVpC1WppvMjr4YmsUgzPkv`
 
@@ -132,7 +137,7 @@ const MintTestPage: NextPage = (/* props */) => {
         const nftName = undefined
 
         toast({
-          duration: 15_000,
+          duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>

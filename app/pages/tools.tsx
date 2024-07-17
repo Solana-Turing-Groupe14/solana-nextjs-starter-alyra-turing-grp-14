@@ -8,6 +8,10 @@ import { AirdropResponseData } from "types"
 
 export default function MintTestPage() {
 
+  const SUCCESS_DELAY = 10_000
+  const WARN_DELAY = 15_000
+  const ERROR_DELAY = 30_000
+
   const { connected, publicKey: connectedWalletPublicKey } = useWallet()
   const [isProcessingConnectedWalletAirdrop, setIsProcessingConnectedWalletAirdrop] = useState(false)
   const [isProcessingApp1AddressAirdrop, setIsProcessingApp1AddressAirdrop] = useState(false)
@@ -28,7 +32,7 @@ export default function MintTestPage() {
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: 5_000,
+      duration: WARN_DELAY,
       isClosable: true,
       position: 'top-right',
     })
@@ -55,11 +59,8 @@ export default function MintTestPage() {
       const response:AirdropResponseData = await res.json();
       console.debug('app/pages/mintTest.tsx:aidrop: response', response);
       if (response && response.success && response.amount) {
-
-        
         const addressUri = getAddressUri(address)
         const shortenedAddress = shortenAddress(address)
-
         // toast({
         //   title: 'Wallet airdropped.',
         //   description: `${response.address} received ${response.amount} sol.`,
@@ -68,10 +69,8 @@ export default function MintTestPage() {
         //   isClosable: true,
         //   position: 'top-right',
         // })
-
-
         toast({
-          duration: 15_000,
+          duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
@@ -119,7 +118,7 @@ export default function MintTestPage() {
           title: 'Airdrop failed',
           description: error,
           status: 'error',
-          duration: 15_000,
+          duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
@@ -191,10 +190,9 @@ export default function MintTestPage() {
 
       <Box bg='' w='100%' p={4} color=''>
 
-      <Center w='100%' h='100%' bg='' color=''>
-        <SendIcon size='64' />
-      </Center>
-        
+        <Center w='100%' h='100%' bg='' color=''>
+          <SendIcon size='64' />
+        </Center>
 
         <Stack direction='column' spacing={4} align='center'>
 
@@ -235,9 +233,7 @@ export default function MintTestPage() {
           </Button>
 
         </Stack>
-</Box>
-
-
+      </Box>
 
       </div>
 

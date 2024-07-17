@@ -4,20 +4,33 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import {
-  createMyFullNftCollection as mplxH_createMyFullNftCollection
+  finalizeCmNftCollectionConfig,
+  // createMyFullNftCollection as mplxH_createMyFullNftCollection,
+  createCmNftCollection as mplxH_createCmNftCollection,
+  createNftCollection as mplxH_createNftCollection,
 } from "@helpers/mplx.helper.dynamic"
 import {
   createMyCollection as mplxH_createMyCollection,
 } from "@helpers/mplx.helper.static"
 
 import { getAddressUri, getTxUri } from "@helpers/solana.helper"
-import { CollectionCreationResponseData, mplhelp_T_CreateMyFullNftCollectionInput } from "types"
+import { CollectionCreationResponseData,
+  mplhelp_T_CreateCmNftCollection_fromWallet_Input,
+  mplhelp_T_CreateCmNftCollection_fromWallet_Result,
+  mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_fromWallet_Result,
+  mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
+  mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result
+} from "types"
 
 /* eslint-disable react/no-children-prop */
 
 const FILEPATH = 'app/pages/createCollectionTest.tsx'
 
 export default function MintTestPage() {
+
+  const SUCCESS_DELAY = 60_000
+  const WARN_DELAY = 15_000
+  const ERROR_DELAY = 60_000
 
   const randomStringNumber = Math.random().toString(10).substring(2,5); // 3 random digits
   const MAX_FILE_SIZE = 1000; // 1MB
@@ -48,6 +61,7 @@ export default function MintTestPage() {
   }, [connected, connectedWalletPublicKey]);
 
   const isValidCollectionInput = useMemo(() => {
+    const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
     let isValid = false
     try {
       isValid = nftCount >= minNftCount &&
@@ -57,31 +71,33 @@ export default function MintTestPage() {
       image !== undefined
       ;
     } catch (error) {
-      console.error(`${FILEPATH}:isValidCollectionInput: error: `, error)
+      console.error(`${LOGPREFIX}:error: `, error)
     }
-    console.debug(`${FILEPATH}:isValidCollectionInput: ${isValid}`, )
+    console.debug(`${FILEPATH}:${isValid}`, )
     return isValid
   }, [nftCount, collectionName, collectionDescription, image]);
 
   const toast = useToast()
 
   const warnIsNotConnected = () => {
-    console.warn('app/pages/createCollectionTest.tsx: Wallet not connected')
+    const LOGPREFIX = `${FILEPATH}:warnIsNotConnected: `
+    console.warn(`${LOGPREFIX} Wallet not connected`)
     toast({
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: 5_000,
+      duration: WARN_DELAY,
       isClosable: true,
       position: 'top-right',
     })
   }
   const globalMint = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
+    const LOGPREFIX = `${FILEPATH}:globalMint: `
     try {
+      // Guard
+      if (!isConnected) {
+        warnIsNotConnected(); return
+      }
       setIsProcessingGlobalMint(true)
       const res = await fetch('/api/global-mint-test', {
         method: 'post',
@@ -94,7 +110,7 @@ export default function MintTestPage() {
         })
       });
       const response = await res.json();
-      console.debug('app/pages/createCollectionTest.tsx:mint: response', response);
+      console.debug(`${LOGPREFIX}response`, response);
     } catch (error) {
       console.error(error)
     } finally {
@@ -103,12 +119,13 @@ export default function MintTestPage() {
   } // globalMint
 
   const createSponsoredCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
+    const LOGPREFIX = `${FILEPATH}:createSponsoredCollection: `
     try {
       setIsProcessingSponsoredCollectionCreation(true)
+      // Guard
+      if (!isConnected) {
+        warnIsNotConnected(); return
+      }
       const res = await fetch('/api/collection-creation-sponsored-test', {
         method: 'post',
         headers: {
@@ -120,7 +137,7 @@ export default function MintTestPage() {
         })
       });
       const response:CollectionCreationResponseData = await res.json();
-      console.debug('app/pages/createCollectionTest.tsx:mint: response', response);
+      console.debug(`${LOGPREFIX}response`, response);
       if (response && response.success) {
 
         // toast({
@@ -134,13 +151,13 @@ export default function MintTestPage() {
 
         const uri = getTxUri(response.address)
         toast({
-          duration: 15_000,
+          duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >Collection (only) created.</Text>
+                <Text fontWeight="bold" >Collection (only) created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='m-2'>
@@ -176,38 +193,47 @@ export default function MintTestPage() {
         //   ),
         // })
       } else {
-        console.warn('app/pages/createCollectionTest.tsx:aidrop: response', response);
+        console.warn(`${LOGPREFIX}response`, response);
         toast({
           title: 'Collection creation failed',
           description: response?.error,
           status: 'error',
-          duration: 15_000,
+          duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
       }
     } catch (error) {
-      console.error(error)
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}${errorMsg}`)
+      toast({
+        title: 'Collection creation failed',
+        description: errorMsg,
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
     } finally {
       setIsProcessingSponsoredCollectionCreation(false)
     }
   } // createSponsoredCollection
 
-  const createMyCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
+  const createCollectionOnly = async () => {
+    const LOGPREFIX = `${FILEPATH}:createCollectionOnly: `
     try {
       setIsProcessingMyCollectionCreation(true)
+      // Guard
+      if (!isConnected) {
+        warnIsNotConnected(); return
+      }
       if (!wallet) {
-        console.error('app/pages/createCollectionTest.tsx:createMyCollection: Wallet not found')
+        console.error(`${LOGPREFIX}Wallet not found`)
         return
       }
       const response = await mplxH_createMyCollection(wallet.adapter)
-      console.debug('app/pages/createCollectionTest.tsx:createMyCollection: response', response);
       if (response && response.success) {
-
+        console.debug(`${LOGPREFIX}response`, response);
         // toast({
         //   title: '(my)Collection created.',
         //   // description: `address: ${response.address}`,
@@ -220,13 +246,13 @@ export default function MintTestPage() {
 
         const uri = getTxUri(response.address)
         toast({
-          duration: 15_000,
+          duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
                 <div className='flex'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >(own) Collection (only) created.</Text>
+                <Text fontWeight="bold" >(own) Collection (only) created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='m-2'>
@@ -243,33 +269,42 @@ export default function MintTestPage() {
           ),
         })
       } else {
-        console.warn('app/pages/createCollectionTest.tsx:createMyCollection: response', response);
+        console.warn(`${LOGPREFIX}response`, response);
         toast({
           title: '(my)Collection creation failed',
           description: response?.error,
           status: 'error',
-          duration: 15_000,
+          duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
       }
-
     } catch (error) {
-      console.error(error)
-    } finally {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}${errorMsg}`)
+      toast({
+        title: '(my)Collection creation failed',
+        description: errorMsg,
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+  } finally {
       setIsProcessingMyCollectionCreation(false)
     }
-  } // createMyCollection
+  } // createCollectionOnly
 
-  const createMyNftCollection = async () => {
-    // Guard
-    if (!isConnected) {
-      warnIsNotConnected(); return
-    }
+  const createCompleteNftCollection = async () => {
+    const LOGPREFIX = `${FILEPATH}:createCompleteNftCollection: `
     try {
+      // Guard
+      if (!isConnected) {
+        warnIsNotConnected(); return
+      }
       setIsProcessingMyNftCollectionCreation(true)
       if (!wallet) {
-        console.error('app/pages/createCollectionTest.tsx:createMyNftCollection: Wallet not found')
+        console.error(`${LOGPREFIX}Wallet not found`)
         return
       }
 
@@ -284,16 +319,16 @@ export default function MintTestPage() {
       // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
       const endDateTime = null;
 
-      const createMyFullNftCollectionInput:mplhelp_T_CreateMyFullNftCollectionInput = {
-        walletAdapter: wallet.adapter,
-        collectionName: collectionName,
-        collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
-        nftNamePrefix: nftNamePrefix, // TODO: NFT prefix name
-        itemsCount: nftCount,
-        metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
-        startDateTime,
-        endDateTime
-      }
+      // const createMyFullNftCollectionInput:mplhelp_T_CreateMyFullNftCollectionInput = {
+      //   walletAdapter: wallet.adapter,
+      //   collectionName: collectionName,
+      //   collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
+      //   nftNamePrefix: nftNamePrefix, // TODO: NFT prefix name
+      //   itemsCount: nftCount,
+      //   metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
+      //   startDateTime,
+      //   endDateTime
+      // }
       // const response = await mplxH_createMyFullNftCollection(
       //   wallet.adapter,
       //   'MyNftCollection', // Collection name
@@ -304,46 +339,35 @@ export default function MintTestPage() {
       //   startDateTime,
       //   endDateTime
       // )
-      const response = await mplxH_createMyFullNftCollection(
-        createMyFullNftCollectionInput
-      )
+      // const response = await mplxH_createMyFullNftCollection(
+      //   createMyFullNftCollectionInput
+      // )
 
+      // 1 - create Collection
+      const createNftCollectionInput:mplhelp_T_CreateNftCollection_fromWallet_Input = {
+        walletAdapter: wallet.adapter,
+        collectionName: collectionName,
+        collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
+      }
+      const createNftCollectionResponse:mplhelp_T_CreateNftCollection_fromWallet_Result
+        = await mplxH_createNftCollection(
+          createNftCollectionInput
+        )
 
-      console.debug('app/pages/createCollectionTest.tsx:createMyNftCollection: response', response);
-      if (response && response.success) {
-
-        // toast({
-        //   title: '(my)Collection created.',
-        //   // description: `address: ${response.address}`,
-        //   description: `TODO`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
-        const uriCandyMachine = getAddressUri(response.candyMachineAddress)
-        const uriCollection = getAddressUri(response.collectionAddress)
-
+      console.debug(`${LOGPREFIX}createNftCollectionResponse`, createNftCollectionResponse);
+      if (createNftCollectionResponse && createNftCollectionResponse.success) {
+        const uriCollection = getAddressUri(createNftCollectionResponse.collectionAddress)
         toast({
-          duration: 15_000,
+          duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight= "bold" >(own) (full) NFT Collection created.</Text>
+                <Text fontWeight="bold">NFT Collection created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='m-2'>
-                {uriCandyMachine &&
-                  <Link href={uriCandyMachine} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      Candy Machine
-                    </div>
-                    <ExternalLinkIcon size='16px' />
-                  </Link>
-                }
                 {uriCollection &&
                   <Link href={uriCollection} isExternal className="flex text-end">
                     <div className='mr-2'>
@@ -355,25 +379,157 @@ export default function MintTestPage() {
               </div>
             </Box>
           ),
-        })
+        }) // toast
+
+        // 2 - create Candy Machine
+
+        const createCmNftCollectionInput:mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
+          walletAdapter: wallet.adapter,
+          // collectionAddress: createNftCollectionResponse.collectionAddress,
+          collectionSigner: createNftCollectionResponse.collectionSigner,
+          nftNamePrefix: nftNamePrefix,
+          itemsCount: nftCount,
+          // TODO : UPLOAD METADATA
+          metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`,
+          startDateTime,
+          endDateTime
+        }
+        const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_fromWallet_Result
+          = await mplxH_createCmNftCollection(createCmNftCollectionInput)
+
+        console.debug(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
+        if (createCmNftCollectionResponse && createCmNftCollectionResponse.success) {
+          const uriCandyMachine = getAddressUri(createCmNftCollectionResponse.candyMachineAddress)
+          toast({
+            duration: SUCCESS_DELAY,
+            position: 'top-right',
+            render: ({ onClose }) => (
+              <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+                <div className='flex'>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                    <div className='flex'>
+                      <Text fontWeight="normal">NFT Collection</Text>
+                      <Text fontWeight="bold">Candy Machine</Text>
+                      <Text fontWeight="normal">created.</Text>
+                    </div>
+
+                    <CloseButton size='sm' onClick={onClose} />
+                </div>
+                <div className='m-2'>
+                  {uriCandyMachine &&
+                    <Link href={uriCandyMachine} isExternal className="flex text-end">
+                      <div className='mr-2'>
+                        Candy Machine
+                      </div>
+                      <ExternalLinkIcon size='16px' />
+                    </Link>
+                  }
+                </div>
+              </Box>
+            ),
+          }) // toast
+
+          // 3 - finalize Candy Machine: add NFTs to Candy Machine
+          const finalizeCmNftCollectionConfigInput:mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
+            walletAdapter: wallet.adapter,
+            collectionSigner: createNftCollectionResponse.collectionSigner,
+            candyMachineSigner: createCmNftCollectionResponse.candyMachineSigner,
+            itemsCount: nftCount,
+          }
+          const finalizeCmNftCollectionConfigResponse:mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result
+            = await finalizeCmNftCollectionConfig(finalizeCmNftCollectionConfigInput)
+
+          console.debug(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
+
+          if (finalizeCmNftCollectionConfigResponse && finalizeCmNftCollectionConfigResponse.success) {
+            const uriCandyMachine = getAddressUri(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
+            const uriCollection = getAddressUri(finalizeCmNftCollectionConfigResponse.collectionAddress)
+            toast({
+              duration: SUCCESS_DELAY,
+              position: 'top-right',
+              render: ({ onClose }) => (
+                <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+                  <div className='flex'>
+                    <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                    <Text fontWeight="bold">NFT(s) added to Candy Machine</Text>
+                    <CloseButton size='sm' onClick={onClose} />
+                  </div>
+                  <div className='m-2'>
+                    {uriCollection &&
+                      <Link href={uriCollection} isExternal className="flex text-end">
+                        <div className='mr-2'>
+                          Collection
+                        </div>
+                        <ExternalLinkIcon size='16px' />
+                      </Link>
+                    }
+                    {uriCandyMachine &&
+                      <Link href={uriCandyMachine} isExternal className="flex text-end">
+                        <div className='mr-2'>
+                          Candy Machine
+                        </div>
+                        <ExternalLinkIcon size='16px' />
+                      </Link>
+                    }
+                  </div>
+                </Box>
+              ),
+            }) // toast
+          } else {
+            // Finalize Candy Machine failed
+            console.warn(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
+            toast({
+              title: 'Finalize Candy Machine failed',
+              description: finalizeCmNftCollectionConfigResponse?.error,
+              status: 'error',
+              duration: ERROR_DELAY,
+              isClosable: true,
+              position: 'top-right',
+            })
+          }
+        } else {
+          // Candy Machine creation failed
+          console.warn(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
+          toast({
+            title: 'Candy Machine creation failed',
+            description: createCmNftCollectionResponse?.error,
+            status: 'error',
+            duration: ERROR_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+        }
+
       } else {
-        console.warn('app/pages/createCollectionTest.tsx:createMyNftCollection: response', response);
+        // Collection creation failed
+        console.warn(`${LOGPREFIX}createNftCollectionResponse`, createNftCollectionResponse);
         toast({
-          title: '(my)Collection creation failed',
-          description: response?.error,
+          title: 'Collection creation failed',
+          description: createNftCollectionResponse?.error,
           status: 'error',
-          duration: 15_000,
+          duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
       }
 
     } catch (error) {
-      console.error(error)
+      // Global error handling
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}${errorMsg}`);
+      toast({
+        title: 'Collection creation failed',
+        description: errorMsg,
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+
     } finally {
       setIsProcessingMyNftCollectionCreation(false)
     }
-  } // createMyNftCollection
+  } // createCompleteNftCollection
 
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
@@ -678,7 +834,7 @@ export default function MintTestPage() {
                 size={"sm"}
                 isDisabled={!connected}
                 isLoading={isProcessingMyCollectionCreation}
-                onClick={createMyCollection}
+                onClick={createCollectionOnly}
                 colorScheme='orange'
               >
                 Create My own collection (fees paid by wallet owner)
@@ -689,7 +845,7 @@ export default function MintTestPage() {
                 size={"sm"}
                 isDisabled={!connected || !isValidCollectionInput}
                 isLoading={isProcessingMyNftCollectionCreation}
-                onClick={createMyNftCollection}
+                onClick={createCompleteNftCollection}
                 colorScheme='purple'
               >
                 Create My own NFT collection (fees paid by wallet owner)

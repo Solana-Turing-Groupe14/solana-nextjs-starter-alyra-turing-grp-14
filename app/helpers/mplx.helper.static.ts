@@ -80,69 +80,6 @@ export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null =>
 
 // ------------------------------------------------------------
 
-const AIRDROP_DEFAULT_AMOUNT = 1
-
-export const airdrop = async (
-  _publicKeyString: string,
-  _amount: number = AIRDROP_DEFAULT_AMOUNT
-): Promise<mplhelp_T_AirdropResult> => {
-  const LOGPREFIX = `${filePath}:airdrop: `
-  try {
-    console.debug(`${LOGPREFIX} publicKey = '${_publicKeyString}'`)
-    if (!_publicKeyString) {
-      console.error(`${LOGPREFIX}  _publicKeyString not provided`)
-      // throw new Error('Public key not provided')
-      return { success: false, error: 'Public key not provided' }
-    }
-    // check address validity
-    const isValid = soljsweb3PublicKey.isOnCurve(new soljsweb3PublicKey(_publicKeyString))
-    if (!isValid) {
-      // throw new Error('Invalid public key')
-      return { success: false, error: 'Invalid public key' }
-    }
-    // const pubK:MPL_T_PublicKey = new soljsweb3PublicKey(_publicKeyString)
-    const mpl_publicKey: MPL_T_PublicKey = MPL_F_publicKey(_publicKeyString)
-
-    try {
-      const umi = getUmi()
-      await umi.rpc.airdrop(mpl_publicKey, MPL_F_sol(_amount), MPL_TX_BUILDR_OPTIONS.confirm);
-      console.log(`${LOGPREFIX} ✅ Airdropped ${_amount} SOL to the ${mpl_publicKey}`)
-      const airdropResult: mplhelp_T_AirdropResult = { success: true, amount: _amount }
-      return airdropResult
-    } catch (error) {
-      console.log(`${LOGPREFIX} ❌ Error airdropping SOL to ${mpl_publicKey}`);
-      // throw new Error('Error airdropping SOL')
-
-      const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
-      if (error instanceof Error) {
-        console.log('error', error)
-        airdropResult.error = `Error airdropping SOL to ${mpl_publicKey} : ${error.message}`
-      } else {
-        // response.error = 'Error'
-        airdropResult.error = `Error airdropping SOL to ${mpl_publicKey}`
-      }
-      // res.status(200).json({ success: false, error: `Error airdropping SOL to ${_publicKey}` })
-      // res.status(200).json(response)
-      return airdropResult
-    }
-
-  } catch (error) {
-    const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
-    if (error instanceof Error) {
-      console.error(`${LOGPREFIX} error ${error}`)
-      airdropResult.error = error.message
-    } else {
-      console.error(`${LOGPREFIX} error ${error}`)
-      airdropResult.error = `${error}`
-    }
-    return airdropResult
-  } // catch
-
-} // getMplKeypair_fromENV
-
-
-// ------------------------------------------------------------
-
 // https://developers.metaplex.com/umi/public-keys-and-signers
 // Umi interface stores two instances of Signer:
 // - identity using the app and payer paying for transaction

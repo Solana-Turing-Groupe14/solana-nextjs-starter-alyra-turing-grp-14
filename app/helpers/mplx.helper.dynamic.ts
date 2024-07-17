@@ -3,6 +3,7 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
+import { AIRDROP_DEFAULT_AMOUNT } from "@consts/commons";
 import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH } from "@consts/mtplx";
 import { RPC_URL } from '@helpers/solana.helper';
 import {
@@ -26,17 +27,20 @@ import {
   MPL_F_setComputeUnitLimit,
   MPL_F_mintV1,
   MPL_F_none,
+  MPL_T_WalletAdapter,
   // MPL_F_deleteCandyMachine,
 } from '@imports/mtplx.imports';
-import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateMyFullNftCollectionInput, mplhelp_T_CreateNftCollectionResult, mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types";
+import { mplhelp_T_AirdropResult, mplhelp_T_CreateCmNftCollection_fromWallet_Input, mplhelp_T_CreateCmNftCollection_fromWallet_Result, mplhelp_T_CreateCMNftCollectionResult,
+  mplhelp_T_CreateCollectionResult, mplhelp_T_CreateFullNftCollectionInput,
+  mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_fromWallet_Result,
+  mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
+  mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result,
+  mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult
+} from "types";
 
 const filePath = "app/helpers/mplx.helpers.ts"
 
 // ------------------------------------------------------------
-
-
-// ------------------------------------------------------------
-
 
 const mplx_umi: MPL_T_Umi = createUmi(RPC_URL).use(mplCoreCandyMachine());
 if (!mplx_umi) {
@@ -129,11 +133,9 @@ async function checkCandyMachine(
       console.log(`${LOGPREFIX} ❌ Error fetching the Candy Machine.`);
     }
   }
-}
+} // checkCandyMachine
 
 // ------------------------------------------------------------
-
-const AIRDROP_DEFAULT_AMOUNT = 1
 
 export const airdrop = async (
   _publicKeyString: string,
@@ -191,7 +193,7 @@ export const airdrop = async (
     return airdropResult
   } // catch
 
-} // getMplKeypair_fromENV
+} // airdrop
 
 
 // ------------------------------------------------------------
@@ -224,6 +226,36 @@ export const airdrop = async (
 
 // umi = umi.use(walletAdapterIdentity(wallet));
 
+/**
+ * 
+ * @param _walletAdapter 
+ * @returns 
+ */
+export async function setWalletAdapter_IdentityPayer(
+  _walletAdapter: MPL_T_WalletAdapter,
+  _umi: MPL_T_Umi
+): Promise<boolean>
+{
+  const LOGPREFIX = `${filePath}:setWalletAdapter_IdentityPayer: `
+  try {
+    // const umi = mplx_umi
+    if (!_walletAdapter) {
+      console.error(`${LOGPREFIX} _walletAdapter not provided`)
+      return false
+    }
+    // Set identity & payer with the same signer: _walletAdapter
+    // Payer / Minter = Wallet
+    // Set identity
+    _umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+    // Set payer
+    _umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+    return true
+  } catch (error) {
+    console.error(`${LOGPREFIX}`, error)
+    return false
+  }
+} // setWalletAdapter_IdentityPayer
+
 // ------------------------------------------------------------
 
 export async function checkBalance(minAmount: MPL_T_SolAmount, _publicKey: MPL_T_PublicKey|undefined) :
@@ -255,16 +287,470 @@ Promise<boolean>
 
 // ------------------------------------------------------------
 
-export async function createMyFullNftCollection(
-  // _walletAdapter: MPL_T_WalletAdapter,
-  // _collectionName: string,
-  // _collectionUri: string,
-  // _nftNamePrefix: string,
-  // _itemsCount: number,
-  // _metadataPrefixUri: string,
-  // _startDateTime: Date | null,
-  // _endDateTime: Date | null,
-  // // umi:MPL_T_Umi,
+
+
+/**
+ * Create (ONLY) an NFT Collection
+ * @param param0
+ * @returns 
+ */
+export async function createNftCollection(
+  {
+    walletAdapter: _walletAdapter,
+    collectionName: _collectionName,
+    collectionUri: _collectionUri,
+  } : mplhelp_T_CreateNftCollection_fromWallet_Input
+  ): Promise<mplhelp_T_CreateNftCollection_fromWallet_Result>
+  {
+    const LOGPREFIX = `${filePath}:createNftCollection: `
+    try {
+      const umi = mplx_umi
+      // --------------------------------
+      // Check all input parameters
+      // --------------------------------
+      // Check if walletAdapter is a valid signer
+      if (!MPL_F_isSigner(umi.identity)) {
+        console.error(`${LOGPREFIX}❌ wallet ${_walletAdapter.publicKey} is not a valid signer`)
+        const collectionResultError: mplhelp_T_CreateCollectionResult = {
+          success: false,
+          error: `Error creating collection: wallet is not a signer`
+        }
+        return collectionResultError
+      }
+      // Collection Name
+      if (!_collectionName|| _collectionName.trim().length < 1) {
+        console.error(`${LOGPREFIX}❌ collectionName not provided`)
+        const collectionResultError: mplhelp_T_CreateNftCollection_fromWallet_Result = {
+          success: false,
+          error: `Error creating collection: collectionName not provided`
+        }
+        return collectionResultError
+      }
+      // Collection URI
+      if (!_collectionUri || _collectionUri.trim().length < 1) {
+        console.error(`${LOGPREFIX}❌ collectionUri not provided`)
+        const collectionResultError: mplhelp_T_CreateNftCollection_fromWallet_Result = {
+          success: false,
+          error: `Error creating collection: collectionUri not provided`
+        }
+        return collectionResultError
+      }
+
+      // Payer / Minter = Wallet
+      setWalletAdapter_IdentityPayer(_walletAdapter, umi)
+
+      // Basic Check balance(s)
+      console.debug(`${LOGPREFIX} _walletAdapter.publicKey : ${_walletAdapter.publicKey}`)
+      if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _walletAdapter.publicKey)) {
+        console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
+        const collectionResultError: mplhelp_T_MintNftCMResult = {
+          success: false,
+          error: `Error minting NFT: Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`
+        }
+        return collectionResultError
+      }
+
+      // --------------------------------
+      // Create a collection
+      // --------------------------------
+      const collection_Signer = MPL_F_generateSigner(umi) // NEW random signer
+      try {
+        await MPL_F_createCollectionV1(umi, {
+          collection: collection_Signer,
+          name: _collectionName,
+          uri: _collectionUri,
+        }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+        console.log(`${LOGPREFIX} ✅ Created collection: ${collection_Signer.publicKey.toString()}`)
+      } catch (error) {
+        console.error(`${LOGPREFIX}❌ Error creating collection.`)
+        const collectionResultError: mplhelp_T_CreateNftCollection_fromWallet_Result = {
+          success: false,
+          error: 'Error verifying the Candy Machine configuration.'
+        }
+        const errorString = (error instanceof Error) ? error.message : `${error}`
+        collectionResultError.error += ` ${errorString}`
+        console.error(`${LOGPREFIX} error: ${errorString}`)
+        return collectionResultError
+      }
+
+      // --------------
+
+      const collectionResult: mplhelp_T_CreateNftCollection_fromWallet_Result = {
+        success: true,
+        collectionAddress: collection_Signer.publicKey,
+        collectionSigner: collection_Signer,
+      }
+      console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
+      return collectionResult
+    } catch (error) {
+      console.error(`${LOGPREFIX}`, error)
+      const collectionResultError: mplhelp_T_CreateNftCollection_fromWallet_Result = {
+        success: false,
+        error: 'Global Error'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return collectionResultError
+    } // catch
+} // createNftCollection
+
+// ------------------------------------------------------------
+
+/**
+ * Create (ONLY) a Candy Machine from/using an existing NFT Collection
+ * @param param0 
+ * @returns 
+ */
+export async function createCmNftCollection(
+  {
+    walletAdapter: _walletAdapter,
+    // collectionAddress: _collectionAddress,
+    collectionSigner: _collectionSigner,
+
+    nftNamePrefix: _nftNamePrefix,
+    itemsCount: _itemsCount,
+    metadataPrefixUri: _metadataPrefixUri,
+    startDateTime: _startDateTime,
+    endDateTime: _endDateTime,
+
+  } : mplhelp_T_CreateCmNftCollection_fromWallet_Input
+  ): Promise<mplhelp_T_CreateCmNftCollection_fromWallet_Result>
+  {
+    const LOGPREFIX = `${filePath}:createCmNftCollection: `
+    try {
+      const umi = mplx_umi
+      // --------------------------------
+      // Check all input parameters
+      // --------------------------------
+
+      // const collection_Signer = MPL_F_publicKey(_collectionAddress)
+      // TODO : check Collection Address is an NFT Collection
+      // TODO : check Collection Address is an NFT Collection
+
+      // Check if walletAdapter is a valid signer
+      if (!MPL_F_isSigner(umi.identity)) {
+        console.error(`${LOGPREFIX}❌ wallet ${_walletAdapter.publicKey} is not a valid signer`)
+        const collectionResultError: mplhelp_T_CreateCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: wallet is not a signer`
+        }
+        return collectionResultError
+      }
+
+
+      // Check if collectionSigner is a valid signer
+      if (!MPL_F_isSigner(_collectionSigner)) {
+        console.error(`${LOGPREFIX}❌ wallet ${_collectionSigner.publicKey} is not a valid signer`)
+        const collectionResultError: mplhelp_T_CreateCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: collectionSigner is not a signer`
+        }
+        return collectionResultError
+      }
+
+      // NFT Name Prefix
+      if (!_nftNamePrefix || _nftNamePrefix.trim().length < 1) {
+        console.error(`${LOGPREFIX}❌ nftNamePrefix not provided`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: nftNamePrefix not provided`
+        }
+        return collectionResultError
+      }
+      // `${nftNamePrefix} #$ID+1$`
+      const nftNamePostfix = ` #${_itemsCount.toString()}`
+      if (`${_nftNamePrefix}${nftNamePostfix}`.length > NFT_NAME_PREFIX_MAX_LENGTH) {
+        const nftNameMaxLength = NFT_NAME_PREFIX_MAX_LENGTH - nftNamePostfix.length;
+        console.error(`${LOGPREFIX}❌ nftNamePrefix too long`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: nftNamePrefix too long (max ${nftNameMaxLength} characters)`
+        }
+        return collectionResultError
+      }
+      // Items Count
+      if (_itemsCount < 1) {
+        console.error(`${LOGPREFIX}❌ itemsCount < 1`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: itemsCount < 1`
+        }
+        return collectionResultError
+      }
+      // Metadata Prefix URI
+      if (!_metadataPrefixUri || _metadataPrefixUri.trim().length < 1) {
+        console.error(`${LOGPREFIX}❌ metadataPrefixUri not provided`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: metadataPrefixUri not provided`
+        }
+        return collectionResultError
+      }
+
+      // // Payer / Minter = Wallet
+      // // Set identity
+      // umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+      // // Set payer
+      // umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+
+      // Payer / Minter = Wallet
+      setWalletAdapter_IdentityPayer(_walletAdapter, umi)
+
+      // Basic Check balance(s)
+      if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _walletAdapter.publicKey)) {
+        console.debug(`${LOGPREFIX} _walletAdapter.publicKey : ${_walletAdapter.publicKey}`)
+        console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
+        const collectionResultError: mplhelp_T_CreateCmNftCollection_fromWallet_Result = {
+          success: false,
+          error: `Error minting NFT: Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`
+        }
+        return collectionResultError
+      }
+
+    // TODO : check signers
+
+    const treasury_Signer = MPL_F_generateSigner(umi);
+    const candyMachineSigner = MPL_F_generateSigner(umi);
+
+    const metadataPrefixUri = _metadataPrefixUri
+    const metadataPrefixUriLength = metadataPrefixUri.length
+
+    // --------------------------------
+    // Create a Candy Machine
+    // --------------------------------
+    try {
+      // GUARDS
+      // let guards_rules = {
+      const guards_rules: MPL_T_GuardSetArgs = {
+        botTax: MPL_F_some({ lamports: MPL_F_sol(0.001), lastInstruction: true }),
+        solPayment: MPL_F_some({ lamports: MPL_F_sol(1.5), destination: treasury_Signer.publicKey }),
+        // All other guards are disabled...
+      }
+      // The Candy Machine will only be able to mint NFTs after this date
+      // if (_startDateTime) {
+      //   guards_rules.startDate = MPL_F_some({ date: _startDateTime });
+      // }
+      // // The Candy Machine will stop minting NFTs after this date
+      // if (_endDateTime) {
+      //   guards_rules.endDate = MPL_F_some({ date: _endDateTime });
+      // }
+
+      console.debug(`${LOGPREFIX} guards_rules:`)
+      console.dir(guards_rules);
+
+      console.table({
+        treasury: treasury_Signer.publicKey.toString(),
+        candyMachine: candyMachineSigner.publicKey.toString(),
+        collection: _collectionSigner.publicKey.toString(),
+        itemsAvailable: _itemsCount,
+        // prefixName: nftNamePrefix,
+        prefixName: _nftNamePrefix,
+        // nameLength: nftNameMaxLength,
+        nameLength: 0, // Everything is a prefix
+        prefixUri: metadataPrefixUri,
+        uriLength: metadataPrefixUriLength,
+      });
+
+      // https://developers.metaplex.com/core-candy-machine/settings#config-line-settings
+      // Name Prefix: A name prefix shared by all inserted items.
+      //  This prefix can have a maximum of 32 characters.
+      // Name Length: The maximum length for the name of each inserted item
+      //  EXCLUDING THE NAME PREFIX.
+      // URI Prefix: A URI prefix shared by all inserted items.
+      //  This prefix can have a maximum of 200 characters.
+      // URI Length: The maximum length for the URI of each inserted item excluding the URI prefix.
+      // Is Sequential: Indicates whether to mint NFTs sequentially — true — or in random order — false.
+      //  We recommend setting this to false to prevent buyers from predicting which NFT will be minted next. Note that our SDKs will default to using Config Line Settings with Is Sequential set to false when creating new Candy Machines.
+
+      const CoreCM_configLineSettings = MPL_F_some({
+        hiddenSettings: MPL_F_none(),
+        // prefixName: nftNamePrefix,
+        // prefixName: `${nftNamePrefix} #$ID+1$`,
+        prefixName: `${_nftNamePrefix} #$ID+1$`,
+        // nameLength: nftNameMaxLength,
+        nameLength: 0, // Everything is a prefix
+        prefixUri: metadataPrefixUri,
+        uriLength: metadataPrefixUriLength,
+        isSequential: false,
+      });
+
+      console.debug(`${LOGPREFIX} CoreCM_configLineSettings:`)
+      console.dir(CoreCM_configLineSettings);
+
+      const coreCM_CreateIx = await MPL_F_create(umi, {
+        candyMachine: candyMachineSigner,
+        collection: _collectionSigner.publicKey, // create assets into this collection
+        collectionUpdateAuthority: umi.identity,
+        itemsAvailable: _itemsCount,
+        authority: umi.identity.publicKey,
+        isMutable: false,
+        // https://developers.metaplex.com/core-candy-machine/create#config-line-settings
+        // configLineSettings: MPL_F_some({
+        //   prefixName: nftNamePrefix,
+        //   nameLength: nftNameMaxLength,
+        //   prefixUri: metadataPrefixUri,
+        //   uriLength: metadataPrefixUriLength,
+        //   isSequential: false,
+        // }),
+        configLineSettings: CoreCM_configLineSettings,
+        // guards
+        guards: guards_rules,
+      })
+      const candyMachineTxResult = await coreCM_CreateIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+      console.debug(`${LOGPREFIX} createIx result`, candyMachineTxResult)
+      console.dir(candyMachineTxResult)
+
+      if (candyMachineTxResult.result.value.err !== null) {
+        console.error(`${LOGPREFIX}❌ Error creating Candy Machine.`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: 'Error creating Candy Machine.'
+        }
+        return collectionResultError
+      }
+
+      console.log(`${LOGPREFIX} ✅ Created Candy Machine: ${candyMachineSigner.publicKey.toString()}`)
+    } catch (error) {
+      console.error(`${LOGPREFIX} ❌ Error creating Candy Machine.`, error)
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+        success: false,
+        error: 'Error creating Candy Machine.'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      return collectionResultError
+    } // catch
+
+
+    const cmCollectionResult: mplhelp_T_CreateCmNftCollection_fromWallet_Result = {
+      success: true,
+      // collectionAddress: _collectionAddress,
+      candyMachineAddress: candyMachineSigner.publicKey,
+      candyMachineSigner: candyMachineSigner,
+    }
+    console.debug(`${LOGPREFIX} cmCollectionResult`, cmCollectionResult)
+    return cmCollectionResult
+  } catch (error) {
+    console.error(`${LOGPREFIX}`, error)
+    const cmCollectionResultError: mplhelp_T_CreateCmNftCollection_fromWallet_Result = {
+      success: false,
+      error: 'Global Error'
+    }
+    const errorString = (error instanceof Error) ? error.message : `${error}`
+    cmCollectionResultError.error += ` ${errorString}`
+    console.error(`${LOGPREFIX} error: ${errorString}`)
+    return cmCollectionResultError
+  } // catch
+} // createCmNftCollection
+
+
+
+/**
+ * Finalises/completes/updates a Candy Machine NFT collection
+ * Updates/config (ONLY) a Candy Machine
+ * @param param0 
+ * @returns 
+ */
+export async function finalizeCmNftCollectionConfig(
+  {
+    walletAdapter: _walletAdapter,
+    // candyMachineAddress: _candyMachineAddress,
+    itemsCount: _itemsCount,
+    collectionSigner: _collectionSigner,
+    candyMachineSigner: _candyMachineSigner,
+  } : mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input
+  ): Promise<mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result>
+  {
+    const LOGPREFIX = `${filePath}:finalizeCmNftCollectionConfig: `
+    try {
+      const umi = mplx_umi
+
+      // Payer / Minter = Wallet
+      setWalletAdapter_IdentityPayer(_walletAdapter, umi)
+
+    // --------------------------------
+    // Add items to the Candy Machine
+    // --------------------------------
+
+    try {
+      const configLines = [];
+      for (let i = 1; i <= _itemsCount; i++) {
+        configLines.push(
+          {
+            name: `${i}`,
+            uri: `${i}.json`,
+          })
+      }
+      await MPL_F_addConfigLines(umi, {
+        candyMachine: _candyMachineSigner.publicKey,
+        index: 0,
+        // configLines: [
+        //     { name: '1', uri: '1.json' },
+        //     { name: '2', uri: '2.json' },
+        //     { name: '3', uri: '3.json' },
+        // ],
+        configLines: configLines,
+      }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+      console.log(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${_candyMachineSigner.publicKey.toString()}`)
+    } catch (error) {
+      console.error(`${LOGPREFIX} ❌ Error adding items to the Candy Machine`, error)
+      const collectionResult: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result = {
+        success: false,
+        error: 'Error adding items to the Candy Machine.'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResult.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return collectionResult
+    } // catch
+
+    // 5. Verify the Candy Machine configuration
+    try {
+      await checkCandyMachine(umi, _candyMachineSigner.publicKey, {
+        itemsLoaded: _itemsCount,
+        authority: umi.identity.publicKey,
+        collection: _collectionSigner.publicKey,
+        itemsRedeemed: 0,
+      });
+      // , 5);
+    } catch (error) {
+      console.error(`${LOGPREFIX} ❌ Error verifying the Candy Machine configuration`, error)
+      const collectionResultError: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result = {
+        success: false,
+        error: 'Error verifying the Candy Machine configuration.'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      collectionResultError.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return collectionResultError
+    } // catch
+
+
+    const finalizeCmNftCollectionConfigResult: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result = {
+        success: true,
+        collectionAddress: _collectionSigner.publicKey,
+        candyMachineAddress: _candyMachineSigner.publicKey,
+      }
+      console.debug(`${LOGPREFIX} finalizeCmNftCollectionConfigResult`, finalizeCmNftCollectionConfigResult)
+      return finalizeCmNftCollectionConfigResult
+    } catch (error) {
+      console.error(`${LOGPREFIX}`, error)
+      const finalizeCmNftCollectionConfigResult: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result = {
+        success: false,
+        error: 'Global Error'
+      }
+      const errorString = (error instanceof Error) ? error.message : `${error}`
+      finalizeCmNftCollectionConfigResult.error += ` ${errorString}`
+      console.error(`${LOGPREFIX} error: ${errorString}`)
+      return finalizeCmNftCollectionConfigResult
+    } // catch
+  } // finalizeCmNftCollectionConfig
+  
+  
+// ------------------------------------------------------------
+
+export async function createFullNftCollection(
   {
     walletAdapter: _walletAdapter,
     collectionName: _collectionName,
@@ -274,9 +760,9 @@ export async function createMyFullNftCollection(
     metadataPrefixUri: _metadataPrefixUri,
     startDateTime: _startDateTime,
     endDateTime: _endDateTime,
-  }: mplhelp_T_CreateMyFullNftCollectionInput
-
-): Promise<mplhelp_T_CreateNftCollectionResult> {
+  }: mplhelp_T_CreateFullNftCollectionInput
+  ): Promise<mplhelp_T_CreateCMNftCollectionResult>
+  {
   const LOGPREFIX = `${filePath}:createFullNftCollection: `
   try {
     const umi = mplx_umi
@@ -297,7 +783,7 @@ export async function createMyFullNftCollection(
     // Collection Name
     if (!_collectionName|| _collectionName.trim().length < 1) {
       console.error(`${LOGPREFIX}❌ collectionName not provided`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: collectionName not provided`
       }
@@ -306,7 +792,7 @@ export async function createMyFullNftCollection(
     // Collection URI
     if (!_collectionUri || _collectionUri.trim().length < 1) {
       console.error(`${LOGPREFIX}❌ collectionUri not provided`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: collectionUri not provided`
       }
@@ -315,7 +801,7 @@ export async function createMyFullNftCollection(
     // NFT Name Prefix
     if (!_nftNamePrefix || _nftNamePrefix.trim().length < 1) {
       console.error(`${LOGPREFIX}❌ nftNamePrefix not provided`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: nftNamePrefix not provided`
       }
@@ -326,7 +812,7 @@ export async function createMyFullNftCollection(
     if (`${_nftNamePrefix}${nftNamePostfix}`.length > NFT_NAME_PREFIX_MAX_LENGTH) {
       const nftNameMaxLength = NFT_NAME_PREFIX_MAX_LENGTH - nftNamePostfix.length;
       console.error(`${LOGPREFIX}❌ nftNamePrefix too long`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: nftNamePrefix too long (max ${nftNameMaxLength} characters)`
       }
@@ -335,7 +821,7 @@ export async function createMyFullNftCollection(
     // Items Count
     if (_itemsCount < 1) {
       console.error(`${LOGPREFIX}❌ itemsCount < 1`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: itemsCount < 1`
       }
@@ -344,7 +830,7 @@ export async function createMyFullNftCollection(
     // Metadata Prefix URI
     if (!_metadataPrefixUri || _metadataPrefixUri.trim().length < 1) {
       console.error(`${LOGPREFIX}❌ metadataPrefixUri not provided`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: `Error creating collection: metadataPrefixUri not provided`
       }
@@ -353,9 +839,12 @@ export async function createMyFullNftCollection(
 
     // Payer / Minter = Wallet
     // Set identity
-    umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
-    // Set payer
-    umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+    // umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+    // // Set payer
+    // umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+
+    // Payer / Minter = Wallet
+    setWalletAdapter_IdentityPayer(_walletAdapter, umi)
 
     // Basic Check balance(s)
 
@@ -392,7 +881,7 @@ export async function createMyFullNftCollection(
       console.log(`${LOGPREFIX} ✅ Created collection: ${collection_Signer.publicKey.toString()}`)
     } catch (error) {
       console.error(`${LOGPREFIX}❌ Error creating collection.`)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error verifying the Candy Machine configuration.'
       }
@@ -406,7 +895,7 @@ export async function createMyFullNftCollection(
 
     // } catch (error) {
     //   console.error(`${LOGPREFIX}`, error)
-    //   const collectionResult:mplhelp_T_CreateNftCollectionResult = {
+    //   const collectionResult:mplhelp_T_CreateCMNftCollectionResult = {
     //     success: false,
     //     error: ''
     //   }
@@ -443,8 +932,8 @@ export async function createMyFullNftCollection(
     // const nftNameMaxLength = nftNamePrefix.length + _itemsCount.toString().length;
     // const nftNameMaxLength = _nftNamePrefix.length + _itemsCount.toString().length;
 
-    const metadataPrefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
-    // const metadataPrefixUri = _metadataPrefixUri
+    // const metadataPrefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
+    const metadataPrefixUri = _metadataPrefixUri
     const metadataPrefixUriLength = metadataPrefixUri.length
     // const metadataPrefixUriLength = _metadataPrefixUri.length
 
@@ -535,7 +1024,7 @@ export async function createMyFullNftCollection(
 
       if (candyMachineTxResult.result.value.err !== null) {
         console.error(`${LOGPREFIX}❌ Error creating Candy Machine.`)
-        const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
           success: false,
           error: 'Error creating Candy Machine.'
         }
@@ -545,7 +1034,7 @@ export async function createMyFullNftCollection(
       console.log(`${LOGPREFIX} ✅ Created Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ Error creating Candy Machine.`, error)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error creating Candy Machine.'
       }
@@ -580,7 +1069,7 @@ export async function createMyFullNftCollection(
       console.log(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${candyMachine.publicKey.toString()}`)
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ Error adding items to the Candy Machine`, error)
-      const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResult: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error adding items to the Candy Machine.'
       }
@@ -601,7 +1090,7 @@ export async function createMyFullNftCollection(
       // , 5);
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ Error verifying the Candy Machine configuration`, error)
-      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error verifying the Candy Machine configuration.'
       }
@@ -617,7 +1106,7 @@ export async function createMyFullNftCollection(
 
     // } catch (error) {
     //   console.error(`${LOGPREFIX}`, error)
-    //   const collectionResult:mplhelp_T_CreateNftCollectionResult = {
+    //   const collectionResult:mplhelp_T_CreateCMNftCollectionResult = {
     //     success: false,
     //     error: ''
     //   }
@@ -670,7 +1159,7 @@ export async function createMyFullNftCollection(
 
     // } catch (error) {
     //   console.error(`${LOGPREFIX}`, error)
-    //   const collectionResult:mplhelp_T_CreateNftCollectionResult = {
+    //   const collectionResult:mplhelp_T_CreateCMNftCollectionResult = {
     //     success: false,
     //     error: ''
     //   }
@@ -709,7 +1198,7 @@ export async function createMyFullNftCollection(
       // if (mintTxResult.result.value.err !== null) {
 
       //   console.error(`${LOGPREFIX}❌ Error Minting ONE NFT`)
-      //   const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      //   const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
       //     success: false,
       //     error: 'Error creating Candy Machine.'
       //   }
@@ -719,7 +1208,7 @@ export async function createMyFullNftCollection(
       console.log(`${LOGPREFIX} ✅ Minted ONE NFT`)
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ Error minting ONE NFT`, error)
-      const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResult: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error minting NFT.'
       }
@@ -756,7 +1245,7 @@ export async function createMyFullNftCollection(
     // ------------------------------------------------------------------------
 
 
-    const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+    const collectionResult: mplhelp_T_CreateCMNftCollectionResult = {
       success: true,
       collectionAddress: collection_Signer.publicKey,
       candyMachineAddress: candyMachine.publicKey,
@@ -767,7 +1256,7 @@ export async function createMyFullNftCollection(
 
   } catch (error) {
     console.error(`${LOGPREFIX}`, error)
-    const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+    const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
       success: false,
       error: 'Global Error'
     }
@@ -778,7 +1267,7 @@ export async function createMyFullNftCollection(
     return collectionResultError
   } // catch
 
-} // createMyFullNftCollection
+} // createFullNftCollection
 
 
 // ------------------------------------------------------------
@@ -806,10 +1295,13 @@ export async function mintNftFromCM(
       return collectionResultError
     }
 
-    // Set identity
-    umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
-    // Set payer
-    umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+    // // Set identity
+    // umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+    // // Set payer
+    // umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+
+    // Payer / Minter = Wallet
+    setWalletAdapter_IdentityPayer(_walletAdapter, umi)
 
     // console.debug(`${LOGPREFIX} candyMachineAddress=${_candyMachineAddress} collectionAddress=${_collectionAddress}`)
     // console.debug(`${LOGPREFIX}`)
@@ -858,7 +1350,7 @@ export async function mintNftFromCM(
     } catch (error) {
       // console.log('6. ❌ - Error minting NFTs.');
       console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)
-      const collectionResult: mplhelp_T_CreateNftCollectionResult = {
+      const collectionResult: mplhelp_T_CreateCMNftCollectionResult = {
         success: false,
         error: 'Error minting NFT.'
       }
