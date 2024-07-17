@@ -26,6 +26,7 @@ import {
   createSignerFromKeypair as MPL_F_createSignerFromKeypair,
   generateSigner as MPL_F_generateSigner,
   isSigner as MPL_F_isSigner,
+  none as MPL_F_none,
   publicKey as MPL_F_publicKey,
   sol as MPL_F_sol,
   some as MPL_F_some,
@@ -34,6 +35,7 @@ import {
   keypairIdentity as MPL_P_KeypairIdentity,
   KeypairSigner as MPL_T_KeypairSigner,
   PublicKey as MPL_T_PublicKey,
+  RpcConfirmTransactionResult as MPL_T_RpcConfirmTransactionResult,
   SolAmount as MPL_T_SolAmount,
   Umi as MPL_T_Umi,
   TransactionBuilderSendAndConfirmOptions,
@@ -62,6 +64,7 @@ export {
   MPL_P_walletAdapterPayer,
   MPL_C_emptyDefaultGuardSetArgs,
   MPL_F_some,
+  MPL_F_none,
   MPL_F_addConfigLines,
   MPL_F_fetchCandyMachine,
   MPL_F_create,
@@ -78,5 +81,6 @@ export type {
   MPL_T_Umi,
   MPL_T_WalletAdapter,
   MPL_T_GuardSetArgs,
+  MPL_T_RpcConfirmTransactionResult
 };
 

@@ -25,11 +25,11 @@ import {
   MPL_F_transactionBuilder,
   MPL_F_setComputeUnitLimit,
   MPL_F_mintV1,
+  MPL_F_none,
   // MPL_F_deleteCandyMachine,
 } from '@helpers/mtplx';
 import { RPC_URL } from '@helpers/solana.helper';
 import { mplhelp_T_AirdropResult, mplhelp_T_CreateCollectionResult, mplhelp_T_CreateMyFullNftCollectionInput, mplhelp_T_CreateNftCollectionResult, mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types";
-import { RpcConfirmTransactionResult } from "@metaplex-foundation/umi";
 
 const filePath = "app/helpers/mplx.helpers.ts"
 
@@ -38,6 +38,8 @@ const filePath = "app/helpers/mplx.helpers.ts"
 // balance(s)
 const MINIMUM_CREATOR_BALANCE = 1 // 1 SOL
 const LOW_CREATOR_BALANCE = 10 // 10 SOL
+
+const NFT_NAME_PREFIX_MAX_LENGTH = 32
 
 const MINIMUM_CREATOR_BALANCE_SOL = MPL_F_sol(MINIMUM_CREATOR_BALANCE)
 const LOW_CREATOR_BALANCE_SOL = MPL_F_sol(LOW_CREATOR_BALANCE)
@@ -543,6 +545,17 @@ export async function createMyFullNftCollection(
       }
       return collectionResultError
     }
+    // `${nftNamePrefix} #$ID+1$`
+    const nftNamePostfix = ` #${_itemsCount.toString()}`
+    if (`${_nftNamePrefix}${nftNamePostfix}`.length > NFT_NAME_PREFIX_MAX_LENGTH) {
+      const nftNameMaxLength = NFT_NAME_PREFIX_MAX_LENGTH - nftNamePostfix.length;
+      console.error(`${LOGPREFIX}❌ nftNamePrefix too long`)
+      const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+        success: false,
+        error: `Error creating collection: nftNamePrefix too long (max ${nftNameMaxLength} characters)`
+      }
+      return collectionResultError
+    }
     // Items Count
     if (_itemsCount < 1) {
       console.error(`${LOGPREFIX}❌ itemsCount < 1`)
@@ -647,10 +660,11 @@ export async function createMyFullNftCollection(
     // const itemsAvailable = _itemsCount;
     // const nftNamePrefix = 'Quick NFT'; // TODO: change this
     // const nftNamePrefix = _nftNamePrefix;
-    const nftNamePrefix = 'Quick NFT ABCDE'; // Max. 16 ? <-----------------
+    // const nftNamePrefix = 'Quick NFT ABCDE'; // Max. 16 ? <-----------------
+    // const nftNamePrefix = 'Quick NFT ABCDEFGHIJK'; // Max. 16 ? <-----------------
 
     // const nftNameMaxLength = nftNamePrefix.length+1; // TODO: change this
-    const nftNameMaxLength = nftNamePrefix.length + _itemsCount.toString().length;
+    // const nftNameMaxLength = nftNamePrefix.length + _itemsCount.toString().length;
     // const nftNameMaxLength = _nftNamePrefix.length + _itemsCount.toString().length;
 
     const metadataPrefixUri = 'https://example.com/metadata/' // TODO: change this ; upload metadata to IPFS
@@ -685,16 +699,42 @@ export async function createMyFullNftCollection(
         treasury: treasury_Signer.publicKey.toString(),
         candyMachine: candyMachine.publicKey.toString(),
         collection: collection_Signer.publicKey.toString(),
-
         itemsAvailable: _itemsCount,
-
-        prefixName: nftNamePrefix,
-        nameLength: nftNameMaxLength,
+        // prefixName: nftNamePrefix,
+        prefixName: _nftNamePrefix,
+        // nameLength: nftNameMaxLength,
+        nameLength: 0, // Everything is a prefix
         prefixUri: metadataPrefixUri,
         uriLength: metadataPrefixUriLength,
       });
 
-      const createIx = await MPL_F_create(umi, {
+      // https://developers.metaplex.com/core-candy-machine/settings#config-line-settings
+      // Name Prefix: A name prefix shared by all inserted items.
+      //  This prefix can have a maximum of 32 characters.
+      // Name Length: The maximum length for the name of each inserted item
+      //  EXCLUDING THE NAME PREFIX.
+      // URI Prefix: A URI prefix shared by all inserted items.
+      //  This prefix can have a maximum of 200 characters.
+      // URI Length: The maximum length for the URI of each inserted item excluding the URI prefix.
+      // Is Sequential: Indicates whether to mint NFTs sequentially — true — or in random order — false.
+      //  We recommend setting this to false to prevent buyers from predicting which NFT will be minted next. Note that our SDKs will default to using Config Line Settings with Is Sequential set to false when creating new Candy Machines.
+
+      const CoreCM_configLineSettings = MPL_F_some({
+        hiddenSettings: MPL_F_none(),
+        // prefixName: nftNamePrefix,
+        // prefixName: `${nftNamePrefix} #$ID+1$`,
+        prefixName: `${_nftNamePrefix} #$ID+1$`,
+        // nameLength: nftNameMaxLength,
+        nameLength: 0, // Everything is a prefix
+        prefixUri: metadataPrefixUri,
+        uriLength: metadataPrefixUriLength,
+        isSequential: false,
+      });
+
+      console.debug(`${LOGPREFIX} CoreCM_configLineSettings:`)
+      console.dir(CoreCM_configLineSettings);
+
+      const coreCM_CreateIx = await MPL_F_create(umi, {
         candyMachine,
         collection: collection_Signer.publicKey, // create assets into this collection
         collectionUpdateAuthority: umi.identity,
@@ -702,22 +742,22 @@ export async function createMyFullNftCollection(
         authority: umi.identity.publicKey,
         isMutable: false,
         // https://developers.metaplex.com/core-candy-machine/create#config-line-settings
-        configLineSettings: MPL_F_some({
-          prefixName: nftNamePrefix,
-          nameLength: nftNameMaxLength,
-          prefixUri: metadataPrefixUri,
-          uriLength: metadataPrefixUriLength,
-          isSequential: false,
-        }),
+        // configLineSettings: MPL_F_some({
+        //   prefixName: nftNamePrefix,
+        //   nameLength: nftNameMaxLength,
+        //   prefixUri: metadataPrefixUri,
+        //   uriLength: metadataPrefixUriLength,
+        //   isSequential: false,
+        // }),
+        configLineSettings: CoreCM_configLineSettings,
         // guards
         guards: guards_rules,
       })
-      const candyMachineTxResult = await createIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+      const candyMachineTxResult = await coreCM_CreateIx.sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
       console.debug(`${LOGPREFIX} createIx result`, candyMachineTxResult)
       console.dir(candyMachineTxResult)
 
       if (candyMachineTxResult.result.value.err !== null) {
-
         console.error(`${LOGPREFIX}❌ Error creating Candy Machine.`)
         const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
           success: false,
@@ -869,27 +909,40 @@ export async function createMyFullNftCollection(
 
 
     try {
-      const numMints = 1;
-      let minted = 0;
-      for (let i = 0; i < numMints; i++) {
-        await MPL_F_transactionBuilder()
-          .add(MPL_F_setComputeUnitLimit(umi, { units: 800_000 }))
-          .add(
-            MPL_F_mintV1(umi, {
-              candyMachine: candyMachine.publicKey,
-              asset: MPL_F_generateSigner(umi),
-              collection: collection_Signer.publicKey,
-              mintArgs: {
-                solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
-              },
-            })
-          )
-          .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-        minted++;
-      }
-      console.log(`${LOGPREFIX} ✅ Minted ${minted} NFTs.`)
+      const mintTxResult = await MPL_F_transactionBuilder()
+        .add(MPL_F_setComputeUnitLimit(umi, { units: 800_000 }))
+        .add(
+          MPL_F_mintV1(umi, {
+            candyMachine: candyMachine.publicKey,
+            asset: MPL_F_generateSigner(umi),
+            collection: collection_Signer.publicKey,
+            mintArgs: {
+              solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
+            },
+          })
+        )
+        .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+
+      // console.dir(mintTxResult) //
+
+      // MINT: Error is NOT returned in the result
+      // TODO: check tx cost BEFORE sending
+      // TODO: check tx cost BEFORE sending
+      // TODO: check tx cost BEFORE sending
+
+      // if (mintTxResult.result.value.err !== null) {
+
+      //   console.error(`${LOGPREFIX}❌ Error Minting ONE NFT`)
+      //   const collectionResultError: mplhelp_T_CreateNftCollectionResult = {
+      //     success: false,
+      //     error: 'Error creating Candy Machine.'
+      //   }
+      //   return collectionResultError
+      // }
+
+      console.log(`${LOGPREFIX} ✅ Minted ONE NFT`)
     } catch (error) {
-      console.error(`${LOGPREFIX} ❌ Error minting NFT`, error)
+      console.error(`${LOGPREFIX} ❌ Error minting ONE NFT`, error)
       const collectionResult: mplhelp_T_CreateNftCollectionResult = {
         success: false,
         error: 'Error minting NFT.'
