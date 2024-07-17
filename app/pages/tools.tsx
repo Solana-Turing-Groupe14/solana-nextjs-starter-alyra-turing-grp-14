@@ -38,7 +38,11 @@ export default function MintTestPage() {
     })
   }
 
-  const airdropWallet = async (address:string, name: string|null|undefined) => {
+  const airdropWallet = async (
+    address:string,
+    amount:number,
+    name: string|null|undefined
+  ) => {
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -47,13 +51,14 @@ export default function MintTestPage() {
       if (!address) {
         throw new Error('Address is required')
       }
-      const res = await fetch('/api/airdrop-test', {
+      const res = await fetch('/api/airdrop', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           publicKey: address,
+          amount: amount,
         })
       });
       const response:AirdropResponseData = await res.json();
@@ -138,7 +143,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingConnectedWalletAirdrop(true)
       const address:string = connectedWalletPublicKey?.toBase58()||''
-      airdropWallet(address, null)
+      airdropWallet(address, 1, null)
     } catch (error) {
       console.error(error)
     } finally {
@@ -150,7 +155,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp1AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP01||''
-      airdropWallet(address, 'App 1')
+      airdropWallet(address, 1, 'App 1')
     } catch (error) {
       console.error(error)
     } finally {
@@ -162,7 +167,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp2AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP02||''
-      airdropWallet(address, 'App 2')
+      airdropWallet(address, 1, 'App 2')
     } catch (error) {
       console.error(error)
     } finally {
@@ -174,14 +179,13 @@ export default function MintTestPage() {
     try {
       setIsProcessingAppDefaultAddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINT_APP_DEFAULT||''
-      airdropWallet(address, 'App Default')
+      airdropWallet(address, 1, 'App Default')
     } catch (error) {
       console.error(error)
     } finally {
       setIsProcessingAppDefaultAddressAirdrop(false)
     }
   } // airdropAppDefaultWallet
-
 
   return (
     <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">

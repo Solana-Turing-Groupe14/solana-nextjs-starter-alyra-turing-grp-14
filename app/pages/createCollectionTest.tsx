@@ -4,10 +4,9 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import {
-  finalizeCmNftCollectionConfig,
-  // createMyFullNftCollection as mplxH_createMyFullNftCollection,
-  createCmNftCollection as mplxH_createCmNftCollection,
-  createNftCollection as mplxH_createNftCollection,
+  createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
+  createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
+  finalizeCmNftCollectionConfig_fromWallet as mplxH_finalizeCmNftCollectionConfig_fromWallet,
 } from "@helpers/mplx.helper.dynamic"
 import {
   createMyCollection as mplxH_createMyCollection,
@@ -15,11 +14,12 @@ import {
 
 import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { CollectionCreationResponseData,
+  CreateCompleteCollectionCmConfigResponseData,
   mplhelp_T_CreateCmNftCollection_fromWallet_Input,
-  mplhelp_T_CreateCmNftCollection_fromWallet_Result,
-  mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_fromWallet_Result,
+  mplhelp_T_CreateCmNftCollection_Result,
+  mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_Result,
   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
-  mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result
+  mplhelp_T_FinalizeCmNftCollectionConfig_Result,
 } from "types"
 
 /* eslint-disable react/no-children-prop */
@@ -51,9 +51,10 @@ export default function MintTestPage() {
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
-  const [isProcessingSponsoredCollectionCreation, setIsProcessingSponsoredCollectionCreation] = useState(false)
-  const [isProcessingMyCollectionCreation, setIsProcessingMyCollectionCreation] = useState(false)
-  const [isProcessingMyNftCollectionCreation, setIsProcessingMyNftCollectionCreation] = useState(false)
+  const [isProcessingSponsoredCollectionCreationHarCoded, setIsProcessingSponsoredCollectionCreationHardcoded] = useState(false)
+  const [isProcessingCollectionCreationHardcoded, setIsProcessingCollectionCreationHardcoded] = useState(false)
+  const [isProcessingNftCollectionCreation, setIsProcessingNftCollectionCreation] = useState(false)
+  const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
 
   const isConnected = useMemo(() => {
     // console.debug(`${FILEPATH}:isConnected: `, connected && connectedWalletPublicKey)
@@ -121,7 +122,7 @@ export default function MintTestPage() {
   const createSponsoredCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createSponsoredCollection: `
     try {
-      setIsProcessingSponsoredCollectionCreation(true)
+      setIsProcessingSponsoredCollectionCreationHardcoded(true)
       // Guard
       if (!isConnected) {
         warnIsNotConnected(); return
@@ -215,14 +216,14 @@ export default function MintTestPage() {
         position: 'top-right',
       })
     } finally {
-      setIsProcessingSponsoredCollectionCreation(false)
+      setIsProcessingSponsoredCollectionCreationHardcoded(false)
     }
   } // createSponsoredCollection
 
   const createCollectionOnly = async () => {
     const LOGPREFIX = `${FILEPATH}:createCollectionOnly: `
     try {
-      setIsProcessingMyCollectionCreation(true)
+      setIsProcessingCollectionCreationHardcoded(true)
       // Guard
       if (!isConnected) {
         warnIsNotConnected(); return
@@ -291,9 +292,11 @@ export default function MintTestPage() {
         position: 'top-right',
       })
   } finally {
-      setIsProcessingMyCollectionCreation(false)
+      setIsProcessingCollectionCreationHardcoded(false)
     }
   } // createCollectionOnly
+
+  // ----------------------------
 
   const createCompleteNftCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createCompleteNftCollection: `
@@ -302,7 +305,7 @@ export default function MintTestPage() {
       if (!isConnected) {
         warnIsNotConnected(); return
       }
-      setIsProcessingMyNftCollectionCreation(true)
+      setIsProcessingNftCollectionCreation(true)
       if (!wallet) {
         console.error(`${LOGPREFIX}Wallet not found`)
         return
@@ -349,8 +352,8 @@ export default function MintTestPage() {
         collectionName: collectionName,
         collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
       }
-      const createNftCollectionResponse:mplhelp_T_CreateNftCollection_fromWallet_Result
-        = await mplxH_createNftCollection(
+      const createNftCollectionResponse:mplhelp_T_CreateNftCollection_Result
+        = await mplxH_createNftCollection_fromWallet(
           createNftCollectionInput
         )
 
@@ -394,8 +397,8 @@ export default function MintTestPage() {
           startDateTime,
           endDateTime
         }
-        const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_fromWallet_Result
-          = await mplxH_createCmNftCollection(createCmNftCollectionInput)
+        const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_Result
+          = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
 
         console.debug(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
         if (createCmNftCollectionResponse && createCmNftCollectionResponse.success) {
@@ -409,7 +412,7 @@ export default function MintTestPage() {
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
                     <div className='flex'>
                       <Text fontWeight="normal">NFT Collection</Text>
-                      <Text fontWeight="bold">Candy Machine</Text>
+                      <Text className='mx-1' fontWeight="bold">Candy Machine</Text>
                       <Text fontWeight="normal">created.</Text>
                     </div>
 
@@ -436,8 +439,8 @@ export default function MintTestPage() {
             candyMachineSigner: createCmNftCollectionResponse.candyMachineSigner,
             itemsCount: nftCount,
           }
-          const finalizeCmNftCollectionConfigResponse:mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result
-            = await finalizeCmNftCollectionConfig(finalizeCmNftCollectionConfigInput)
+          const finalizeCmNftCollectionConfigResponse:mplhelp_T_FinalizeCmNftCollectionConfig_Result
+            = await mplxH_finalizeCmNftCollectionConfig_fromWallet(finalizeCmNftCollectionConfigInput)
 
           console.debug(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
 
@@ -527,10 +530,135 @@ export default function MintTestPage() {
       })
 
     } finally {
-      setIsProcessingMyNftCollectionCreation(false)
+      setIsProcessingNftCollectionCreation(false)
     }
   } // createCompleteNftCollection
 
+
+  // ----------------------------
+
+
+  // TODO : call from API Page
+
+
+  const createCompleteNftCollectionSponsored = async () => {
+    const LOGPREFIX = `${FILEPATH}:createCompleteNftCollectionSponsored: `
+    try {
+      // Guard
+      if (!isConnected) {
+        warnIsNotConnected(); return
+      }
+      setIsProcessingSponsoredNftCollectionCreation(true)
+      if (!wallet) {
+        console.error(`${LOGPREFIX}Wallet not found`)
+        return
+      }
+
+      const year = 2023;
+      const month = 12;
+      const day = 31;
+      const hour = 16;
+      const minute = 33;
+      const second = 59;
+      const millisecond = 0;
+      const startDateTime = new Date(year, month, day, hour, minute, second, millisecond);
+      // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
+      const endDateTime = null;
+
+      const res = await fetch('/api/complete-collection-creation-sponsored', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collectionName: collectionName,
+          collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
+          collectionDescription,
+          nftNamePrefix,
+          nftCount,
+          metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
+          startDateTime,
+          endDateTime,
+          // TODO
+          // TODO
+          // TODO
+          // TODO
+          // TODO
+          // TODO
+        })
+      });
+      const response:CreateCompleteCollectionCmConfigResponseData = await res.json();
+      console.debug(`${LOGPREFIX}`, response);
+
+      if (response && response.success) {
+
+        const uriCollection = getAddressUri(response.collectionAddress)
+        const uriCandyMachine = getAddressUri(response.candyMachineAddress)
+        toast({
+          duration: SUCCESS_DELAY,
+          position: 'top-right',
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+              <div className='flex'>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <Text fontWeight="bold">NFT Collection created.</Text>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='m-2'>
+                {uriCollection &&
+                  <Link href={uriCollection} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      Collection
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+                {uriCandyMachine &&
+                  <Link href={uriCandyMachine} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      Candy Machine
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
+            </Box>
+          ),
+        }) // toast
+
+      } else {
+        // Error
+        const error = (response && response.success === false ? response.error : 'Unknown error') 
+        console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, error);
+        toast({
+          title: 'Collection creation failed',
+          description: error,
+          status: 'error',
+          duration: ERROR_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
+    } catch (error) {
+      // Global error handling
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}${errorMsg}`);
+      toast({
+        title: 'Collection creation failed',
+        description: errorMsg,
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+
+    } finally {
+      setIsProcessingSponsoredNftCollectionCreation(false)
+    }
+  } // createCompleteNftCollectionSponsored
+
+
+  // ----------------------------
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -822,35 +950,46 @@ export default function MintTestPage() {
               <Button
                 size={"sm"}
                 isDisabled={!connected}
-                isLoading={isProcessingSponsoredCollectionCreation}
+                isLoading={isProcessingSponsoredCollectionCreationHarCoded}
                 onClick={createSponsoredCollection}
-                colorScheme='green'
+                colorScheme='red'
               >
                 Create sponsored collection (fees paid by the app)
-                hardcoded
+                HARDCODED
               </Button>
 
               <Button
                 size={"sm"}
                 isDisabled={!connected}
-                isLoading={isProcessingMyCollectionCreation}
+                isLoading={isProcessingCollectionCreationHardcoded}
                 onClick={createCollectionOnly}
                 colorScheme='orange'
               >
-                Create My own collection (fees paid by wallet owner)
-                hardcoded
+                Create collection (fees paid by wallet owner)
+                HARDCODED
               </Button>
 
               <Button
                 size={"sm"}
                 isDisabled={!connected || !isValidCollectionInput}
-                isLoading={isProcessingMyNftCollectionCreation}
+                isLoading={isProcessingNftCollectionCreation}
                 onClick={createCompleteNftCollection}
                 colorScheme='purple'
               >
-                Create My own NFT collection (fees paid by wallet owner)
+                Create NFT collection (fees paid by wallet owner)
               </Button>
-              </VStack>
+
+              <Button
+                size={"sm"}
+                isDisabled={!connected || !isValidCollectionInput}
+                isLoading={isProcessingSponsoredNftCollectionCreation}
+                onClick={createCompleteNftCollectionSponsored}
+                colorScheme='green'
+              >
+                Create NFT collection (Sponnsored fees)
+              </Button>
+
+            </VStack>
 
           </Container>
 

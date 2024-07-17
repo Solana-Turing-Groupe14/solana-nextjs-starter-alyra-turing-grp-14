@@ -118,6 +118,13 @@ export type mplhelp_T_CreateFullNftCollectionInput =
 //       error: mplhelp_T_CheckBalanceError
 //     }
 
+// Creates a NFT collection
+
+export type mplhelp_T_CreateNftCollection_fromApp_Input =
+  {
+    collectionName: string,
+    collectionUri: string,
+  }
 
 export type mplhelp_T_CreateNftCollection_fromWallet_Input =
   {
@@ -126,7 +133,14 @@ export type mplhelp_T_CreateNftCollection_fromWallet_Input =
     collectionUri: string,
   }
 
-export type mplhelp_T_CreateNftCollection_fromWallet_Result =
+export type mplhelp_T_CreateNftCollection_Input =
+  {
+    collectionName: string,
+    collectionUri: string,
+    umi: MPL_T_Umi,
+  }
+
+export type mplhelp_T_CreateNftCollection_Result =
   | {
     success: true
     collectionAddress: string,
@@ -137,7 +151,20 @@ export type mplhelp_T_CreateNftCollection_fromWallet_Result =
     error: string
   };
 
-  export type mplhelp_T_CreateCmNftCollection_fromWallet_Input =
+// Creates a Candy Machine NFT collection
+
+export type mplhelp_T_CreateCmNftCollection_fromApp_Input =
+  {
+    // collectionAddress: string,
+    collectionSigner: MPL_T_KeypairSigner,
+    nftNamePrefix: string,
+    itemsCount: number,
+    metadataPrefixUri: string,
+    startDateTime: Date | null,
+    endDateTime: Date | null,
+  }
+
+export type mplhelp_T_CreateCmNftCollection_fromWallet_Input =
   {
     walletAdapter: MPL_T_WalletAdapter,
     // collectionAddress: string,
@@ -150,10 +177,22 @@ export type mplhelp_T_CreateNftCollection_fromWallet_Result =
     endDateTime: Date | null,
   }
 
-export type mplhelp_T_CreateCmNftCollection_fromWallet_Result =
+export type mplhelp_T_CreateCmNftCollection_Input =
+  {
+    collectionSigner: MPL_T_KeypairSigner,
+
+    nftNamePrefix: string,
+    itemsCount: number,
+    metadataPrefixUri: string,
+    startDateTime: Date | null,
+    endDateTime: Date | null,
+
+    umi: MPL_T_Umi,
+  }
+
+export type mplhelp_T_CreateCmNftCollection_Result =
   | {
     success: true
-    // collectionAddress: string
     candyMachineAddress: string,
     candyMachineSigner: MPL_T_KeypairSigner,
   }
@@ -163,18 +202,29 @@ export type mplhelp_T_CreateCmNftCollection_fromWallet_Result =
   };
 
 
-  // Finalises/completes/updates a Candy Machine NFT collection
+// Finalises/completes/updates a Candy Machine NFT collection
 
-  export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input =
+export type mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input =
+  {
+    collectionSigner: MPL_T_KeypairSigner,
+    candyMachineSigner: MPL_T_KeypairSigner,
+    itemsCount: number,
+    umi: MPL_T_Umi,
+  }
+export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input =
   {
     walletAdapter: MPL_T_WalletAdapter,
-    // candyMachineAddress: string,
     collectionSigner: MPL_T_KeypairSigner,
     candyMachineSigner: MPL_T_KeypairSigner,
     itemsCount: number,
   }
 
-export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result =
+export type mplhelp_T_FinalizeCmNftCollectionConfig =
+  mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input
+
+
+
+export type mplhelp_T_FinalizeCmNftCollectionConfig_Result =
   | {
     success: true
     collectionAddress: string
@@ -184,3 +234,34 @@ export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Result =
     success: false
     error: string
   };
+
+// Create an entire NFT collection / Candy Machine NFT collection
+
+export type mplhelp_T_CreateCompleteNftCollectionCmConfig_Input =
+  {
+    collectionName: string,
+    collectionUri: string,
+    nftNamePrefix: string,
+    itemsCount: number,
+    metadataPrefixUri: string,
+    startDateTime: Date | null,
+    endDateTime: Date | null,
+  }
+
+type mplhelp_T_CreateCompleteNftCollectionCmConfig_Result =
+  mplhelp_T_FinalizeCmNftCollectionConfig_Result
+
+
+  export type CreateCompleteCollectionCmConfigResponseData =
+  | {
+    success: true
+    collectionAddress: string
+    candyMachineAddress: string,
+  }
+  | {
+    success: false
+    error: string
+  };
+
+// Mint NFTs from a Candy Machine
+// TODO
