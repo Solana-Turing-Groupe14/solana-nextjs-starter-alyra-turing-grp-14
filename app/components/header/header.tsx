@@ -29,6 +29,10 @@ const MenuItems = [
     href: "/mint/",
   },
   {
+    text: "Gallery",
+    href: "/gallery",
+  },
+  {
     text: "Tools",
     href: "/tools",
   },

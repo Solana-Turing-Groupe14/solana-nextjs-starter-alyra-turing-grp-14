@@ -10,6 +10,7 @@ import type { FC } from "react"
 import React, { useMemo } from "react"
 import RootLayout from "@components/layout"
 import { siteConfig } from "@config/site"
+import '../polyfills'
 
 // Use require instead of import since order matters
 require("@solana/wallet-adapter-react-ui/styles.css")

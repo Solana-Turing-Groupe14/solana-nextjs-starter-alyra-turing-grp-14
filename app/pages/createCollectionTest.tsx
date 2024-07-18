@@ -362,7 +362,7 @@ export default function MintTestPage() {
           collectionSigner: createNftCollectionResponse.collectionSigner,
           nftNamePrefix: nftNamePrefix,
           // TODO : UPLOAD METADATA
-          metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`,
+          metadataPrefixUri: `https://bafybeiekcbs72khssh6enrytqyju7lkzdgorul6bhe5gcguo6ko56k2way.ipfs.w3s.link/lion/${randomStringNumber}/`,
           // itemsCount: nftCount,
           // startDateTime,
           // endDateTime,
