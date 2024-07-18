@@ -75,23 +75,12 @@ export const getMplKeypair_fromEnv = (signerName: string): MPL_Keypair | null =>
     }
     const jsonSEED = JSON.parse(SIGNER_SEED_TEXT_from_env)
     const buf = Buffer.from(jsonSEED as string, 'utf8')
-    // console.debug('${LOGPREFIX} buf', buf)
     const SIGNER_SEED: Uint8Array = Uint8Array.from(buf)
-    // console.debug('${LOGPREFIX} SIGNER_SEED', SIGNER_SEED)
     const keyPair: MPL_Keypair = mplx_umi.eddsa.createKeypairFromSecretKey(SIGNER_SEED);
-    // const keyPairPublicKeySTR = keyPair.publicKey.toString()
-    // console.debug('${LOGPREFIX} keyPairPublicKeySTR', keyPairPublicKeySTR)
     return keyPair;
   } catch (error) {
-    console.error(`${LOGPREFIX} error`, error)
-    //   const response: ResponseData = { success: false, error: '' };
-    if (error instanceof Error) {
-      console.error(`error ${error}`)
-      // response.error = error.message
-    } else {
-      // response.error = 'Error'
-      console.error(`error ${error}`)
-    }
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX} error`, errorMsg)
   } // catch
   return null
 } // getMplKeypair_fromEnv
@@ -121,11 +110,9 @@ async function checkCandyMachine(
     }
     console.log(`${LOGPREFIX} ✅  Candy Machine has the correct configuration.`);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(`${LOGPREFIX} ❌ Candy Machine incorrect configuration: ${error.message}`);
-    } else {
-      console.error(`${LOGPREFIX} ❌ Error fetching the Candy Machine.`);
-    }
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX} ❌ Candy Machine incorrect configuration: ${errorMsg}`);
+
   }
 } // checkCandyMachine
 
@@ -148,7 +135,6 @@ export const airdrop = async (
       return { success: false, error: 'Invalid public key' }
     }
     const mpl_publicKey: MPL_T_PublicKey = MPL_F_publicKey(_publicKeyString)
-
     try {
       const umi = getUmi()
       await umi.rpc.airdrop(mpl_publicKey, MPL_F_sol(_amount), MPL_TX_BUILDR_OPTIONS.confirm);
@@ -156,26 +142,18 @@ export const airdrop = async (
       const airdropResult: mplhelp_T_AirdropResult = { success: true, amount: _amount }
       return airdropResult
     } catch (error) {
-      console.log(`${LOGPREFIX} ❌ Error airdropping SOL to ${mpl_publicKey}`);
+      console.error(`${LOGPREFIX} ❌ Error airdropping SOL to ${mpl_publicKey}`);
       const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
-      if (error instanceof Error) {
-        console.log('error', error)
-        airdropResult.error = `Error airdropping SOL to ${mpl_publicKey} : ${error.message}`
-      } else {
-        airdropResult.error = `Error airdropping SOL to ${mpl_publicKey}`
-      }
+      const errorMsg = (error instanceof Error) ? error.message : `${error}`
+      console.error(`${LOGPREFIX} error ${errorMsg}`)
+      airdropResult.error = `Error airdropping SOL to ${mpl_publicKey} : ${errorMsg}`
       return airdropResult
     }
-
   } catch (error) {
     const airdropResult: mplhelp_T_AirdropResult = { success: false, error: '' };
-    if (error instanceof Error) {
-      console.error(`${LOGPREFIX} error ${error}`)
-      airdropResult.error = error.message
-    } else {
-      console.error(`${LOGPREFIX} error ${error}`)
-      airdropResult.error = `${error}`
-    }
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX} error ${errorMsg}`)
+    airdropResult.error = `Error airdropping SOL to ${_publicKeyString} : ${errorMsg}`
     return airdropResult
   } // catch
 } // airdrop
@@ -225,15 +203,14 @@ export async function setIdentityPayer_WalletAdapter(
     // Set identity (Minter) & payer with the same signer: _walletAdapter
     _umi.use(MPL_P_walletAdapterIdentity(_walletAdapter)); // Set identity
     _umi.use(MPL_P_walletAdapterPayer(_walletAdapter)); // Set payer
-
     if (_checkSigner && !MPL_F_isSigner(_umi.identity)) {
       console.error(`${LOGPREFIX}❌ wallet ${_walletAdapter.publicKey} is not a valid signer`)
       return false
     }
-
     return true
   } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}error`, errorMsg)
     return false
   }
 } // setIdentityPayer_WalletAdapter
@@ -260,10 +237,10 @@ export async function setIdentityPayer_APP(
       console.error(`${LOGPREFIX}❌ wallet ${_umi.identity} is not a valid signer`)
       return false
     }
-
     return true
   } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}error`, errorMsg)
     return false
   }
 } // setIdentityPayer_APP
@@ -290,7 +267,8 @@ Promise<boolean>
     }
     return true
   } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}error`, errorMsg)
     return false
   }
 } // checkBalance
