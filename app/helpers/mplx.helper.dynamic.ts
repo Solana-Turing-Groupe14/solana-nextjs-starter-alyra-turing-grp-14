@@ -308,11 +308,13 @@ export async function createCompleteNftCollectionCm_fromApp(
     collectionName,
     collectionUri,
     nftNamePrefix,
-    itemsCount,
     metadataPrefixUri,
-    startDateTime,
-    endDateTime,
-    mintFee,
+
+    // itemsCount,
+    // startDateTime,
+    // endDateTime,
+    // mintFee,
+    cmNftCollectioNParams
   } : mplhelp_T_CreateCompleteNftCollectionCmConfig_Input
   ): Promise<mplhelp_T_CreateCompleteNftCollectionCmConfig_Result>
   {
@@ -331,16 +333,18 @@ export async function createCompleteNftCollectionCm_fromApp(
         const createCmNftCollectionResult:mplhelp_T_CreateCmNftCollection_Result = await createCmNftCollection({
           collectionSigner: createNftCollectionResult.collectionSigner,
           nftNamePrefix,
-          itemsCount,
           metadataPrefixUri,
-          startDateTime,
-          endDateTime,
-          mintFee,
+          // itemsCount,
+          // startDateTime,
+          // endDateTime,
+          // mintFee,
+          cmNftCollectioNParams,
           umi
         })
         if (createCmNftCollectionResult.success === true) {
-          const finalizeCmNftCollectionConfigResult: mplhelp_T_FinalizeCmNftCollectionConfig_Result = await finalizeCmNftCollectionConfig({
-            itemsCount,
+          const finalizeCmNftCollectionConfigResult: mplhelp_T_FinalizeCmNftCollectionConfig_Result =
+           await finalizeCmNftCollectionConfig({
+            itemsCount: cmNftCollectioNParams.itemsCount,
             collectionSigner: createNftCollectionResult.collectionSigner,
             candyMachineSigner: createCmNftCollectionResult.candyMachineSigner,
             umi
@@ -548,11 +552,12 @@ export async function createCmNftCollection_fromApp(
   {
     collectionSigner,
     nftNamePrefix,
-    itemsCount,
     metadataPrefixUri,
-    startDateTime,
-    endDateTime,
-    mintFee,
+    // itemsCount,
+    // startDateTime,
+    // endDateTime,
+    // mintFee,
+    cmNftCollectioNParams
   } : mplhelp_T_CreateCmNftCollection_fromApp_Input
   ): Promise<mplhelp_T_CreateCmNftCollection_Result>
   {
@@ -564,11 +569,12 @@ export async function createCmNftCollection_fromApp(
       return await createCmNftCollection({
         collectionSigner,
         nftNamePrefix,
-        itemsCount,
         metadataPrefixUri,
-        startDateTime,
-        endDateTime,
-        mintFee,
+        // itemsCount,
+        // startDateTime,
+        // endDateTime,
+        // mintFee,
+        cmNftCollectioNParams,
         umi
       })
     } catch (error) {
@@ -594,11 +600,12 @@ export async function createCmNftCollection_fromWallet(
   {
     walletAdapter, collectionSigner,
     nftNamePrefix,
-    itemsCount,
     metadataPrefixUri,
-    startDateTime,
-    endDateTime,
-    mintFee,
+    // itemsCount,
+    // startDateTime,
+    // endDateTime,
+    // mintFee,
+    cmNftCollectioNParams,
   } : mplhelp_T_CreateCmNftCollection_fromWallet_Input
   ): Promise<mplhelp_T_CreateCmNftCollection_Result>
   {
@@ -610,11 +617,12 @@ export async function createCmNftCollection_fromWallet(
       return await createCmNftCollection({
         collectionSigner,
         nftNamePrefix,
-        itemsCount,
         metadataPrefixUri,
-        startDateTime,
-        endDateTime,
-        mintFee,
+        // itemsCount,
+        // startDateTime,
+        // endDateTime,
+        // mintFee,
+        cmNftCollectioNParams,
         umi
       })
     } catch (error) {
@@ -641,11 +649,12 @@ export async function createCmNftCollection(
   {
     collectionSigner: _collectionSigner,
     nftNamePrefix: _nftNamePrefix,
-    itemsCount: _itemsCount,
     metadataPrefixUri: _metadataPrefixUri,
-    startDateTime: _startDateTime,
-    endDateTime: _endDateTime,
-    mintFee: _mintFee,
+    // itemsCount: _itemsCount,
+    // startDateTime: _startDateTime,
+    // endDateTime: _endDateTime,
+    // mintFee: _mintFee,
+    cmNftCollectioNParams,
     umi: _umi,
   } : mplhelp_T_CreateCmNftCollection_Input
   ): Promise<mplhelp_T_CreateCmNftCollection_Result>
@@ -677,7 +686,7 @@ export async function createCmNftCollection(
         return collectionResultError
       }
       // `${nftNamePrefix} #$ID+1$`
-      const nftNamePostfix = ` #${_itemsCount.toString()}`
+      const nftNamePostfix = ` #${cmNftCollectioNParams.itemsCount.toString()}`
       if (`${_nftNamePrefix}${nftNamePostfix}`.length > NFT_NAME_PREFIX_MAX_LENGTH) {
         const nftNameMaxLength = NFT_NAME_PREFIX_MAX_LENGTH - nftNamePostfix.length;
         console.error(`${LOGPREFIX}❌ nftNamePrefix too long`)
@@ -688,7 +697,7 @@ export async function createCmNftCollection(
         return collectionResultError
       }
       // Items Count
-      if (_itemsCount < 1) {
+      if (cmNftCollectioNParams.itemsCount < 1) {
         console.error(`${LOGPREFIX}❌ itemsCount < 1`)
         const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
           success: false,
@@ -705,7 +714,7 @@ export async function createCmNftCollection(
         }
         return collectionResultError
       }
-      if (_mintFee < MINT_FEE_MIN_AMOUNT) {
+      if (cmNftCollectioNParams.mintFee < MINT_FEE_MIN_AMOUNT) {
         console.error(`${LOGPREFIX}❌ mintFee < ${MINT_FEE_MIN_AMOUNT} SOL`)
         const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
           success: false,
@@ -713,7 +722,7 @@ export async function createCmNftCollection(
         }
         return collectionResultError
       }
-      if (_mintFee > MINT_FEE_MAX_AMOUNT) {
+      if (cmNftCollectioNParams.mintFee > MINT_FEE_MAX_AMOUNT) {
         console.error(`${LOGPREFIX}❌ mintFee > ${MINT_FEE_MAX_AMOUNT} SOL`)
         const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
           success: false,
@@ -746,7 +755,7 @@ export async function createCmNftCollection(
       const guards_rules: MPL_T_GuardSetArgs = {
         // botTax: MPL_F_some({ lamports: MPL_F_sol(0.001), lastInstruction: true }),
         // solPayment: MPL_F_some({ lamports: MPL_F_sol(_mintFee), destination: treasurySigner.publicKey }),
-        // mintLimit: MPL_F_some({ id: 1, limit: 3 }),
+        // mintLimit: MPL_F_some({ id: 1, limit: 3 }), // Limit the number of mints per wallet
         // All other guards are disabled...
       }
 
@@ -768,14 +777,14 @@ export async function createCmNftCollection(
         treasury: treasurySigner.publicKey.toString(),
         candyMachine: candyMachineSigner.publicKey.toString(),
         collection: _collectionSigner.publicKey.toString(),
-        itemsAvailable: _itemsCount,
+        itemsAvailable: cmNftCollectioNParams.itemsCount,
         // prefixName: nftNamePrefix,
         prefixName: _nftNamePrefix,
         // nameLength: nftNameMaxLength,
         nameLength: 0, // Everything is a prefix
         prefixUri: _metadataPrefixUri,
         uriLength: _metadataPrefixUri.length,
-        mintFee: _mintFee,
+        mintFee: cmNftCollectioNParams.mintFee,
       });
 
       // https://developers.metaplex.com/core-candy-machine/settings#config-line-settings
@@ -808,7 +817,7 @@ export async function createCmNftCollection(
         candyMachine: candyMachineSigner,
         collection: _collectionSigner.publicKey, // create assets into this collection
         collectionUpdateAuthority: _umi.identity,
-        itemsAvailable: _itemsCount,
+        itemsAvailable: cmNftCollectioNParams.itemsCount,
         authority: _umi.identity.publicKey,
         isMutable: false,
         configLineSettings: coreCM_configLineSettings, // Config Line Settings
@@ -1078,12 +1087,10 @@ export async function mintNftFromCM_fromWallet({
       }
       return collectionResultError
     }
- 
 
     const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
 
     // Load CM
-    // const candyMachine = await fetchCandyMachine(umi, candyMachinePublicKey)
     const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey, MPL_TX_BUILDR_OPTIONS.confirm);
     console.debug(`${LOGPREFIX}candyMachine`, candyMachine)
     console.debug(`${LOGPREFIX}candyMachine.collectionMint.__publicKey`, candyMachine.collectionMint.__publicKey)
@@ -1093,6 +1100,7 @@ export async function mintNftFromCM_fromWallet({
 
     const collectionPublicKey = candyMachine.collectionMint
 
+
     console.table({
       candyMachinePublicKey: candyMachinePublicKey.toString(),
       collectionPublicKey: collectionPublicKey.toString(),
@@ -1101,61 +1109,75 @@ export async function mintNftFromCM_fromWallet({
     })
 
     try {
-        await MPL_F_transactionBuilder()
-          .add(MPL_F_setComputeUnitLimit(umi, { units: 800_000 }))
-          .add(
-            MPL_F_mintV1(umi, {
-              candyMachine: candyMachinePublicKey, // candyMachine.publicKey
-              asset: MPL_F_generateSigner(umi),
-              collection: collectionPublicKey, // collection_Signer.publicKey
-              // mintArgs: {
-              //   solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
-              // },
-              // mintArgs: {
-              //   solPayment: MPL_F_some({ destination: treasury }),
-              // },
-            })
-          )
-          .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+      // Mint NFT
+      const mintTx = await MPL_F_transactionBuilder()
+        .add(MPL_F_setComputeUnitLimit(umi, { units: 800_000 }))
+        .add(
+          MPL_F_mintV1(umi, {
+            candyMachine: candyMachinePublicKey, // candyMachine.publicKey
+            asset: MPL_F_generateSigner(umi),
+            collection: collectionPublicKey, // collection_Signer.publicKey
+            // mintArgs: {
+            //   solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
+            // },
+            // mintArgs: {
+            //   solPayment: MPL_F_some({ destination: treasury }),
+            // },
+          })
+        )
+        .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
 
-          console.log(`✅ - NFT Minted.`);
+        console.debug(`${LOGPREFIX} mintTx`, mintTx)
+        console.dir(mintTx)
+        console.dir(mintTx.result)
+        console.log(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
+
+        if (mintTx.result.value.err !== null) {
+          console.error(`${LOGPREFIX}❌ Error minting NFT.`)
+          const mintResultError: mplhelp_T_MintNftCMResult = {
+            success: false,
+            error: 'Error minting NFT.'
+          }
+          return mintResultError
+        }
+      console.log(`✅ NFT Minted.`);
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)
-      const collectionResult: mplhelp_T_CreateNftCollection_Result = {
+      const mintResultError: mplhelp_T_CreateNftCollection_Result = {
         success: false,
         error: 'Error minting NFT.'
       }
       if (error instanceof Error) {
         console.log('error', error)
-        collectionResult.error += ` ${error.message}`
+        mintResultError.error += ` ${error.message}`
       } else {
-        collectionResult.error = ` ${error}`
+        mintResultError.error = ` ${error}`
       }
-      return collectionResult
+      return mintResultError
     } // catch
 
 
-    const collectionResult: mplhelp_T_MintNftCMResult = {
+    const mintResult: mplhelp_T_MintNftCMResult = {
       success: true,
       mintAddress: "TODO",
     }
 
-    console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
-    return collectionResult
+    console.debug(`${LOGPREFIX} mintResult`, mintResult)
+    return mintResult
 
   } catch (error) {
     console.error(`${LOGPREFIX}`, error)
-    const collectionResult: mplhelp_T_MintNftCMResult = {
+    const mintResultError: mplhelp_T_MintNftCMResult = {
       success: false,
       error: ''
     }
     if (error instanceof Error) {
       console.log('error', error)
-      collectionResult.error = error.message
+      mintResultError.error = error.message
     } else {
-      collectionResult.error = 'Error'
+      mintResultError.error = 'Error'
     }
-    return collectionResult
+    return mintResultError
   } // catch
 
 } // mintNftFromCM

@@ -1,37 +1,38 @@
 import { AddIcon, AtSignIcon, CheckCircleIcon,  } from '@chakra-ui/icons'
 import { Box, Button, CloseButton, FormControl, FormLabel, Input, InputGroup,
-  InputLeftElement, Link, Text, useToast
+  InputLeftElement, Link, Text, useEditable, useToast
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
-import { ExternalLinkIcon } from 'lucide-react'
 import { NextPage } from "next"
-import { SetStateAction, useMemo, useState } from "react"
+import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
 import {
   mintNftFromCM_fromWallet  as mplxH_mintNftFromCM,
 } from "@helpers/mplx.helper.dynamic"
-// import { getAddressUri, getTxUri } from "@helpers/solana.helper"
-import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
+import { getUmi } from '@helpers/mplx.helper.static'
+// import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
+import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mplhelp_T_MintNftCMInput, mplhelp_T_MintNftCMResult } from "types"
+import { set } from 'lodash'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
-// export default function MintTestPage() {
 const MintTestPage: NextPage = (/* props */) => {
-
 
   const SUCCESS_DELAY = 60_000
   // const WARN_DELAY = 15_000
-  // const ERROR_DELAY = 60_000
+  const ERROR_DELAY = 60_000
 
   // const defaultCollectionAddress = `HwUY2vXuuvaximnpbmE6f8ds2TVmC2V4KnweQjAS5AaM`
   const defaultCandyMachineAddress = ``
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingMint, setIsProcessingMint] = useState(false)
+  const [isValidCandyMachineAddress, setisValidCandyMachineAddress] = useState<boolean>(false)
 
   const [candyMachineAddress, setCandyMachineAddress] = useState( defaultCandyMachineAddress )
   // const [collectionAddress, setcollectionAddress] = useState( defaultCollectionAddress )
+  const [itemsRemaining, setItemsRemaining] = useState<number>(0)
 
   const isConnected = useMemo(() => {
     const LOGPREFIX = `${FILEPATH}:isConnected: `
@@ -41,45 +42,97 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const toast = useToast()
 
-
-  const handleChangeCandyMachineAddress = (event: { target: { value: SetStateAction<string> } }) => setCandyMachineAddress(event.target.value)
-
-  const isValidCandyMachineInput = useMemo(() => {
+/* 
+  const isValidCandyMachineInput = useCallback(async () => {
     const LOGPREFIX = `${FILEPATH}:isValidCandyMachineInput: `
-    let isValid = false
+    // let isValid = false
     try {
       if (candyMachineAddress.length > 0) {
         try {
-          const solPubKey = new soljsweb3PublicKey(candyMachineAddress)
-          isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+          // Check if the address is a valid public key
+          // const solPubKey = new soljsweb3PublicKey(candyMachineAddress)
+          // isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+          const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(candyMachineAddress)
+          // Load CM
+          const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+          const valid =  (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
+          console.debug(`${LOGPREFIX}isValidCandyMachineInput: valid: ${valid}`)
+          setisValidCandyMachineAddress(true)
         } catch (error) {
+          const errorMsg = (error instanceof Error ? error.message : `${error}`)
+          console.error(`${FILEPATH}:isValidCandyMachineInput: error: ${errorMsg}`)
+          toast({
+            title: 'Invalid Candy Machine address',
+            description: `${errorMsg}`,
+            status: 'error',
+            duration: ERROR_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          // return false
+          setisValidCandyMachineAddress(false)
         }
       }
-      } catch (error) {
+    } catch (error) {
       const errorMsg = (error instanceof Error ? error.message : `${error}`)
       console.error(`${LOGPREFIX} error: ${errorMsg}`)
     }
-    return isValid
-  }, [candyMachineAddress])
+    // return false
+    setisValidCandyMachineAddress(false)
+  }, [candyMachineAddress, toast])
+ */
 
-  // const handleChangeCollectionAddress = (event: { target: { value: SetStateAction<string> } }) => setcollectionAddress(event.target.value)
-  // const isValidCollectionInput = useMemo(() => {
-  //   let isValid = false
-  //   const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
-  //   try {
-  //     if (collectionAddress.length > 0) {
-  //       try {
-  //         const solPubKey = new soljsweb3PublicKey(collectionAddress)
-  //         isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
-  //       } catch (error) {
-  //       }
-  //     }
-  //     } catch (error) {
-  //     const errorMsg = (error instanceof Error ? error.message : `${error}`)
-  //     console.error(`${LOGPREFIX} error: ${errorMsg}`)
-  //   }
-  //   return isValid
-  // }, [collectionAddress])
+  const handleChangeCandyMachineAddress = async(event: { target: { value: SetStateAction<string> } }) => {
+    const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
+    try {
+      setCandyMachineAddress(event.target.value)
+      const newCandyMachineAddress = event.target.value.toString()
+
+      if (candyMachineAddress.length > 0) {
+        try {
+          // Check if the address is a valid public key
+          // const solPubKey = new soljsweb3PublicKey(candyMachineAddress)
+          // isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+          const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
+          // Load CM
+          const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+          const valid =  (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
+          console.debug(`${LOGPREFIX}isValidCandyMachineInput: valid: ${valid}`)
+          setisValidCandyMachineAddress(true)
+          // toast({
+          //   title: 'Valid Candy Machine address',
+          //   status: 'success',
+          //   duration: SUCCESS_DELAY,
+          //   isClosable: true,
+          //   position: 'top-right',
+          // })
+        } catch (error) {
+          const errorMsg = (error instanceof Error ? error.message : `${error}`)
+          console.error(`${FILEPATH}:isValidCandyMachineInput: error: ${errorMsg}`)
+          toast({
+            title: 'Invalid Candy Machine address',
+            description: `${errorMsg}`,
+            status: 'error',
+            duration: ERROR_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          // return false
+          setisValidCandyMachineAddress(false)
+          setItemsRemaining(0)
+        }
+      } else {
+        setisValidCandyMachineAddress(false)
+        setItemsRemaining(0)
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}:handleChangeCandyMachineAddress: error: ${error}`)
+      setisValidCandyMachineAddress(false)
+      setItemsRemaining(0)
+    }
+  
+  // isValidCandyMachineInput()
+  }
 
   const warnIsNotConnected = () => {
     const LOGPREFIX = `${FILEPATH}:warnIsNotConnected: `
@@ -102,25 +155,22 @@ const MintTestPage: NextPage = (/* props */) => {
     }
     try {
       setIsProcessingMint(true)
-
-      // TODO: Implement mint
       if (!wallet?.adapter) {
         console.error(`${LOGPREFIX} Wallet adapter not found`)
         return
       }
       const mintInput: mplhelp_T_MintNftCMInput = {
         walletAdapter: wallet.adapter,
-        // collectionAddress,
         candyMachineAddress,
       }
-      const res:mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
+      const mintResponse:mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
         mintInput
       )
-      console.debug(`${LOGPREFIX} mint:res: `, res)
-      if (res.success) {
-        const mintAddressUri = getAddressUri(res.mintAddress)
-        const shortenedAddress = shortenAddress(res.mintAddress)
-        const nftName = undefined
+      console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
+      if (mintResponse.success) {
+        // const mintAddressUri = getAddressUri(mintResponse.mintAddress)
+        // const shortenedAddress = shortenAddress(mintResponse.mintAddress)
+        // const nftName = undefined
         toast({
           duration: SUCCESS_DELAY,
           position: 'top-right',
@@ -133,29 +183,51 @@ const MintTestPage: NextPage = (/* props */) => {
                 </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
+              {/*
               <div className='px-2 py-1'>
-                {res.mintAddress}
+                {mintResponse.mintAddress}
               </div>
+
               <div className='m-2'>
                 {mintAddressUri &&
                   <Link href={mintAddressUri} isExternal className="flex text-end">
                     <div className='mr-2'>
-                      {/* {name?name:shortenedAddress} */}
                       {nftName?nftName:shortenedAddress}
                     </div>
                     <ExternalLinkIcon size='16px' />
                   </Link>
                 }
               </div>
+              */}
+
             </Box>
           ),
         })
 
-      } // if (res.success)
-
+      } else {
+        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error') 
+        console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, errorMsg);
+        toast({
+          title: 'Mint failed',
+          description: `${errorMsg}`,
+          status: 'error',
+          duration: ERROR_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
     } catch (error) {
-      console.error(error)
-    } finally {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, errorMsg);
+      toast({
+        title: 'Mint failed',
+        description: `${errorMsg}`,
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+  } finally {
       setIsProcessingMint(false)
     }
   } // submitMint
@@ -163,6 +235,51 @@ const MintTestPage: NextPage = (/* props */) => {
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
   };
+
+  const getRemainingItems = useCallback(async (_candyMachineAddress:string):Promise<number> => {
+    try {
+      const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
+      // Load CM
+      const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+      const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
+      console.log('getRemainingItems:remainingItems', remainingItems)
+      return remainingItems
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
+      return 0
+    }
+  } , [])
+
+  const updateRemainingItems = useCallback(async () => {
+    const remaining = await getRemainingItems(candyMachineAddress)
+    setItemsRemaining(remaining)
+  }
+  , [candyMachineAddress, getRemainingItems])
+
+  const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
+
+  useEffect(() => {
+    let interval = null
+    try {
+      if (candyMachineAddress) {
+        updateRemainingItems()
+        interval = setInterval(() => {
+          updateRemainingItems()
+        }, REMAINING_ITEMS_UPDATE_INTERVAL)
+      }
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${FILEPATH}:useEffect:fetchRemainingItems: error: ${errorMsg}`)
+    }
+    // cleanup
+    return () => {
+      if (interval) clearInterval(interval)
+      }
+  }, [candyMachineAddress, updateRemainingItems]
+
+
+)
 
   return (
     <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
@@ -172,23 +289,37 @@ const MintTestPage: NextPage = (/* props */) => {
 
         <form onSubmit={handleDefaultSubmit} className="">
 
-
+        <Box w='100%' boxShadow='sm' p='6' rounded='md' className='flex' >
+          <Text
+              bgColor={'gray.200'}
+              bgClip="text"
+              fontSize="xl"
+              fontWeight="extrabold"
+              className='pr-2'
+            >
+            Remaining :
+          </Text>
+          <Text
+            bgGradient="linear(to-l, #7928CA, #FF0080)"
+            bgClip="text"
+            fontSize="2xl"
+            fontWeight="extrabold"
+            className='pr-2'
+            >
+            {itemsRemaining}
+          </Text>
+          <Text
+              bgColor={'gray.200'}
+              bgClip="text"
+              fontSize="xl"
+              fontWeight="extrabold"
+            >
+            to mint
+          </Text>
+        </Box>
 
           <FormControl>
-{/* 
-              <FormLabel className="pt-3">Addresses</FormLabel>
-              <InputGroup>
-                  <InputLeftElement pointerEvents='none'>
-                    <AtSignIcon color='gray.300' />
-                  </InputLeftElement>
-                  <Input
-                    type='text'
-                    placeholder='Collection address'
-                    value={collectionAddress}
-                    onChange={handleChangeCollectionAddress}
-                  />
-              </InputGroup>
- */}
+
               <InputGroup>
                 <InputLeftElement pointerEvents='none'>
                   <AtSignIcon color='gray.300' />
@@ -201,13 +332,12 @@ const MintTestPage: NextPage = (/* props */) => {
                 />
               </InputGroup>
 
-
           </FormControl>
 
           <Button
             className="mt-4"
             // isDisabled={!connected || !isValidCandyMachineInput || !isValidCollectionInput}
-            isDisabled={!connected || !isValidCandyMachineInput}
+            isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
             isLoading={isProcessingMint}
             onClick={submitMint}
             colorScheme='purple'
@@ -216,8 +346,7 @@ const MintTestPage: NextPage = (/* props */) => {
             Mint test
           </Button>
 
-
-          </form>
+        </form>
 
 
 

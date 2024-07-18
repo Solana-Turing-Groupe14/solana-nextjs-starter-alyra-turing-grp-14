@@ -16,6 +16,7 @@ import {
 import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { CollectionCreationResponseData,
   CreateCompleteCollectionCmConfigResponseData,
+  mplhelp_T_CmNftCollection_Params,
   mplhelp_T_CreateCmNftCollection_fromWallet_Input,
   mplhelp_T_CreateCmNftCollection_Result,
   mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_Result,
@@ -142,16 +143,6 @@ export default function MintTestPage() {
       const response:CollectionCreationResponseData = await res.json();
       console.debug(`${LOGPREFIX}response`, response);
       if (response && response.success) {
-
-        // toast({
-        //   title: 'Collection created.',
-        //   description: `address: ${response.address}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
         const uri = getTxUri(response.address)
         toast({
           duration: SUCCESS_DELAY,
@@ -358,18 +349,25 @@ export default function MintTestPage() {
         }) // toast
 
         // 2 - create Candy Machine
-
+        const cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params = {
+          itemsCount: nftCount,
+          mintFee: mintFee,
+          maxMintPerwallet: 1, // TODO: maxMintPerwallet
+          startDateTime,
+          endDateTime
+        }
         const createCmNftCollectionInput:mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
           walletAdapter: wallet.adapter,
           // collectionAddress: createNftCollectionResponse.collectionAddress,
           collectionSigner: createNftCollectionResponse.collectionSigner,
           nftNamePrefix: nftNamePrefix,
-          itemsCount: nftCount,
           // TODO : UPLOAD METADATA
           metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`,
-          startDateTime,
-          endDateTime,
-          mintFee,
+          // itemsCount: nftCount,
+          // startDateTime,
+          // endDateTime,
+          // mintFee,
+          cmNftCollectioNParams,
         }
         const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_Result
           = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
@@ -534,16 +532,24 @@ export default function MintTestPage() {
       // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
       const endDateTime = null;
 
+      const cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params = {
+        itemsCount: nftCount,
+        mintFee: mintFee,
+        maxMintPerwallet: 1, // TODO: maxMintPerwallet
+        startDateTime,
+        endDateTime
+      }
       const createCompleteCollectionCmConfigInputData:T_CreateCompleteCollectionCmConfigInputData = {
         collectionName: collectionName,
         collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
         metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
         collectionDescription,
         nftNamePrefix,
-        itemsCount: nftCount,
-        startDateTime,
-        endDateTime,
-        mintFee,
+        // itemsCount: nftCount,
+        // startDateTime,
+        // endDateTime,
+        // mintFee,
+        cmNftCollectioNParams,
       }
       console.debug(`${LOGPREFIX}createCompleteCollectionCmConfigInputData`, createCompleteCollectionCmConfigInputData);
 
@@ -595,11 +601,11 @@ export default function MintTestPage() {
 
       } else {
         // Error
-        const error = (response && response.success === false ? response.error : 'Unknown error') 
-        console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, error);
+        const errorMsg = (response && response.success === false ? response.error : 'Unknown error') 
+        console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, errorMsg);
         toast({
           title: 'Collection creation failed',
-          description: error,
+          description: errorMsg,
           status: 'error',
           duration: ERROR_DELAY,
           isClosable: true,

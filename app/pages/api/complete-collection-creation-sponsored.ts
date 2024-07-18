@@ -4,6 +4,7 @@ import { NFT_NAME_PREFIX_MAX_LENGTH } from '@consts/mtplx';
 import { createCompleteNftCollectionCm_fromApp } from '@helpers/mplx.helper.dynamic';
 import {
   CreateCompleteCollectionCmConfigResponseData,
+   mplhelp_T_CmNftCollection_Params,
    mplhelp_T_CreateCompleteNftCollectionCmConfig_Input,
    mplhelp_T_CreateCompleteNftCollectionCmConfig_Result
 } from 'types';
@@ -25,21 +26,34 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       // collectionDescription,
       collectionUri,
       nftNamePrefix,
-      itemsCount,
       metadataPrefixUri,
-      startDateTime,
-      endDateTime,
-      mintFee,
+      cmNftCollectioNParams: _cmNftCollectioNParams,
+      // itemsCount,
+      // startDateTime,
+      // endDateTime,
+      // mintFee,
+      // maxMintPerwallet,
     } = req.body
 
-    // console.debug(`${LOGPREFIX} collectionName = `, collectionName)
+    const {
+      itemsCount,
+      mintFee,
+      maxMintPerwallet,
+      startDateTime,
+      endDateTime,
+    } = _cmNftCollectioNParams
+
+    console.debug(`${LOGPREFIX} collectionName = `, collectionName)
     // console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription) // unused for now
-    // console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
-    // console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
-    // console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
-    // console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
-    // console.debug(`${LOGPREFIX} startDateTime = `, startDateTime)
-    // console.debug(`${LOGPREFIX} endDateTime = `, endDateTime)
+    console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
+    console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
+    console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
+
+    console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
+    console.debug(`${LOGPREFIX} mintFee = `, mintFee)
+    console.debug(`${LOGPREFIX} maxMintPerwallet = `, maxMintPerwallet)
+    console.debug(`${LOGPREFIX} startDateTime = `, startDateTime)
+    console.debug(`${LOGPREFIX} endDateTime = `, endDateTime)
 
 
     // Parameters checks
@@ -92,15 +106,24 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     // console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription)
     // Start and end date are optional
 
+    const cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params = {
+      itemsCount: itemsCount,
+      mintFee: mintFee,
+      maxMintPerwallet: maxMintPerwallet,
+      startDateTime: startDateTime,
+      endDateTime: endDateTime,
+    }
+
     const input: mplhelp_T_CreateCompleteNftCollectionCmConfig_Input = {
       collectionName,
       collectionUri,
       nftNamePrefix,
-      itemsCount,
       metadataPrefixUri,
-      startDateTime,
-      endDateTime,
-      mintFee,
+      // itemsCount,
+      // startDateTime,
+      // endDateTime,
+      // mintFee,
+      cmNftCollectioNParams,
     }
     console.debug(`${LOGPREFIX} input = `, input)
 
