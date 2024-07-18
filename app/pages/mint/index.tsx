@@ -21,8 +21,8 @@ const MintTestPage: NextPage = (/* props */) => {
 
 
   const SUCCESS_DELAY = 60_000
-  const WARN_DELAY = 15_000
-  const ERROR_DELAY = 60_000
+  // const WARN_DELAY = 15_000
+  // const ERROR_DELAY = 60_000
 
   const defaultCollectionAddress = `HwUY2vXuuvaximnpbmE6f8ds2TVmC2V4KnweQjAS5AaM`
   const defaultCandyMachineAddress = `2arDeYbysGvyKFbBzpzPSXuVpC1WppvMjr4YmsUgzPkv`
@@ -109,7 +109,6 @@ const MintTestPage: NextPage = (/* props */) => {
         console.error(`${LOGPREFIX} Wallet adapter not found`)
         return
       }
-
       const mintIn: mplhelp_T_MintNftCMInput = {
         walletAdapter: wallet.adapter,
         collectionAddress,
@@ -118,24 +117,11 @@ const MintTestPage: NextPage = (/* props */) => {
       const res:mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
         mintIn
       )
-
       console.debug(`${LOGPREFIX} mint:res: `, res)
-
-
       if (res.success) {
-        // toast({
-        //   title: 'Mint successful',
-        //   description: "NFT minted successfully.",
-        //   status: 'success',
-        //   duration: 5_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
         const mintAddressUri = getAddressUri(res.mintAddress)
         const shortenedAddress = shortenAddress(res.mintAddress)
         const nftName = undefined
-
         toast({
           duration: SUCCESS_DELAY,
           position: 'top-right',
