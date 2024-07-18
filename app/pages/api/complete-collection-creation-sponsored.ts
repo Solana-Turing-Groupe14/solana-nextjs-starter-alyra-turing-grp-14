@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT } from '@consts/commons';
 import { NFT_NAME_PREFIX_MAX_LENGTH } from '@consts/mtplx';
 import { createCompleteNftCollectionCm_fromApp } from '@helpers/mplx.helper.dynamic';
 import {
@@ -28,6 +29,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       metadataPrefixUri,
       startDateTime,
       endDateTime,
+      mintFee,
     } = req.body
 
     // console.debug(`${LOGPREFIX} collectionName = `, collectionName)
@@ -74,6 +76,18 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     } catch (error) {
       res.status(500).json({ success: false, error: 'itemsCount msut be a number' })
     }
+    if (!mintFee) {
+      res.status(500).json({ success: false, error: 'mintFee is required' })
+      return
+    }
+    if (mintFee < MINT_FEE_MIN_AMOUNT) {
+      res.status(500).json({ success: false, error: `mintFee must be greater than ${MINT_FEE_MIN_AMOUNT}` })
+      return
+    }
+    if (mintFee > MINT_FEE_MAX_AMOUNT) {
+      res.status(500).json({ success: false, error: `mintFee must be less than ${MINT_FEE_MAX_AMOUNT}` })
+      return
+    }
     // collection description is unused for now
     // console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription)
     // Start and end date are optional
@@ -86,6 +100,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       metadataPrefixUri,
       startDateTime,
       endDateTime,
+      mintFee,
     }
     console.debug(`${LOGPREFIX} input = `, input)
 

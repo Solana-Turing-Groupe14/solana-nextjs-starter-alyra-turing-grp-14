@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { globalMint } from '@helpers/nft_collection_test';
+import { globalMint } from '@helpers/nft_collection_static_test';
 
 type ResponseData =
   | {

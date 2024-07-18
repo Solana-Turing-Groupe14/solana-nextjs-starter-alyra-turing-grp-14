@@ -42,8 +42,8 @@ export const getUmi = (): MPL_T_Umi => {
 
 // ------------------------------------------------------------
 
-export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null => {
-  const LOGPREFIX = `${filePath}:getMplKeypair_fromENV: `
+export const getMplKeypair_fromEnv = (signerName: string): MPL_Keypair | null => {
+  const LOGPREFIX = `${filePath}:getMplKeypair_fromEnv: `
   try {
     console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
     if (!signerName) {
@@ -76,7 +76,7 @@ export const getMplKeypair_fromENV = (signerName: string): MPL_Keypair | null =>
     }
   } // catch
   return null
-} // getMplKeypair_fromENV
+} // getMplKeypair_fromEnv
 
 // ------------------------------------------------------------
 
@@ -116,7 +116,7 @@ export async function createSponsoredCollection(
   try {
     const umi = mplx_umi
     const APP_1_KEYPAIR_SIGNER = 'MINT_APP_01_KEYPAIR'
-    const creator_keyPair: MPL_Keypair | null = getMplKeypair_fromENV(APP_1_KEYPAIR_SIGNER)
+    const creator_keyPair: MPL_Keypair | null = getMplKeypair_fromEnv(APP_1_KEYPAIR_SIGNER)
     if (!creator_keyPair) {
       console.error(`${LOGPREFIX} creator_keyPair (${APP_1_KEYPAIR_SIGNER}) Not Found`)
       const collectionResultError: mplhelp_T_CreateCollectionResult = {

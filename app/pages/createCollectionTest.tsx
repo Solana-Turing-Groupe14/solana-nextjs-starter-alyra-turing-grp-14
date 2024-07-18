@@ -3,6 +3,7 @@ import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, Inpu
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon } from "lucide-react"
 import { useMemo, useState } from "react"
+import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
@@ -37,7 +38,6 @@ export default function MintTestPage() {
   const MAX_FILE_SIZE = 1000; // 1MB
 
   const minNftCount = 0
-  const maxNftCount = 100
 
   // TODO: remove/reset test values
   const defaultCollectionName = `Test coll. name ${randomStringNumber}`
@@ -49,6 +49,7 @@ export default function MintTestPage() {
   const [nftNamePrefix, setNftNamePrefix] = useState<string>(defaultNftNamePrefix)
   const [image, setImage] = useState<File | undefined>();
   const [nftCount, setNftCount] = useState<number>(minNftCount)
+  const [mintFee, setmMintFee] = useState<number>(MINT_FEE_DEFAULT_AMOUNT)
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
@@ -67,7 +68,7 @@ export default function MintTestPage() {
     let isValid = false
     try {
       isValid = nftCount >= minNftCount &&
-      nftCount <= maxNftCount &&
+      nftCount <= NFT_COUNT_MAX &&
       collectionName.trim().length > 0 &&
       collectionDescription.trim().length > 0 &&
       image !== undefined
@@ -175,25 +176,6 @@ export default function MintTestPage() {
             </Box>
           ),
         })
-
-        // toast({
-        //   title: '(my)Collection created.',
-        //   description: `address: ${response.address}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        //   render: () => (
-        //     <Box color='white' p={3} bg='blue.500' borderRadius='lg'>
-        //       <Text>(sponsored) Collection created.</Text>
-        //       {uri &&
-        //         <Link href={uri} isExternal className="flex text-end">
-        //           transaction <ExternalLinkIcon size='32px' />
-        //         </Link>
-        //       }
-        //     </Box>
-        //   ),
-        // })
       } else {
         console.warn(`${LOGPREFIX}response`, response);
         toast({
@@ -236,16 +218,6 @@ export default function MintTestPage() {
       const response = await mplxH_createMyCollection(wallet.adapter)
       if (response && response.success) {
         console.debug(`${LOGPREFIX}response`, response);
-        // toast({
-        //   title: '(my)Collection created.',
-        //   // description: `address: ${response.address}`,
-        //   description: `tx: ${getTxUri(response.address)}`,
-        //   status: 'success',
-        //   duration: 60_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
-
         const uri = getTxUri(response.address)
         toast({
           duration: SUCCESS_DELAY,
@@ -396,7 +368,8 @@ export default function MintTestPage() {
           // TODO : UPLOAD METADATA
           metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`,
           startDateTime,
-          endDateTime
+          endDateTime,
+          mintFee,
         }
         const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_Result
           = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
@@ -535,12 +508,7 @@ export default function MintTestPage() {
     }
   } // createCompleteNftCollection
 
-
   // ----------------------------
-
-
-  // TODO : call from API Page
-
 
   const createCompleteNftCollectionSponsored = async () => {
     const LOGPREFIX = `${FILEPATH}:createCompleteNftCollectionSponsored: `
@@ -575,6 +543,7 @@ export default function MintTestPage() {
         itemsCount: nftCount,
         startDateTime,
         endDateTime,
+        mintFee,
       }
       console.debug(`${LOGPREFIX}createCompleteCollectionCmConfigInputData`, createCompleteCollectionCmConfigInputData);
 
@@ -583,17 +552,6 @@ export default function MintTestPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-      //   body: JSON.stringify({
-      //     collectionName: collectionName,
-      //     collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
-      //     metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
-      //     collectionDescription,
-      //     nftNamePrefix,
-      //     itemsCount: nftCount,
-      //     startDateTime,
-      //     endDateTime,
-      //   })
-      // });
       body: JSON.stringify(createCompleteCollectionCmConfigInputData)
     });
     const response:CreateCompleteCollectionCmConfigResponseData = await res.json();
@@ -673,6 +631,8 @@ export default function MintTestPage() {
     event.preventDefault();
   } // handleDefaultSubmit
 
+  // ----------------------------
+
   const handleChangeCollectionName = (event: React.ChangeEvent<HTMLInputElement>) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeCollectionName: `
     console.debug(`${LOGPREFIX} handleChangeCollectionName:event: `, event)
@@ -683,6 +643,8 @@ export default function MintTestPage() {
     setCollectionName(event.target.value);
   } // handleChangeCollectionName
 
+  // ----------------------------
+
   const handleChangeCollectionDescription = (event: React.ChangeEvent<HTMLInputElement>) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeCollectionName: `
     console.debug(`${LOGPREFIX} handleChangeCollectionName:event: `, event)
@@ -692,6 +654,8 @@ export default function MintTestPage() {
     }
     setCollectionDescription(event.target.value);
   } // handleChangeCollectionDescription
+
+  // ----------------------------
 
   const handleChangeNftCount = (_value: number|string) => { // event: React.ChangeEvent<HTMLInputElement> => {
     const LOGPREFIX = `${FILEPATH}:handleChangeNftCount: `
@@ -709,6 +673,8 @@ export default function MintTestPage() {
     setNftCount(value)
   } // handleChangeNftCount
 
+  // ----------------------------
+
   const handleChangeNftNamePrefix = (event: React.ChangeEvent<HTMLInputElement>) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeNftNamePrefix: `
     console.debug(`${LOGPREFIX} handleChangeNftNamePrefix:event: `, event)
@@ -718,6 +684,8 @@ export default function MintTestPage() {
     }
     setNftNamePrefix(event.target.value);
   } // handleChangeNftNamePrefix
+
+  // ----------------------------
 
   //   const handleChangeImage = (event: { target: { files: SetStateAction<File | undefined>[] } }) => {
   const handleChangeImage = /* async */ (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -742,6 +710,49 @@ export default function MintTestPage() {
     // console.dir(p)
   };
 
+  // ----------------------------
+
+  const handleChangeNftMintFee = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const LOGPREFIX = `${FILEPATH}:handleChangeNftMintFee: `
+    try {
+      console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
+      let value:number
+      // debugger
+      if (typeof event.target.value === 'string') {
+        value = parseFloat(event.target.value)
+        if (isNaN(value)) {
+          return
+        }
+        if (value > MINT_FEE_MAX_AMOUNT) {
+          toast({
+            title: 'Mint fee amount too high',
+            description: `Mint fee amount must be at most ${MINT_FEE_MAX_AMOUNT}`,
+            status: 'warning',
+            duration: WARN_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          value = MINT_FEE_MAX_AMOUNT
+        }
+        if (value < MINT_FEE_MIN_AMOUNT) {
+          toast({
+            title: 'Mint fee amount too low',
+            description: `Mint fee amount must be at least ${MINT_FEE_MIN_AMOUNT}`,
+            status: 'warning',
+            duration: WARN_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          value = MINT_FEE_MIN_AMOUNT
+        }
+        setmMintFee(value)
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+  } // handleChangeNftMintFee
+
+  // ----------------------------
 
 /*
   const submitNftCollectionCreation = useCallback(async () => {
@@ -854,7 +865,6 @@ export default function MintTestPage() {
                   value={collectionName}
                   onChange={handleChangeCollectionName}
                   placeholder='Collection name'
-                  // size='md'
                 />
               </InputGroup>
 
@@ -866,7 +876,6 @@ export default function MintTestPage() {
                   value={collectionDescription}
                   onChange={handleChangeCollectionDescription}
                   placeholder='Collection description'
-                  // size='md'
                 />
               </InputGroup>
 
@@ -878,7 +887,17 @@ export default function MintTestPage() {
                   value={nftNamePrefix}
                   onChange={handleChangeNftNamePrefix}
                   placeholder='Nft name prefix: NFT name will be prefix + mint number'
-                  // size='md'
+                />
+              </InputGroup>
+
+              <FormLabel className="pt-1">
+                Nft mint fee
+              </FormLabel>
+              <InputGroup>
+                <Input
+                  value={mintFee}
+                  onChange={handleChangeNftMintFee}
+                  placeholder='Set mint fee'
                 />
               </InputGroup>
 
@@ -920,9 +939,9 @@ export default function MintTestPage() {
                   maxW='100px' mr='2rem'
                   value={nftCount}
                   onChange={handleChangeNftCount}
-                  min={minNftCount} max={maxNftCount}
+                  min={minNftCount} max={NFT_COUNT_MAX}
                 >
-                  <NumberInputField min={minNftCount} max={maxNftCount} />
+                  <NumberInputField min={minNftCount} max={NFT_COUNT_MAX} />
                   <NumberInputStepper
                     >
                     <NumberIncrementStepper  />
@@ -935,7 +954,7 @@ export default function MintTestPage() {
                   value={nftCount}
                   onChange={handleChangeNftCount}
                   min={minNftCount}
-                  max={maxNftCount}
+                  max={NFT_COUNT_MAX}
                 >
                   <SliderTrack>
                     <SliderFilledTrack />

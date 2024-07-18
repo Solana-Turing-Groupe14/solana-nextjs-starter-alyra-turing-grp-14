@@ -22,7 +22,7 @@ export default function MintTestPage() {
   const [isProcessingApp2AddressAirdrop, setIsProcessingApp2AddressAirdrop] = useState(false)
   const [isProcessingAppDefaultAddressAirdrop, setIsProcessingAppDefaultAddressAirdrop] = useState(false)
 
-  const [airdropAmount, setaAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
+  const [airdropAmount, setAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -104,8 +104,13 @@ export default function MintTestPage() {
               </div>
               <div className='px-2 py-1'>
                 {name?
-                  <div>
-                    {name} received {response.amount} SOL.
+                  <div className='p-1'>
+                    <div className='flex'>
+                    <Text>{name}</Text>
+                      <Text className='p-1'>received</Text>
+                      <Text className='p-1' fontWeight="bold">{response.amount}</Text>
+                      <Text>SOL.</Text>
+                    </div>
                   </div>
                   :
                   <div className='p-1'>
@@ -233,7 +238,7 @@ export default function MintTestPage() {
           })
           value = AIRDROP_MAX_AMOUNT
         }
-        setaAirdropAmount(value)
+        setAirdropAmount(value)
       }
     } catch (error) {
       console.error(`${LOGPREFIX}error: `, error)
