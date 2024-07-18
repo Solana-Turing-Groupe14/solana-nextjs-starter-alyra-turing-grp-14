@@ -552,7 +552,7 @@ export async function createNftCollection(
         console.error(`${LOGPREFIX}❌ Error creating collection.`)
         const collectionResultError: mplhelp_T_CreateNftCollection_Result = {
           success: false,
-          error: 'Error verifying the Candy Machine configuration.'
+          error: 'Error creating collection.'
         }
         const errorString = (error instanceof Error) ? error.message : `${error}`
         collectionResultError.error += ` ${errorString}`
