@@ -65,18 +65,31 @@ export default function Header( ) {
     const wallet = useWallet();
   const [solanaBalance, setSolanaBalance] = useState<number | null | undefined>(null);
 
+  const BALANCE_UPDATE_INTERVAL = 10_000
+
   useEffect(() => {
+    let interval = null
     if (wallet.publicKey) {
       // console.debug(`header.tsx: wallet.publicKey=${wallet.publicKey.toBase58()}`);
       getSolanaBalance(wallet.publicKey.toBase58())
         .then((balance) => { /* console.debug(`header.tsx: balance=${balance}`) ; */ setSolanaBalance(balance)})
         .catch((err) => { console.error(`header.tsx: getSolanaBalance error: ${err}`); } );
+        // Update balance every n seconds
+        interval = setInterval(() => {
+          if (wallet.publicKey) {
+            getSolanaBalance(wallet.publicKey.toBase58())
+            .then((balance) => { /* console.debug(`header.tsx: balance=${balance}`) ; */ setSolanaBalance(balance)})
+            .catch((err) => { console.error(`header.tsx: getSolanaBalance error: ${err}`); } );
+          }
+        }, BALANCE_UPDATE_INTERVAL)
+
     } else {
       setSolanaBalance(null);
     }
-    return () => {
-      //
-    }
+      // cleanup
+      return () => {
+      if (interval) clearInterval(interval)
+      }
   }, [wallet.publicKey, ]);
 
   return (
