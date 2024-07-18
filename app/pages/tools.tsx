@@ -1,12 +1,16 @@
 import { CheckCircleIcon } from '@chakra-ui/icons'
-import { Box, Button, Center, CloseButton, Link, Stack, Text, useToast } from "@chakra-ui/react"
+import { Box, Button, Center, CloseButton, FormControl, FormLabel, Input, InputGroup, Link, Stack, Text, useToast } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon, SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
+import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
 
+const FILEPATH = 'app/pages/tools.tsx'
+
 export default function MintTestPage() {
+
 
   const SUCCESS_DELAY = 10_000
   const WARN_DELAY = 15_000
@@ -17,6 +21,8 @@ export default function MintTestPage() {
   const [isProcessingApp1AddressAirdrop, setIsProcessingApp1AddressAirdrop] = useState(false)
   const [isProcessingApp2AddressAirdrop, setIsProcessingApp2AddressAirdrop] = useState(false)
   const [isProcessingAppDefaultAddressAirdrop, setIsProcessingAppDefaultAddressAirdrop] = useState(false)
+
+  const [airdropAmount, setaAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -37,6 +43,16 @@ export default function MintTestPage() {
       position: 'top-right',
     })
   }
+
+  // const isValidAirdropAmount = (amount:number) => {
+  //   return amount >= 0 && amount <= AIRDROP_MAX_AMOUNT
+  // } // isValidAirdropAmount
+
+  const isValidAirdropAmount = useMemo(() => { 
+    return airdropAmount > 0 && airdropAmount <= AIRDROP_MAX_AMOUNT
+  } , [airdropAmount])
+
+  // ----------------------------
 
   const airdropWallet = async (
     address:string,
@@ -89,15 +105,15 @@ export default function MintTestPage() {
               <div className='px-2 py-1'>
                 {name?
                   <div>
-                    {name} received {response.amount} sol.
+                    {name} received {response.amount} SOL.
                   </div>
                   :
-                  <div>
-                    <div>
-                      {address}
-                    </div>
-                    <div>
-                       received {response.amount} sol.
+                  <div className='p-1'>
+                      <Text>{address}</Text>
+                      <div className='flex'>
+                        <Text className='p-1'>received</Text>
+                        <Text className='p-1' fontWeight="bold">{response.amount}</Text>
+                        <Text>SOL.</Text>
                     </div>
                   </div>
                   }
@@ -143,7 +159,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingConnectedWalletAirdrop(true)
       const address:string = connectedWalletPublicKey?.toBase58()||''
-      airdropWallet(address, 1, null)
+      airdropWallet(address, airdropAmount, null)
     } catch (error) {
       console.error(error)
     } finally {
@@ -155,7 +171,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp1AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP01||''
-      airdropWallet(address, 1, 'App 1')
+      airdropWallet(address, airdropAmount, 'App 1')
     } catch (error) {
       console.error(error)
     } finally {
@@ -167,7 +183,7 @@ export default function MintTestPage() {
     try {
       setIsProcessingApp2AddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINTAP02||''
-      airdropWallet(address, 1, 'App 2')
+      airdropWallet(address, airdropAmount, 'App 2')
     } catch (error) {
       console.error(error)
     } finally {
@@ -179,13 +195,52 @@ export default function MintTestPage() {
     try {
       setIsProcessingAppDefaultAddressAirdrop(true)
       const address:string = process.env.NEXT_PUBLIC_MINT_APP_DEFAULT||''
-      airdropWallet(address, 1, 'App Default')
+      airdropWallet(address, airdropAmount, 'App Default')
     } catch (error) {
       console.error(error)
     } finally {
       setIsProcessingAppDefaultAddressAirdrop(false)
     }
   } // airdropAppDefaultWallet
+
+  // ----------------------------
+
+  const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+  } // handleDefaultSubmit
+
+  const handleChangeAirdropAmount = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const LOGPREFIX = `${FILEPATH}:handleChangeAirdropAmount: `
+    try {
+      console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
+      let value:number
+      if (typeof event.target.value === 'string') {
+        value = parseInt(event.target.value)
+        if (isNaN(value)) {
+          return
+        }
+        if (value < 0) {
+          value = 0
+        }
+        if (value > AIRDROP_MAX_AMOUNT) {
+          toast({
+            title: 'Airdrop amount too high',
+            description: `Airdrop amount must be at most ${AIRDROP_MAX_AMOUNT}`,
+            status: 'warning',
+            duration: WARN_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          value = AIRDROP_MAX_AMOUNT
+        }
+        setaAirdropAmount(value)
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+  } // handleChangeAirdropAmount
+
+    // ----------------------------
 
   return (
     <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">
@@ -201,7 +256,7 @@ export default function MintTestPage() {
         <Stack direction='column' spacing={4} align='center'>
 
           <Button
-            isDisabled={!connected}
+            isDisabled={!connected || !isValidAirdropAmount}
             isLoading={isProcessingConnectedWalletAirdrop}
             onClick={airdropConnectedWallet}
             colorScheme='green' variant='outline'
@@ -210,7 +265,7 @@ export default function MintTestPage() {
           </Button>
 
           <Button
-            isDisabled={!connected}
+            isDisabled={!connected || !isValidAirdropAmount}
             isLoading={isProcessingApp1AddressAirdrop}
             onClick={airdropApp1Wallet}
             colorScheme='orange' variant='outline'
@@ -219,7 +274,7 @@ export default function MintTestPage() {
           </Button>
 
           <Button
-            isDisabled={!connected}
+            isDisabled={!connected || !isValidAirdropAmount}
             isLoading={isProcessingApp2AddressAirdrop}
             onClick={airdropApp2Wallet}
             colorScheme='purple' variant='outline'
@@ -228,7 +283,7 @@ export default function MintTestPage() {
           </Button>
 
           <Button
-            isDisabled={!connected}
+            isDisabled={!connected || !isValidAirdropAmount}
             isLoading={isProcessingAppDefaultAddressAirdrop}
             onClick={airdropAppDefaultWallet}
             colorScheme='red' variant='outline'
@@ -237,6 +292,28 @@ export default function MintTestPage() {
           </Button>
 
         </Stack>
+
+        <form onSubmit={handleDefaultSubmit} className="">
+
+          <FormControl>
+
+              <FormLabel className="pt-1">
+                Amount
+              </FormLabel>
+              <InputGroup>
+                <Input
+                  type='number'
+                  min={0}
+                  max={AIRDROP_MAX_AMOUNT}
+                  value={airdropAmount}
+                  onChange={handleChangeAirdropAmount}
+                  placeholder='Airdrop amount'
+                  // size='md'
+                />
+              </InputGroup>
+          </FormControl>
+        </form>
+
       </Box>
 
       </div>
