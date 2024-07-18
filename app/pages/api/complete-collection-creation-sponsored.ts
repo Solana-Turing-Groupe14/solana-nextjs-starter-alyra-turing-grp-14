@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { NFT_NAME_PREFIX_MAX_LENGTH } from '@consts/mtplx';
 import { createCompleteNftCollectionCm_fromApp } from '@helpers/mplx.helper.dynamic';
 import {
   CreateCompleteCollectionCmConfigResponseData,
@@ -20,6 +21,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     console.log('POST req.body', req.body)
     const {
       collectionName,
+      collectionDescription,
       collectionUri,
       nftNamePrefix,
       itemsCount,
@@ -28,15 +30,53 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       endDateTime,
     } = req.body
 
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
-    // TODO : check parameters
+    console.debug(`${LOGPREFIX} collectionName = `, collectionName)
+    console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription) // unused for now
+    console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
+    console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
+    console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
+    console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
+    console.debug(`${LOGPREFIX} startDateTime = `, startDateTime)
+    console.debug(`${LOGPREFIX} endDateTime = `, endDateTime)
+
+
+    // Parameters checks
+    if (!collectionName?.trim()) {
+      res.status(500).json({ success: false, error: 'collectionName is required' })
+      return
+    }
+    if (!collectionUri.trim()) {
+      res.status(500).json({ success: false, error: 'collectionUri is required' })
+      return
+    }
+    if (!nftNamePrefix.trim()) {
+      res.status(500).json({ success: false, error: 'nftNamePrefix is required' })
+      return
+    }
+    if (nftNamePrefix?.length > NFT_NAME_PREFIX_MAX_LENGTH) {
+      res.status(500).json({ success: false, error: `nftNamePrefix must be at most ${NFT_NAME_PREFIX_MAX_LENGTH} characters long` })
+      return
+    }
+    if (!metadataPrefixUri.trim()) {
+      res.status(500).json({ success: false, error: 'metadataPrefixUri is required' })
+      return
+    }
+    if (!itemsCount) {
+      res.status(500).json({ success: false, error: 'itemsCount is required' })
+      return
+    }
+    try {
+      const itemsCountInt = parseInt(itemsCount)
+      if (itemsCountInt <= 0) {
+        res.status(500).json({ success: false, error: 'itemsCount msut be greater than 0' })
+        return
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'itemsCount msut be a number' })
+    }
+    // collection description is unused for now
+    // console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription)
+    // Start and end date are optional
 
     const input: mplhelp_T_CreateCompleteNftCollectionCmConfig_Input = {
       collectionName,

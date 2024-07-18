@@ -242,8 +242,8 @@ export type mplhelp_T_CreateCompleteNftCollectionCmConfig_Input =
     collectionName: string,
     collectionUri: string,
     nftNamePrefix: string,
-    itemsCount: number,
     metadataPrefixUri: string,
+    itemsCount: number,
     startDateTime: Date | null,
     endDateTime: Date | null,
   }
@@ -262,6 +262,17 @@ type mplhelp_T_CreateCompleteNftCollectionCmConfig_Result =
     success: false
     error: string
   };
+
+export type T_CreateCompleteCollectionCmConfigInputData = {
+  collectionName: string,
+  collectionDescription: string,
+  collectionUri: string,
+  nftNamePrefix: string,
+  metadataPrefixUri: string,
+  itemsCount: number,
+  startDateTime: Date | null,
+  endDateTime: Date | null,
+}
 
 // Mint NFTs from a Candy Machine
 // TODO

@@ -20,6 +20,7 @@ import { CollectionCreationResponseData,
   mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_Result,
   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
   mplhelp_T_FinalizeCmNftCollectionConfig_Result,
+  T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
 
 /* eslint-disable react/no-children-prop */
@@ -158,7 +159,7 @@ export default function MintTestPage() {
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                <Text fontWeight="bold" >Collection (only) created.</Text>
+                <Text fontWeight="bold">Collection (only) created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='m-2'>
@@ -565,29 +566,37 @@ export default function MintTestPage() {
       // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
       const endDateTime = null;
 
+      const createCompleteCollectionCmConfigInputData:T_CreateCompleteCollectionCmConfigInputData = {
+        collectionName: collectionName,
+        collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
+        metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
+        collectionDescription,
+        nftNamePrefix,
+        itemsCount: nftCount,
+        startDateTime,
+        endDateTime,
+      }
+      console.debug(`${LOGPREFIX}createCompleteCollectionCmConfigInputData`, createCompleteCollectionCmConfigInputData);
+
       const res = await fetch('/api/complete-collection-creation-sponsored', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          collectionName: collectionName,
-          collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
-          collectionDescription,
-          nftNamePrefix,
-          nftCount,
-          metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
-          startDateTime,
-          endDateTime,
-          // TODO
-          // TODO
-          // TODO
-          // TODO
-          // TODO
-          // TODO
-        })
-      });
-      const response:CreateCompleteCollectionCmConfigResponseData = await res.json();
+      //   body: JSON.stringify({
+      //     collectionName: collectionName,
+      //     collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
+      //     metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
+      //     collectionDescription,
+      //     nftNamePrefix,
+      //     itemsCount: nftCount,
+      //     startDateTime,
+      //     endDateTime,
+      //   })
+      // });
+      body: JSON.stringify(createCompleteCollectionCmConfigInputData)
+    });
+    const response:CreateCompleteCollectionCmConfigResponseData = await res.json();
       console.debug(`${LOGPREFIX}`, response);
 
       if (response && response.success) {
@@ -686,11 +695,8 @@ export default function MintTestPage() {
 
   const handleChangeNftCount = (_value: number|string) => { // event: React.ChangeEvent<HTMLInputElement> => {
     const LOGPREFIX = `${FILEPATH}:handleChangeNftCount: `
-    console.debug(`${LOGPREFIX} handleChangeNftCount:_value: `, _value)
-
+    console.debug(`${LOGPREFIX}_value: `, _value)
     let value:number
-
-    // const valueAsNumber = parseInt(valueAsString)
     if (typeof _value === 'string') {
       value = parseInt(_value)
       if (isNaN(value)) {
@@ -965,7 +971,7 @@ export default function MintTestPage() {
                 onClick={createCollectionOnly}
                 colorScheme='orange'
               >
-                Create collection (fees paid by wallet owner)
+                Create collection (fees paid)
                 HARDCODED
               </Button>
 
@@ -976,7 +982,7 @@ export default function MintTestPage() {
                 onClick={createCompleteNftCollection}
                 colorScheme='purple'
               >
-                Create NFT collection (fees paid by wallet owner)
+                Create NFT collection (fees paid)
               </Button>
 
               <Button
@@ -986,7 +992,7 @@ export default function MintTestPage() {
                 onClick={createCompleteNftCollectionSponsored}
                 colorScheme='green'
               >
-                Create NFT collection (Sponnsored fees)
+                Create NFT collection (Fees sponsored)
               </Button>
 
             </VStack>
