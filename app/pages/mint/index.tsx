@@ -8,7 +8,7 @@ import { ExternalLinkIcon } from 'lucide-react'
 import { NextPage } from "next"
 import { SetStateAction, useMemo, useState } from "react"
 import {
-  mintNftFromCM  as mplxH_mintNftFromCM,
+  mintNftFromCM_fromWallet  as mplxH_mintNftFromCM,
 } from "@helpers/mplx.helper.dynamic"
 // import { getAddressUri, getTxUri } from "@helpers/solana.helper"
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
@@ -24,14 +24,14 @@ const MintTestPage: NextPage = (/* props */) => {
   // const WARN_DELAY = 15_000
   // const ERROR_DELAY = 60_000
 
-  const defaultCollectionAddress = `HwUY2vXuuvaximnpbmE6f8ds2TVmC2V4KnweQjAS5AaM`
-  const defaultCandyMachineAddress = `2arDeYbysGvyKFbBzpzPSXuVpC1WppvMjr4YmsUgzPkv`
+  // const defaultCollectionAddress = `HwUY2vXuuvaximnpbmE6f8ds2TVmC2V4KnweQjAS5AaM`
+  const defaultCandyMachineAddress = ``
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingMint, setIsProcessingMint] = useState(false)
 
   const [candyMachineAddress, setCandyMachineAddress] = useState( defaultCandyMachineAddress )
-  const [collectionAddress, setcollectionAddress] = useState( defaultCollectionAddress )
+  // const [collectionAddress, setcollectionAddress] = useState( defaultCollectionAddress )
 
   const isConnected = useMemo(() => {
     const LOGPREFIX = `${FILEPATH}:isConnected: `
@@ -62,25 +62,24 @@ const MintTestPage: NextPage = (/* props */) => {
     return isValid
   }, [candyMachineAddress])
 
-  const handleChangeCollectionAddress = (event: { target: { value: SetStateAction<string> } }) => setcollectionAddress(event.target.value)
-
-  const isValidCollectionInput = useMemo(() => {
-    let isValid = false
-    const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
-    try {
-      if (collectionAddress.length > 0) {
-        try {
-          const solPubKey = new soljsweb3PublicKey(collectionAddress)
-          isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
-        } catch (error) {
-        }
-      }
-      } catch (error) {
-      const errorMsg = (error instanceof Error ? error.message : `${error}`)
-      console.error(`${LOGPREFIX} error: ${errorMsg}`)
-    }
-    return isValid
-  }, [collectionAddress])
+  // const handleChangeCollectionAddress = (event: { target: { value: SetStateAction<string> } }) => setcollectionAddress(event.target.value)
+  // const isValidCollectionInput = useMemo(() => {
+  //   let isValid = false
+  //   const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
+  //   try {
+  //     if (collectionAddress.length > 0) {
+  //       try {
+  //         const solPubKey = new soljsweb3PublicKey(collectionAddress)
+  //         isValid = soljsweb3PublicKey.isOnCurve(solPubKey)
+  //       } catch (error) {
+  //       }
+  //     }
+  //     } catch (error) {
+  //     const errorMsg = (error instanceof Error ? error.message : `${error}`)
+  //     console.error(`${LOGPREFIX} error: ${errorMsg}`)
+  //   }
+  //   return isValid
+  // }, [collectionAddress])
 
   const warnIsNotConnected = () => {
     const LOGPREFIX = `${FILEPATH}:warnIsNotConnected: `
@@ -109,13 +108,13 @@ const MintTestPage: NextPage = (/* props */) => {
         console.error(`${LOGPREFIX} Wallet adapter not found`)
         return
       }
-      const mintIn: mplhelp_T_MintNftCMInput = {
+      const mintInput: mplhelp_T_MintNftCMInput = {
         walletAdapter: wallet.adapter,
-        collectionAddress,
+        // collectionAddress,
         candyMachineAddress,
       }
       const res:mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
-        mintIn
+        mintInput
       )
       console.debug(`${LOGPREFIX} mint:res: `, res)
       if (res.success) {
@@ -130,7 +129,7 @@ const MintTestPage: NextPage = (/* props */) => {
               <div className='flex justify-between'>
                 <div className='flex '>
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                  <Text fontWeight= "bold" >Wallet airdropped</Text>
+                  <Text fontWeight= "bold" >Mint done</Text>
                 </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
@@ -176,10 +175,9 @@ const MintTestPage: NextPage = (/* props */) => {
 
 
           <FormControl>
-
-
-                <FormLabel className="pt-3">Addresses</FormLabel>
-                <InputGroup>
+{/* 
+              <FormLabel className="pt-3">Addresses</FormLabel>
+              <InputGroup>
                   <InputLeftElement pointerEvents='none'>
                     <AtSignIcon color='gray.300' />
                   </InputLeftElement>
@@ -190,7 +188,7 @@ const MintTestPage: NextPage = (/* props */) => {
                     onChange={handleChangeCollectionAddress}
                   />
               </InputGroup>
-
+ */}
               <InputGroup>
                 <InputLeftElement pointerEvents='none'>
                   <AtSignIcon color='gray.300' />
@@ -208,7 +206,8 @@ const MintTestPage: NextPage = (/* props */) => {
 
           <Button
             className="mt-4"
-            isDisabled={!connected || !isValidCandyMachineInput || !isValidCollectionInput}
+            // isDisabled={!connected || !isValidCandyMachineInput || !isValidCollectionInput}
+            isDisabled={!connected || !isValidCandyMachineInput}
             isLoading={isProcessingMint}
             onClick={submitMint}
             colorScheme='purple'

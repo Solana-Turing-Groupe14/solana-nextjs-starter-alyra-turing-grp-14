@@ -1,4 +1,4 @@
-// import { mintNftFromCM } from "@helpers/mplx.helpers"
+// import { mintNftFromCM_fromWallet } from "@helpers/mplx.helpers"
 
 export type SiteConfig = {
   name: string
@@ -72,7 +72,6 @@ export type mplhelp_T_MintNftCMInput =
   {
     walletAdapter: MPL_T_WalletAdapter,
     candyMachineAddress: string,
-    collectionAddress: string,
   }
 
 export type mplhelp_T_MintNftCMResult =

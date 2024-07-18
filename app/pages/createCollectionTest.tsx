@@ -990,7 +990,7 @@ export default function MintTestPage() {
                 onClick={createCollectionOnly}
                 colorScheme='orange'
               >
-                Create collection (fees paid)
+                Create collection (fees paid by wallet owner)
                 HARDCODED
               </Button>
 
@@ -1001,7 +1001,7 @@ export default function MintTestPage() {
                 onClick={createCompleteNftCollection}
                 colorScheme='purple'
               >
-                Create NFT collection (fees paid)
+                Create NFT collection (fees paid by wallet owner)
               </Button>
 
               <Button
