@@ -4,6 +4,9 @@ import { Connection, LAMPORTS_PER_SOL, PublicKey, SendTransactionError, SystemPr
 import { sign } from 'tweetnacl';
 import { IDL, USER_ACCOUNT_SEED, USER_DATA_PROGRAM_ID } from "../imports/consts";
 
+
+const FILEPATH = 'app/helpers/solana.helper.ts'
+
 if (!process.env.NEXT_PUBLIC_RPC_URL) {
     throw new Error("NEXT_PUBLIC_RPC_URL is required");
 }
@@ -220,7 +223,7 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
       age.toArrayLike(Buffer, 'le', 2).copy(instructionData, 9); // Write age
       // taille.toArrayLike(Buffer, 'le', 1).copy(instructionData, 11); // Write taille
       // taille.toArrayLike(Buffer, 'le', 1).copy(instructionData, 11); // Write taille
-  
+
       const instruction = new TransactionInstruction({
         keys: [
           { pubkey: accountPda, isSigner: false, isWritable: true },
@@ -249,49 +252,52 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
   //
 
   export const getTxUri = (_txId: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:getTxUri: `
     try {
-
-      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${_txId}`);
-      if (!_txId) return null;
-
-      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
-      return url;
-
+      // console.debug(`${LOGPREFIX}txId:${_txId}`);
+      if (_txId) {
+        const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+        // console.debug(`${LOGPREFIX}url:${url}`);
+        return url;
+      }
     } catch (error) {
-      console.error(error);
-      return null;
+      console.error(`${LOGPREFIX}error:${error}`);
     }
+    return null;
   }
 
   //
 
   export const getAddressUri = (_address: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:getAddressUri: `
     try {
-
-      console.debug(`app/helpers/solana.helper.ts: getTxUri txId:${_address}`);
-      if (!_address) return null;
-
-      const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_address}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
-      return url;
-
+      // console.debug(`${LOGPREFIX}txId:${_address}`);
+      if (_address) {
+        const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_address}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+        // console.debug(`${LOGPREFIX}url:${url}`);
+        return url;
+      }
     } catch (error) {
-      console.error(error);
-      return null;
+      console.error(`${LOGPREFIX}error:${error}`);
     }
+    // console.debug(`${LOGPREFIX}NULL`);
+    return null;
   }
 
   //
 
   export const shortenAddress = (_address: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:shortenAddress: `
     try {
-      console.debug(`app/helpers/solana.helper.ts: shortenAddress address:${_address}`);
-      if (!_address) return null;
-
-      const shortAddress = `${_address.substring(0, 4)}...${_address.substring(_address.length - 4)}`;
-      return shortAddress;
-
+      // console.debug(`${LOGPREFIX}address:${_address}`);
+      if (_address) {
+        const shortAddress = `${_address.substring(0, 4)}...${_address.substring(_address.length - 4)}`;
+        // console.debug(`${LOGPREFIX}shortAddress:${shortAddress}`);
+        return shortAddress;
+      }
     } catch (error) {
-      console.error(error);
-      return null;
+      console.error(`${LOGPREFIX}error:${error}`);
     }
+    // console.debug(`${LOGPREFIX}NULL`);
+    return null;
   }
