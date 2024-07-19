@@ -1,4 +1,4 @@
-import { Text } from '@chakra-ui/react';
+import { Text, Box, Flex } from '@chakra-ui/react';
 import React from 'react';
 
 interface BalanceProps {
@@ -6,20 +6,20 @@ interface BalanceProps {
 }
 
 const Balance: React.FC<BalanceProps> = ({ balance }) => {
-    // console.debug(`app/components/header/balance.tsx: balance=${balance}`);
-    const displayBalance = () => {
-        return ( <>
-                <Text paddingRight={1}>Balance:</Text>
-                {
-                    balance !== undefined ?
-                    <Text as="b">{balance}</Text>
-                    :
-                    <Text as='mark'>unavailable</Text>
-                }
-            </>)
+    const formatBalance = (value: number | null | undefined) => {
+        if (value === null || value === undefined) return '0.00000';
+        return value.toFixed(3);
     };
+
     return (
-        <div className="flex">{displayBalance()}</div>
+        <Flex align="center" mx={2}>
+            <Box>
+                <Text fontSize="sm" paddingRight={1} display={{ base: 'none', md: 'inline' }}>Balance:</Text>
+                <Text as="b" fontSize="sm">
+                    {formatBalance(balance)} SOL
+                </Text>
+            </Box>
+        </Flex>
     );
 };
 
