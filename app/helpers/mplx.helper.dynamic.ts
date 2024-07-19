@@ -289,7 +289,7 @@ export async function createCompleteNftCollectionCm_fromApp(
     collectionUri,
     nftNamePrefix,
     metadataPrefixUri,
-
+    nameUriArray,
     // itemsCount,
     // startDateTime,
     // endDateTime,
@@ -314,10 +314,6 @@ export async function createCompleteNftCollectionCm_fromApp(
           collectionSigner: createNftCollectionResult.collectionSigner,
           nftNamePrefix,
           metadataPrefixUri,
-          // itemsCount,
-          // startDateTime,
-          // endDateTime,
-          // mintFee,
           cmNftCollectioNParams,
           umi
         })
@@ -327,6 +323,7 @@ export async function createCompleteNftCollectionCm_fromApp(
             itemsCount: cmNftCollectioNParams.itemsCount,
             collectionSigner: createNftCollectionResult.collectionSigner,
             candyMachineSigner: createCmNftCollectionResult.candyMachineSigner,
+            nameUriArray,
             umi
           })
           return finalizeCmNftCollectionConfigResult
@@ -533,10 +530,6 @@ export async function createCmNftCollection_fromApp(
     collectionSigner,
     nftNamePrefix,
     metadataPrefixUri,
-    // itemsCount,
-    // startDateTime,
-    // endDateTime,
-    // mintFee,
     cmNftCollectioNParams
   } : mplhelp_T_CreateCmNftCollection_fromApp_Input
   ): Promise<mplhelp_T_CreateCmNftCollection_Result>
@@ -550,10 +543,6 @@ export async function createCmNftCollection_fromApp(
         collectionSigner,
         nftNamePrefix,
         metadataPrefixUri,
-        // itemsCount,
-        // startDateTime,
-        // endDateTime,
-        // mintFee,
         cmNftCollectioNParams,
         umi
       })
@@ -581,10 +570,6 @@ export async function createCmNftCollection_fromWallet(
     walletAdapter, collectionSigner,
     nftNamePrefix,
     metadataPrefixUri,
-    // itemsCount,
-    // startDateTime,
-    // endDateTime,
-    // mintFee,
     cmNftCollectioNParams,
   } : mplhelp_T_CreateCmNftCollection_fromWallet_Input
   ): Promise<mplhelp_T_CreateCmNftCollection_Result>
@@ -598,10 +583,6 @@ export async function createCmNftCollection_fromWallet(
         collectionSigner,
         nftNamePrefix,
         metadataPrefixUri,
-        // itemsCount,
-        // startDateTime,
-        // endDateTime,
-        // mintFee,
         cmNftCollectioNParams,
         umi
       })
@@ -630,10 +611,6 @@ export async function createCmNftCollection(
     collectionSigner: _collectionSigner,
     nftNamePrefix: _nftNamePrefix,
     metadataPrefixUri: _metadataPrefixUri,
-    // itemsCount: _itemsCount,
-    // startDateTime: _startDateTime,
-    // endDateTime: _endDateTime,
-    // mintFee: _mintFee,
     cmNftCollectioNParams,
     umi: _umi,
   } : mplhelp_T_CreateCmNftCollection_Input
@@ -686,14 +663,15 @@ export async function createCmNftCollection(
         return collectionResultError
       }
       // Metadata Prefix URI
-      if (!_metadataPrefixUri || _metadataPrefixUri.trim().length < 1) {
-        console.error(`${LOGPREFIX}❌ metadataPrefixUri not provided`)
-        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
-          success: false,
-          error: `Error creating CM Collection: metadataPrefixUri not provided`
-        }
-        return collectionResultError
-      }
+      // not mandatory if individual metadata URIs are provided
+      // if (!_metadataPrefixUri || _metadataPrefixUri.trim().length < 1) {
+      //   console.error(`${LOGPREFIX}❌ metadataPrefixUri not provided`)
+      //   const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+      //     success: false,
+      //     error: `Error creating CM Collection: metadataPrefixUri not provided`
+      //   }
+      //   return collectionResultError
+      // }
       if (cmNftCollectioNParams.mintFee < MINT_FEE_MIN_AMOUNT) {
         console.error(`${LOGPREFIX}❌ mintFee < ${MINT_FEE_MIN_AMOUNT} SOL`)
         const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
@@ -868,6 +846,7 @@ export async function finalizeCmNftCollectionConfig_Sponsored(
     itemsCount,
     collectionSigner,
     candyMachineSigner,
+    nameUriArray,
   } : mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input
   ): Promise<mplhelp_T_FinalizeCmNftCollectionConfig_Result>
   {
@@ -876,7 +855,7 @@ export async function finalizeCmNftCollectionConfig_Sponsored(
     try {
       setIdentityPayer_APP(umi)
       return await finalizeCmNftCollectionConfig({
-        itemsCount, collectionSigner, candyMachineSigner, umi
+        itemsCount, collectionSigner, candyMachineSigner, nameUriArray, umi
       })
     } catch (error) {
       console.error(`${LOGPREFIX}`, error)
@@ -905,6 +884,7 @@ export async function finalizeCmNftCollectionConfig_fromWallet(
     itemsCount,
     collectionSigner,
     candyMachineSigner,
+    nameUriArray,
   } : mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input
   ): Promise<mplhelp_T_FinalizeCmNftCollectionConfig_Result>
   {
@@ -914,7 +894,7 @@ export async function finalizeCmNftCollectionConfig_fromWallet(
       // Payer / Minter = Wallet
       setIdentityPayer_WalletAdapter(walletAdapter, umi)
       return await finalizeCmNftCollectionConfig({
-        itemsCount, collectionSigner, candyMachineSigner, umi
+        itemsCount, collectionSigner, candyMachineSigner, nameUriArray, umi
       })
     } catch (error) {
       console.error(`${LOGPREFIX}`, error)
@@ -941,6 +921,7 @@ export async function finalizeCmNftCollectionConfig(
     itemsCount: _itemsCount,
     collectionSigner: _collectionSigner,
     candyMachineSigner: _candyMachineSigner,
+    nameUriArray,
     umi: _umi,
   } : mplhelp_T_FinalizeCmNftCollectionConfig
   ): Promise<mplhelp_T_FinalizeCmNftCollectionConfig_Result>
@@ -962,13 +943,27 @@ export async function finalizeCmNftCollectionConfig(
       }
       try {
         const configLines = [];
-        for (let i = 1; i <= _itemsCount; i++) {
-          configLines.push(
-            {
-              name: `${i}`,
-              uri: `${i}.json`,
-            })
-        }
+        if (nameUriArray) {
+          for (const nameUri of nameUriArray) {
+            configLines.push(
+              {
+                name: `${nameUri.name}`,
+                uri: `${nameUri.uri}.json`,
+              })
+          } // for
+        } else {
+          for (let i = 1; i <= _itemsCount; i++) {
+            configLines.push(
+              {
+                name: `${i}`,
+                uri: `${i}.json`,
+              })
+          } // for
+        } // nameUriArray
+
+        console.debug(`${LOGPREFIX} configLines:`, configLines);
+        console.dir(configLines);
+
         await MPL_F_addConfigLines(_umi, {
           candyMachine: _candyMachineSigner.publicKey,
           index: 0, // always start at 0

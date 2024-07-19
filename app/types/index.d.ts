@@ -231,11 +231,26 @@ export type mplhelp_T_CreateCmNftCollection_Result =
 
 // Finalises/completes/updates a Candy Machine NFT collection
 
+
+export type mplhelp_T_NameUri =
+{
+  name: string,
+  uri: string,
+}
+
+export type mplhelp_T_NameUriArray =
+{
+  name: string,
+  uri: string,
+}[]
+
+
 export type mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input =
   {
     collectionSigner: MPL_T_KeypairSigner,
     candyMachineSigner: MPL_T_KeypairSigner,
     itemsCount: number,
+    nameUriArray: mplhelp_T_NameUriArray,
     umi: MPL_T_Umi,
   }
 export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input =
@@ -244,6 +259,7 @@ export type mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input =
     collectionSigner: MPL_T_KeypairSigner,
     candyMachineSigner: MPL_T_KeypairSigner,
     itemsCount: number,
+    nameUriArray: mplhelp_T_NameUriArray,
   }
 
 export type mplhelp_T_FinalizeCmNftCollectionConfig =
@@ -269,6 +285,7 @@ export type mplhelp_T_CreateCompleteNftCollectionCmConfig_Input =
     collectionName: string,
     collectionUri: string,
     nftNamePrefix: string,
+    nameUriArray: mplhelp_T_NameUriList,
     metadataPrefixUri: string,
     cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
   }
@@ -276,24 +293,24 @@ export type mplhelp_T_CreateCompleteNftCollectionCmConfig_Input =
 type mplhelp_T_CreateCompleteNftCollectionCmConfig_Result =
   mplhelp_T_FinalizeCmNftCollectionConfig_Result
 
-
-  export type CreateCompleteCollectionCmConfigResponseData =
-  | {
-    success: true
-    collectionAddress: string
-    candyMachineAddress: string,
-  }
-  | {
-    success: false
-    error: string
-  };
-
 export type T_CreateCompleteCollectionCmConfigInputData = {
   collectionName: string,
   collectionDescription: string,
   collectionUri: string,
   nftNamePrefix: string,
-  metadataPrefixUri: string,
+  metadataPrefixUri: string|null|undefined,
+  nameUriArray: mplhelp_T_NameUriList,
   cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
 }
+
+export type CreateCompleteCollectionCmConfigResponseData =
+| {
+  success: true
+  collectionAddress: string
+  candyMachineAddress: string,
+}
+| {
+  success: false
+  error: string
+};
 

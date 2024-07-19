@@ -27,6 +27,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       collectionUri,
       nftNamePrefix,
       metadataPrefixUri,
+      nameUriArray,
       cmNftCollectioNParams: _cmNftCollectioNParams,
       // itemsCount,
       // startDateTime,
@@ -48,6 +49,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
     console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
     console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
+    console.debug(`${LOGPREFIX} nameUriArray = `, nameUriArray)
 
     console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
     console.debug(`${LOGPREFIX} mintFee = `, mintFee)
@@ -73,10 +75,16 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       res.status(500).json({ success: false, error: `nftNamePrefix must be at most ${NFT_NAME_PREFIX_MAX_LENGTH} characters long` })
       return
     }
-    if (!metadataPrefixUri.trim()) {
-      res.status(500).json({ success: false, error: 'metadataPrefixUri is required' })
+
+    // if (!metadataPrefixUri.trim()) {
+    //   res.status(500).json({ success: false, error: 'metadataPrefixUri is required' })
+    //   return
+    // }
+    if (!metadataPrefixUri.trim() && (!nameUriArray || nameUriArray.length === 0)) {
+      res.status(500).json({ success: false, error: 'metadataPrefixUri or nameUriArray is reqired' })
       return
     }
+
     if (!itemsCount) {
       res.status(500).json({ success: false, error: 'itemsCount is required' })
       return
@@ -119,10 +127,7 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       collectionUri,
       nftNamePrefix,
       metadataPrefixUri,
-      // itemsCount,
-      // startDateTime,
-      // endDateTime,
-      // mintFee,
+      nameUriArray,
       cmNftCollectioNParams,
     }
     console.debug(`${LOGPREFIX} input = `, input)
