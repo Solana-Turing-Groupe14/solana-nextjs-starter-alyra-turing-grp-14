@@ -3,6 +3,7 @@
 
 ## To Fix
 - collection paid by user doesn't work (mint fails) ❌
+See https://solana.stackexchange.com/questions/14620/how-to-use-payer-and-minter-fields-in-mintv2-from-metaplex
 
 # Mint
 
