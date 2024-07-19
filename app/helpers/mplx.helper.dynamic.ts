@@ -39,7 +39,9 @@ import { I_ExpectedCandyMachineState, mplhelp_T_AirdropResult, mplhelp_T_CreateC
   mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input,
   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
   mplhelp_T_FinalizeCmNftCollectionConfig_Result,
-  mplhelp_T_MintNftCMInput,
+  mplhelp_T_MintNftCm,
+  mplhelp_T_MintNftCm_fromApp_Input,
+  mplhelp_T_MintNftCm_fromWallet_Input,
   mplhelp_T_MintNftCMResult
 } from "types";
 
@@ -229,9 +231,9 @@ export async function setIdentityPayer_APP(
     if (!creator_keyPair) {
       return false
     }
-    const APP_Signer = MPL_F_createSignerFromKeypair(_umi, creator_keyPair)
-    // Set identity & payer with the same signer: APP_Signer
-    _umi.use(MPL_P_KeypairIdentity(APP_Signer));
+    const appSigner = MPL_F_createSignerFromKeypair(_umi, creator_keyPair)
+    // Set identity & payer with the same signer: appSigner
+    _umi.use(MPL_P_KeypairIdentity(appSigner));
 
     if (_checkSigner && !MPL_F_isSigner(_umi.identity)) {
       console.error(`${LOGPREFIX}❌ wallet ${_umi.identity} is not a valid signer`)
@@ -478,14 +480,14 @@ export async function createNftCollection(
       // --------------------------------
       // Create a collection
       // --------------------------------
-      const collection_Signer = MPL_F_generateSigner(_umi) // NEW random signer
+      const collectionSigner = MPL_F_generateSigner(_umi) // NEW random signer
       try {
         await MPL_F_createCollectionV1(umi, {
-          collection: collection_Signer,
+          collection: collectionSigner,
           name: _collectionName,
           uri: _collectionUri,
         }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-        console.log(`${LOGPREFIX} ✅ Created collection: ${collection_Signer.publicKey.toString()}`)
+        console.log(`${LOGPREFIX} ✅ Created collection: ${collectionSigner.publicKey.toString()}`)
       } catch (error) {
         console.error(`${LOGPREFIX}❌ Error creating collection.`)
         const collectionResultError: mplhelp_T_CreateNftCollection_Result = {
@@ -500,8 +502,8 @@ export async function createNftCollection(
       // --------------
       const collectionResult: mplhelp_T_CreateNftCollection_Result = {
         success: true,
-        collectionAddress: collection_Signer.publicKey,
-        collectionSigner: collection_Signer,
+        collectionAddress: collectionSigner.publicKey,
+        collectionSigner: collectionSigner,
       }
       console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
       return collectionResult
@@ -1021,12 +1023,35 @@ export async function finalizeCmNftCollectionConfig(
 
   // ------------------------------------------------------------
 
-  // ------------------------------------------------------------
+  export async function mintNftFromCm_fromApp({
+    candyMachineAddress,
+  }: mplhelp_T_MintNftCm_fromApp_Input): Promise<mplhelp_T_MintNftCMResult> {
+  const LOGPREFIX = `${filePath}:mintNftFromCm_fromApp: `
+  try {
+    const umi = mplx_umi
+    console.debug(`${LOGPREFIX} -> candyMachineAddress=${candyMachineAddress}`)
+    setIdentityPayer_APP(umi)
+    return mintNftFromCm({
+      candyMachineAddress,
+      umi: umi,
+    })
+  } catch (error) {
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}`, errorMsg)
+    const mintResultError: mplhelp_T_MintNftCMResult = {
+      success: false,
+      error: `Error minting NFT: ${errorMsg}`
+    }
+    return mintResultError
+  } // catch
+} // mintNftFromCm_fromApp
 
-export async function mintNftFromCM_fromWallet({
+// ------------------------------------------------------------
+/*
+export async function mintNftFromCm_fromWallet({
     walletAdapter: _walletAdapter,
     candyMachineAddress: _candyMachineAddress,
-  }: mplhelp_T_MintNftCMInput): Promise<mplhelp_T_MintNftCMResult> {
+  }: mplhelp_T_MintNftCm_fromWallet_Input): Promise<mplhelp_T_MintNftCMResult> {
   const LOGPREFIX = `${filePath}:mintNftFromCM: `
   try {
 
@@ -1077,14 +1102,17 @@ export async function mintNftFromCM_fromWallet({
     // const collectionPublicKey: MPL_T_PublicKey = MPL_F_publicKey(_collectionAddress)
 
     const collectionPublicKey = candyMachine.collectionMint
-
+    const assetSigner = MPL_F_generateSigner(umi)
+    
 
     console.table({
       candyMachinePublicKey: candyMachinePublicKey.toString(),
       collectionPublicKey: collectionPublicKey.toString(),
       owner: umi.identity.publicKey.toString(),
       payer: umi.payer.publicKey.toString(),
+      assetSigner: assetSigner.publicKey,
     })
+
 
     try {
       // Mint NFT
@@ -1093,7 +1121,7 @@ export async function mintNftFromCM_fromWallet({
         .add(
           MPL_F_mintV1(umi, {
             candyMachine: candyMachinePublicKey, // candyMachine.publicKey
-            asset: MPL_F_generateSigner(umi),
+            asset: assetSigner,
             collection: collectionPublicKey, // collection_Signer.publicKey
             // mintArgs: {
             //   solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
@@ -1120,43 +1148,181 @@ export async function mintNftFromCM_fromWallet({
         }
       console.log(`✅ NFT Minted.`);
     } catch (error) {
+      const errorMsg = (error instanceof Error) ? error.message : `${error}`
       console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)
       const mintResultError: mplhelp_T_CreateNftCollection_Result = {
         success: false,
-        error: 'Error minting NFT.'
-      }
-      if (error instanceof Error) {
-        console.log('error', error)
-        mintResultError.error += ` ${error.message}`
-      } else {
-        mintResultError.error = ` ${error}`
+        error: `Error minting NFT: ${errorMsg}`
       }
       return mintResultError
     } // catch
 
-
     const mintResult: mplhelp_T_MintNftCMResult = {
       success: true,
-      mintAddress: "TODO",
+      mintAddress: assetSigner.publicKey, // TODO: check this
     }
-
     console.debug(`${LOGPREFIX} mintResult`, mintResult)
     return mintResult
-
   } catch (error) {
-    console.error(`${LOGPREFIX}`, error)
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}`, errorMsg)
     const mintResultError: mplhelp_T_MintNftCMResult = {
       success: false,
-      error: ''
+      error: `Error minting NFT: ${errorMsg}`
     }
-    if (error instanceof Error) {
-      console.log('error', error)
-      mintResultError.error = error.message
-    } else {
-      mintResultError.error = 'Error'
+    return mintResultError
+  } // catch
+} // mintNftFromCm_fromWallet
+*/
+
+export async function mintNftFromCm_fromWallet({
+  walletAdapter: _walletAdapter,
+  candyMachineAddress: _candyMachineAddress,
+  }: mplhelp_T_MintNftCm_fromWallet_Input): Promise<mplhelp_T_MintNftCMResult> {
+  const LOGPREFIX = `${filePath}:mintNftFromCM: `
+  try {
+    const umi = mplx_umi
+    setIdentityPayer_WalletAdapter(_walletAdapter, umi, true)
+    return mintNftFromCm({
+      candyMachineAddress: _candyMachineAddress,
+      umi: umi,
+    })
+  } catch (error) {
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}`, errorMsg)
+    const mintResultError: mplhelp_T_MintNftCMResult = {
+      success: false,
+      error: `Error minting NFT: ${errorMsg}`
+    }
+    return mintResultError
+  } // catch
+} // mintNftFromCm_fromWallet
+
+// ------------------------------------------------------------
+
+export async function mintNftFromCm({
+  candyMachineAddress: _candyMachineAddress,
+  umi: _umi,
+}: mplhelp_T_MintNftCm): Promise<mplhelp_T_MintNftCMResult> {
+const LOGPREFIX = `${filePath}:mintNftFromCM: `
+try {
+
+  const umi = mplx_umi
+
+  // TODO: check real Mint cost
+  // Basic Check balance(s)
+  if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _umi.payer.publicKey)) {
+    console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
+    console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
+    const collectionResultError: mplhelp_T_MintNftCMResult = {
+      success: false,
+      error: `Error minting NFT: Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`
+    }
+    return collectionResultError
+  }
+
+  // // Set identity
+  // umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
+  // // Set payer
+  // umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
+  // setIdentityPayer_WalletAdapter(_walletAdapter, umi, true)
+
+  // console.debug(`${LOGPREFIX} candyMachineAddress=${_candyMachineAddress} collectionAddress=${_collectionAddress}`)
+  // console.debug(`${LOGPREFIX}`)
+  console.table({
+      logger: LOGPREFIX,
+      candyMachineAddress: _candyMachineAddress,
+      // collectionAddress: _collectionAddress,
+    })
+
+  if (!_candyMachineAddress) {
+    console.error(`${LOGPREFIX} _candyMachineAddress`)
+    const collectionResultError: mplhelp_T_MintNftCMResult = {
+      success: false,
+      error: 'No Candy Machine Address provided'
+    }
+    return collectionResultError
+  }
+
+  const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
+
+  // Load CM
+  const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey, MPL_TX_BUILDR_OPTIONS.confirm);
+  console.debug(`${LOGPREFIX}candyMachine`, candyMachine)
+  console.debug(`${LOGPREFIX}candyMachine.collectionMint.__publicKey`, candyMachine.collectionMint.__publicKey)
+
+  // const _collectionAddress:string = candyMachine.collectionMint.__publicKey as string
+  // const collectionPublicKey: MPL_T_PublicKey = MPL_F_publicKey(_collectionAddress)
+
+  const collectionPublicKey = candyMachine.collectionMint
+  const assetSigner = MPL_F_generateSigner(umi)
+  
+
+  console.table({
+    candyMachinePublicKey: candyMachinePublicKey.toString(),
+    collectionPublicKey: collectionPublicKey.toString(),
+    owner: umi.identity.publicKey.toString(),
+    payer: umi.payer.publicKey.toString(),
+    assetSigner: assetSigner.publicKey,
+  })
+
+
+  try {
+    // Mint NFT
+    const mintTx = await MPL_F_transactionBuilder()
+      .add(MPL_F_setComputeUnitLimit(umi, { units: 800_000 }))
+      .add(
+        MPL_F_mintV1(umi, {
+          candyMachine: candyMachinePublicKey, // candyMachine.publicKey
+          asset: assetSigner,
+          collection: collectionPublicKey, // collection_Signer.publicKey
+          // mintArgs: {
+          //   solPayment: MPL_F_some({ destination: treasury_Signer.publicKey }),
+          // },
+          // mintArgs: {
+          //   solPayment: MPL_F_some({ destination: treasury }),
+          // },
+        })
+      )
+      .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
+
+      console.debug(`${LOGPREFIX} mintTx`, mintTx)
+      console.dir(mintTx)
+      console.dir(mintTx.result)
+      console.log(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
+
+      if (mintTx.result.value.err !== null) {
+        console.error(`${LOGPREFIX}❌ Error minting NFT.`)
+        const mintResultError: mplhelp_T_MintNftCMResult = {
+          success: false,
+          error: 'Error minting NFT.'
+        }
+        return mintResultError
+      }
+    console.log(`✅ NFT Minted.`);
+  } catch (error) {
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)
+    const mintResultError: mplhelp_T_CreateNftCollection_Result = {
+      success: false,
+      error: `Error minting NFT: ${errorMsg}`
     }
     return mintResultError
   } // catch
 
-} // mintNftFromCM
-
+  const mintResult: mplhelp_T_MintNftCMResult = {
+    success: true,
+    mintAddress: assetSigner.publicKey, // TODO: check this
+  }
+  console.debug(`${LOGPREFIX} mintResult`, mintResult)
+  return mintResult
+} catch (error) {
+  const errorMsg = (error instanceof Error) ? error.message : `${error}`
+  console.error(`${LOGPREFIX}`, errorMsg)
+  const mintResultError: mplhelp_T_MintNftCMResult = {
+    success: false,
+    error: `Error minting NFT: ${errorMsg}`
+  }
+  return mintResultError
+} // catch
+} // mintNftFromCm_fromWallet

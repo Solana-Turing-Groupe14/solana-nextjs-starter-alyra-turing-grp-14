@@ -1,5 +1,3 @@
-// import { mintNftFromCM_fromWallet } from "@helpers/mplx.helpers"
-
 export type SiteConfig = {
   name: string
   description: string
@@ -68,11 +66,35 @@ export type mplhelp_T_CreateCMNftCollectionResult =
     error: string
   };
 
-export type mplhelp_T_MintNftCMInput =
+// Mint NFTs from a Candy Machine
+
+export type mplhelp_T_MintNftCm_fromApp_Input =
   {
-    walletAdapter: MPL_T_WalletAdapter,
     candyMachineAddress: string,
   }
+
+  export type mplhelp_T_MintNftCm =
+  {
+    candyMachineAddress: string
+    umi: MPL_T_Umi,
+  }
+
+export type mplhelp_T_MintNftCm_fromWallet_Input =
+{
+  walletAdapter: MPL_T_WalletAdapter,
+  candyMachineAddress: string,
+}
+
+export type mintFromCmFromAppResponseData =
+| {
+  success: true
+  mintAddress: string
+}
+| {
+  success: false
+  error: string
+};
+
 
 export type mplhelp_T_MintNftCMResult =
   | {
@@ -183,13 +205,7 @@ export type mplhelp_T_CreateCmNftCollection_fromWallet_Input =
     collectionSigner: MPL_T_KeypairSigner,
     nftNamePrefix: string,
     metadataPrefixUri: string,
-
     cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
-
-    // itemsCount: number,
-    // startDateTime: Date | null,
-    // endDateTime: Date | null,
-    // mintFee: number,
   }
 
 export type mplhelp_T_CreateCmNftCollection_Input =
@@ -197,13 +213,7 @@ export type mplhelp_T_CreateCmNftCollection_Input =
     collectionSigner: MPL_T_KeypairSigner,
     nftNamePrefix: string,
     metadataPrefixUri: string,
-
     cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
-    // itemsCount: number,
-    // startDateTime: Date | null,
-    // endDateTime: Date | null,
-    // mintFee: number,
-
     umi: MPL_T_Umi,
   }
 
@@ -260,12 +270,7 @@ export type mplhelp_T_CreateCompleteNftCollectionCmConfig_Input =
     collectionUri: string,
     nftNamePrefix: string,
     metadataPrefixUri: string,
-
     cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
-    // itemsCount: number,
-    // startDateTime: Date | null,
-    // endDateTime: Date | null,
-    // mintFee: number,
   }
 
 type mplhelp_T_CreateCompleteNftCollectionCmConfig_Result =
@@ -289,14 +294,6 @@ export type T_CreateCompleteCollectionCmConfigInputData = {
   collectionUri: string,
   nftNamePrefix: string,
   metadataPrefixUri: string,
-
   cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params,
-
-  // itemsCount: number,
-  // startDateTime: Date | null,
-  // endDateTime: Date | null,
-  // mintFee: number,
 }
 
-// Mint NFTs from a Candy Machine
-// TODO

@@ -788,7 +788,7 @@ export default function MintTestPage() {
 
 
 
-      const mintIn: mplhelp_T_MintNftCMInput = {
+      const mintIn: mplhelp_T_MintNftCm_fromWallet_Input = {
         walletAdapter: wallet.adapter,
         collectionAddress,
         candyMachineAddress,
