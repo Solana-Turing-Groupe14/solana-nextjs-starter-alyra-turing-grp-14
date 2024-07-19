@@ -35,7 +35,7 @@ import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 
 /* eslint-disable react/no-children-prop */
 
-const FILEPATH = 'app/pages/createCollectionTest.tsx'
+const FILEPATH = 'app/pages/oldStuff/createCollectionTest.tsx.bak'
 
 export default function MintTestPage() {
 
@@ -116,6 +116,7 @@ export default function MintTestPage() {
       position: 'top-right',
     })
   }
+/*
   const globalMint = async () => {
     const LOGPREFIX = `${FILEPATH}:globalMint: `
     try {
@@ -142,6 +143,7 @@ export default function MintTestPage() {
       setIsProcessingGlobalMint(false)
     }
   } // globalMint
+*/
 /*
   const createSponsoredCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createSponsoredCollection: `
@@ -946,9 +948,9 @@ export default function MintTestPage() {
 
   return (
     <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
-      <Text fontSize='3xl'>Mint(s) test</Text>
+      <Text fontSize='3xl'>Create collection</Text>
       <div className="flex flex-col gap-4 ">
-
+{/* 
         <Button
             isDisabled={!connected}
             isLoading={isProcessingGlobalMint}
@@ -958,7 +960,7 @@ export default function MintTestPage() {
             GLOBAL Mint test
             (everything is hardcoded)
         </Button>
-
+ */}
         <form onSubmit={handleDefaultSubmit} className="">
 
           <Container maxW='2xl' bg='blue.600' borderRadius='lg' centerContent padding={3}>

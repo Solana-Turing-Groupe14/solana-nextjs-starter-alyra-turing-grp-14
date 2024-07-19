@@ -21,11 +21,11 @@ const MenuItems = [
     href: "/",
   },
   {
-    text: "Create Collecton test",
-    href: "/createCollectionTest",
+    text: "Create Collection",
+    href: "/createCollection",
   },
   {
-    text: "Mint test",
+    text: "Mint",
     href: "/mint/",
   },
   {
