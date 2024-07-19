@@ -1,16 +1,22 @@
 
-# Storage
+# Collections
 
+## To Fix
+- collection paid by user doesn't work (mint fails) ❌
+See https://solana.stackexchange.com/questions/14620/how-to-use-payer-and-minter-fields-in-mintv2-from-metaplex
 
-## Iris
-https://docs.irys.xyz/faqs/dev-faq
+# Mint
 
-https://docs.irys.xyz/overview/networks
-Uploads to Irys' Devnet are kept for roughly 60 days. Devnet is for building and prototyping projects along with learning our SDK.
+## Files Upload ⚙️
+### Todo 📝
 
-Uploads can be paid for using free tokens available from faucets.
+- Image 🖼️
+- JSONs
+  - collection metadata 📁
+  - individual nft data 📁
 
-On Devnet, you can pay for uploads in any of these tokens:
+# Display NFT 🖼️
 
-Token / Blockchain	Token	Parameter Value	Irys Support	WebIrys Support
-Solana	SOL	solana	yes	yes
+# Anchor 👨‍💻
+
+# Tests 🧪
