@@ -1,16 +1,12 @@
-import { AddIcon, AtSignIcon, CheckCircleIcon,  } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, FormControl, Input, InputGroup,
-  InputLeftElement, Link, Text, useToast
-} from "@chakra-ui/react"
+import { AddIcon, AtSignIcon, CheckCircleIcon } from '@chakra-ui/icons'
+import { Box, Button, CloseButton, FormControl, Input, InputGroup, InputLeftElement, Link, Text, useToast, VStack, Heading, Container, useColorModeValue, Fade, ScaleFade } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon } from 'lucide-react'
 import { NextPage } from "next"
 import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
-import {
-  mintNftFromCm_fromWallet  as mplxH_mintNftFromCM,
-} from "@helpers/mplx.helper.dynamic"
+import { motion } from "framer-motion"
+import { mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic"
 import { getUmi } from '@helpers/mplx.helper.static'
-// import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
@@ -32,6 +28,11 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const [candyMachineAddress, setCandyMachineAddress] = useState( defaultCandyMachineAddress )
   const [itemsRemaining, setItemsRemaining] = useState<number>(0)
+
+  const bgColor = useColorModeValue("gray.50", "gray.800")
+  const cardBgColor = useColorModeValue("white", "gray.700")
+  const textColor = useColorModeValue("gray.800", "white")
+  const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
     const LOGPREFIX = `${FILEPATH}:isConnected: `
@@ -320,85 +321,85 @@ const MintTestPage: NextPage = (/* props */) => {
   )
 
   return (
-    <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
-      <Text fontSize='3xl'>Mint(s) test</Text>
-      <div className="flex flex-col gap-4 ">
+    <Container maxW="container.md" py={10}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <VStack spacing={8}>
+          <Heading as="h1" size="2xl" textAlign="center" mb={6}>
+            Mint NFTs
+          </Heading>
 
+          <ScaleFade initialScale={0.9} in={true}>
+            <Box w='100%' boxShadow='lg' p='6' rounded='xl' bg={cardBgColor}>
+              <Text fontSize="xl" fontWeight="bold" mb={2}>
+                Remaining to mint:
+              </Text>
+              <Text
+                bgGradient={gradientColor}
+                bgClip="text"
+                fontSize="4xl"
+                fontWeight="extrabold"
+              >
+                {itemsRemaining}
+              </Text>
+            </Box>
+          </ScaleFade>
 
-        <form onSubmit={handleDefaultSubmit} className="">
+          <form onSubmit={handleDefaultSubmit} style={{ width: '100%' }}>
+            <VStack spacing={6}>
+              <FormControl>
+                <InputGroup>
+                  <InputLeftElement pointerEvents='none'>
+                    <AtSignIcon color='gray.300' />
+                  </InputLeftElement>
+                  <Input
+                    type='text'
+                    placeholder='Candy Machine address'
+                    value={candyMachineAddress}
+                    onChange={handleChangeCandyMachineAddress}
+                    bg={cardBgColor}
+                    borderRadius="full"
+                  />
+                </InputGroup>
+              </FormControl>
 
-        <Box w='100%' boxShadow='sm' p='6' rounded='md' className='flex' >
-          <Text
-              bgColor={'gray.200'}
-              bgClip="text"
-              fontSize="xl"
-              fontWeight="extrabold"
-              className='pr-2'
-            >
-            Remaining :
-          </Text>
-          <Text
-            bgGradient="linear(to-l, #7928CA, #FF0080)"
-            bgClip="text"
-            fontSize="2xl"
-            fontWeight="extrabold"
-            className='pr-2'
-            >
-            {itemsRemaining}
-          </Text>
-          <Text
-              bgColor={'gray.200'}
-              bgClip="text"
-              fontSize="xl"
-              fontWeight="extrabold"
-            >
-            to mint
-          </Text>
-        </Box>
+              <Fade in={true}>
+                <Button
+                  isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                  isLoading={isProcessingMintPaidByWallet}
+                  onClick={submitMintPaidByWallet}
+                  colorScheme='purple'
+                  size="lg"
+                  width="full"
+                  leftIcon={<AddIcon />}
+                  borderRadius="full"
+                >
+                  Mint (fee paid by wallet)
+                </Button>
+              </Fade>
 
-          <FormControl>
-
-              <InputGroup>
-                <InputLeftElement pointerEvents='none'>
-                  <AtSignIcon color='gray.300' />
-                </InputLeftElement>
-                <Input
-                  type='text'
-                  placeholder='Candy Machine address'
-                  value={candyMachineAddress}
-                  onChange={handleChangeCandyMachineAddress}
-                />
-              </InputGroup>
-
-          </FormControl>
-
-          <Button
-            className="mt-4"
-            isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
-            isLoading={isProcessingMintPaidByWallet}
-            onClick={submitMintPaidByWallet}
-            colorScheme='purple'
-          >
-            <AddIcon className='pr-1' />
-            Mint (fee paid by wallet)
-          </Button>
-
-          <Button
-            className="mt-4"
-            isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
-            isLoading={isProcessingMintPaidByApp}
-            onClick={submitMintPaidByApp}
-            colorScheme='purple'
-          >
-            <AddIcon className='pr-1' />
-            Mint (free)
-          </Button>
-
-        </form>
-
-      </div>
-
-    </div>
+              <Fade in={true}>
+                <Button
+                  isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                  isLoading={isProcessingMintPaidByApp}
+                  onClick={submitMintPaidByApp}
+                  colorScheme='green'
+                  size="lg"
+                  width="full"
+                  leftIcon={<AddIcon />}
+                  borderRadius="full"
+                >
+                  Mint (free)
+                </Button>
+              </Fade>
+            </VStack>
+          </form>
+        </VStack>
+      </motion.div>
+    </Container>
   )
 }
 

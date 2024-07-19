@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey, Umi } from '@metaplex-foundation/umi';
+import { publicKey } from '@metaplex-foundation/umi';
 import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { 
-  Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image
+  Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image,
+  Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
+  useDisclosure, Container, Heading, useColorModeValue
 } from '@chakra-ui/react';
+import { motion } from 'framer-motion';
 
 interface OffChainMetadata {
   image?: string;
@@ -16,6 +19,72 @@ interface OffChainMetadata {
 interface NFTData extends DigitalAsset {
   offChainMetadata: OffChainMetadata | null;
 }
+
+const NFTCard: React.FC<{ nft: NFTData; index: number }> = ({ nft, index }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const bgColor = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+
+  return (
+    <Box 
+      as={motion.div}
+      whileHover={{ scale: 1.05 }}
+      transition={{ duration: "0.3s" }}
+      borderWidth={1}
+      borderRadius="lg"
+      borderColor={borderColor}
+      overflow="hidden"
+      bg={bgColor}
+      boxShadow="md"
+      onClick={onOpen}
+      cursor="pointer"
+    >
+      {nft.offChainMetadata && nft.offChainMetadata.image && (
+        <Image src={nft.offChainMetadata.image} alt={nft.metadata.name} w="100%" h="200px" objectFit="cover" />
+      )}
+      <Box p={4}>
+        <Text fontSize="lg" fontWeight="bold">{nft.metadata.name}</Text>
+        <Text fontSize="sm" color="gray.500">#{index + 1}</Text>
+      </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{nft.metadata.name}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              {nft.offChainMetadata && nft.offChainMetadata.image && (
+                <Image src={nft.offChainMetadata.image} alt={nft.metadata.name} borderRadius="md" />
+              )}
+              <Text fontWeight="bold">Symbol: {nft.metadata.symbol}</Text>
+              {nft.offChainMetadata && nft.offChainMetadata.description && (
+                <Text>{nft.offChainMetadata.description}</Text>
+              )}
+              {nft.offChainMetadata && nft.offChainMetadata.attributes && (
+                <Table variant="simple" size="sm">
+                  <Tbody>
+                    {nft.offChainMetadata.attributes.map((attr, attrIndex) => (
+                      <Tr key={attrIndex}>
+                        <Td fontWeight="bold">{attr.trait_type}</Td>
+                        <Td>{attr.value}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Box>
+  );
+};
 
 const NFTGallery: React.FC = () => {
   const { publicKey: walletPublicKey } = useWallet();
@@ -76,57 +145,42 @@ const NFTGallery: React.FC = () => {
     }
   }, [walletPublicKey]);
 
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+
   if (!walletPublicKey) {
-    return <Text>Please connect your wallet to view your NFTs.</Text>;
+    return <Text textAlign="center" fontSize="xl">Please connect your wallet to view your NFTs.</Text>;
   }
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner size="xl" />;
   }
 
   if (error) {
     return (
-      <VStack>
+      <VStack spacing={4}>
         <Text color="red.500">{error}</Text>
-        <Button onClick={() => fetchNFTs()}>Retry</Button>
+        <Button onClick={() => fetchNFTs()} colorScheme="blue">Retry</Button>
       </VStack>
     );
   }
 
   if (nfts.length === 0) {
-    return <Text>No NFTs found for this wallet on Devnet.</Text>;
+    return <Text textAlign="center" fontSize="xl">No NFTs found for this wallet on Devnet.</Text>;
   }
 
   return (
-    <Box p={6}>
-      <Text fontSize="3xl" mb={6}>My NFTs on Devnet</Text>
-      <SimpleGrid columns={[1, 2, 3]} spacing={6}>
-        {nfts.map((nft, index) => (
-          <Box key={index} borderWidth={1} borderRadius="lg" p={4}>
-            <VStack spacing={4} align="stretch">
-              {nft.offChainMetadata && nft.offChainMetadata.image && (
-                <Image src={nft.offChainMetadata.image} alt={nft.metadata.name} borderRadius="md" />
-              )}
-              <Text fontSize="xl" fontWeight="bold">{nft.metadata.name}</Text>
-              <Text>{nft.metadata.symbol}</Text>
-              {nft.offChainMetadata && nft.offChainMetadata.description && (
-                <Text>{nft.offChainMetadata.description}</Text>
-              )}
-              <Table variant="simple" size="sm">
-                <Tbody>
-                  {nft.offChainMetadata && nft.offChainMetadata.attributes && nft.offChainMetadata.attributes.map((attr, attrIndex) => (
-                    <Tr key={attrIndex}>
-                      <Td fontWeight="bold">{attr.trait_type}</Td>
-                      <Td>{attr.value}</Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </VStack>
-          </Box>
-        ))}
-      </SimpleGrid>
-    </Box>
+    <Container maxW="container.xl" py={10}>
+      <VStack spacing={8}>
+        <Heading as="h1" size="2xl" textAlign="center">
+          My NFTs on Devnet
+        </Heading>
+        <SimpleGrid columns={[2, 3, 4, 5]} spacing={6}>
+          {nfts.map((nft, index) => (
+            <NFTCard key={index} nft={nft} index={index} />
+          ))}
+        </SimpleGrid>
+      </VStack>
+    </Container>
   );
 };
 
