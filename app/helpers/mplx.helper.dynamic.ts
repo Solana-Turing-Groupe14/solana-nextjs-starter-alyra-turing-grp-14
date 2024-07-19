@@ -733,6 +733,12 @@ export async function createCmNftCollection(
       // GUARDS
       // let guards_rules = {
       const guards_rules: MPL_T_GuardSetArgs = {
+        // "default": {
+        //   "solPayment": {
+        //     "value": 0.1,
+        //     "destination": "69Z4dXS8aAvDhP4QDRs5C2LePnpYApZX8rvnZ69r6ic1"
+        //   }
+        // }
         // botTax: MPL_F_some({ lamports: MPL_F_sol(0.001), lastInstruction: true }),
         // solPayment: MPL_F_some({ lamports: MPL_F_sol(_mintFee), destination: treasurySigner.publicKey }),
         // mintLimit: MPL_F_some({ id: 1, limit: 3 }), // Limit the number of mints per wallet

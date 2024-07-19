@@ -1,20 +1,27 @@
 import { AttachmentIcon, CheckCircleIcon } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, Input, InputGroup, InputLeftElement, Link, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useToast, VStack } from "@chakra-ui/react"
+import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, IconButton, Input, InputGroup, InputLeftElement, Link, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useToast, VStack } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { ExternalLinkIcon } from "lucide-react"
+import { ExternalLinkIcon, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
   finalizeCmNftCollectionConfig_fromWallet as mplxH_finalizeCmNftCollectionConfig_fromWallet,
+  setIdentityPayer_WalletAdapter,
 } from "@helpers/mplx.helper.dynamic"
+// import {
+//   createMyCollection as mplxH_createMyCollection,
+// } from "@helpers/mplx.helper.static"
+import { getUmiStorage } from '@helpers/mplx.storage.helper'
+import { getAddressUri,
+  // getTxUri
+} from "@helpers/solana.helper"
 import {
-  createMyCollection as mplxH_createMyCollection,
-} from "@helpers/mplx.helper.static"
-
-import { getAddressUri, getTxUri } from "@helpers/solana.helper"
-import { CollectionCreationResponseData,
+  MPL_F_createGenericFileFromBrowserFile
+} from '@imports/mtplx.storage.imports'
+import {
+  // CollectionCreationResponseData,
   CreateCompleteCollectionCmConfigResponseData,
   mplhelp_T_CmNftCollection_Params,
   mplhelp_T_CreateCmNftCollection_fromWallet_Input,
@@ -24,6 +31,7 @@ import { CollectionCreationResponseData,
   mplhelp_T_FinalizeCmNftCollectionConfig_Result,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
+import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 
 /* eslint-disable react/no-children-prop */
 
@@ -54,8 +62,8 @@ export default function MintTestPage() {
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingGlobalMint, setIsProcessingGlobalMint] = useState(false)
-  const [isProcessingSponsoredCollectionCreationHarCoded, setIsProcessingSponsoredCollectionCreationHardcoded] = useState(false)
-  const [isProcessingCollectionCreationHardcoded, setIsProcessingCollectionCreationHardcoded] = useState(false)
+  // const [isProcessingSponsoredCollectionCreationHarCoded, setIsProcessingSponsoredCollectionCreationHardcoded] = useState(false)
+  // const [isProcessingCollectionCreationHardcoded, setIsProcessingCollectionCreationHardcoded] = useState(false)
   const [isProcessingNftCollectionCreation, setIsProcessingNftCollectionCreation] = useState(false)
   const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
 
@@ -63,6 +71,19 @@ export default function MintTestPage() {
     // console.debug(`${FILEPATH}:isConnected: `, connected && connectedWalletPublicKey)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
+
+  const isValidFileInput = useMemo(() => {
+    const LOGPREFIX = `${FILEPATH}:isValidFileInput: `
+    let isValid = false
+    try {
+      isValid = image !== undefined
+      ;
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+    console.debug(`${FILEPATH}isValid=${isValid}`, )
+    return isValid
+  }, [image]);
 
   const isValidCollectionInput = useMemo(() => {
     const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
@@ -77,7 +98,7 @@ export default function MintTestPage() {
     } catch (error) {
       console.error(`${LOGPREFIX}:error: `, error)
     }
-    console.debug(`${FILEPATH}:${isValid}`, )
+    console.debug(`${LOGPREFIX}isValid=${isValid}`, )
     return isValid
   }, [nftCount, collectionName, collectionDescription, image]);
 
@@ -121,7 +142,7 @@ export default function MintTestPage() {
       setIsProcessingGlobalMint(false)
     }
   } // globalMint
-
+/*
   const createSponsoredCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createSponsoredCollection: `
     try {
@@ -259,7 +280,7 @@ export default function MintTestPage() {
       setIsProcessingCollectionCreationHardcoded(false)
     }
   } // createCollectionOnly
-
+*/
   // ----------------------------
 
   const createCompleteNftCollection = async () => {
@@ -842,6 +863,87 @@ export default function MintTestPage() {
   );
 */
 
+  // ----------------------------
+/*
+  const uploadImageFile = async (file: File) => {
+    const LOGPREFIX = `${FILEPATH}:uploadImageFile: `
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      console.debug(`${LOGPREFIX}data`, data);
+      return data;
+    } catch (error) {
+      console.error(`${LOGPREFIX}error`, error);
+    }
+  } // uploadImageFile
+*/
+
+  // ----------------------------
+
+  const handleUploadImageFile = async () => {
+    const LOGPREFIX = `${FILEPATH}:handleUploadImageFile: `
+    try {
+      if (!isConnected || !wallet /* useless but prevents warning on setIdentity */) {
+        warnIsNotConnected(); return
+      }
+      if (!image) {
+        console.error(`${LOGPREFIX}No image to upload`)
+        toast({
+          title: 'No image to upload',
+          description: "Please select an image to upload.",
+          status: 'warning',
+          duration: WARN_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+        return
+      }
+      // 
+      // image.
+      // UploaderUploadOptions
+      const umiStorage = getUmiStorage()
+      setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
+
+      // umiStorage.use(myproviderUploader)
+      // IrysUploaderOptions
+      umiStorage.use(irysUploader())
+
+      const genericF = await MPL_F_createGenericFileFromBrowserFile(image)
+      // const fileUris = await nftStorageUploader.upload([genericF] );
+      // const fileUris = await umiStorage.uploader.upload([genericF]);
+
+      const fileUris = await umiStorage.uploader.upload([genericF], {
+        // signal: myAbortSignal,
+        onProgress: (percent) => {
+          console.log(`${percent * 100}% uploaded...`);
+        },
+      })
+      const fileUri = fileUris[0]
+      if (!fileUri) {
+        console.error(`${LOGPREFIX}No fileUri`)
+        toast({
+          title: 'No fileUri',
+          description: "No fileUri",
+          status: 'warning',
+          duration: WARN_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+        return
+      }
+
+      console.debug(`${LOGPREFIX}fileUris`, fileUris);
+      console.dir(fileUris)
+    } catch (error) {
+      console.error(`${LOGPREFIX}error`, error);
+    }
+  } // handleUploadImageFile
+
   return (
     <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
       <Text fontSize='3xl'>Mint(s) test</Text>
@@ -932,12 +1034,14 @@ export default function MintTestPage() {
                   // style={{ display: "none" }}
                   aria-hidden="true"
                 />
+{/* 
                 <Input
                   type='text'
                   placeholder='Choose an image'
                   value={""}
                   onChange={() => { console.log('Input image onChange') }}
                 />
+ */}
               </InputGroup>
 
               <Flex>
@@ -978,6 +1082,7 @@ export default function MintTestPage() {
 
             <VStack className=''>
 
+{/* 
               <Button
                 size={"sm"}
                 isDisabled={!connected}
@@ -999,7 +1104,7 @@ export default function MintTestPage() {
                 Create collection (fees paid by wallet owner)
                 HARDCODED
               </Button>
-
+ */}
               <Button
                 size={"sm"}
                 isDisabled={!connected || !isValidCollectionInput}
@@ -1019,6 +1124,22 @@ export default function MintTestPage() {
               >
                 Create NFT collection (Fees sponsored)
               </Button>
+{/* 
+              <Button
+                size={"sm"}
+                isDisabled={!connected || !isValidCollectionInput}
+                isLoading={isProcessingSponsoredNftCollectionCreation}
+                onClick={()=>{alert('TODO')}}
+                colorScheme='gray'
+              >
+                Upload file
+              </Button>
+*/}
+              <IconButton aria-label='Search database'
+                icon={<UploadCloudIcon />}
+                isDisabled={!connected || !isValidFileInput}
+                onClick={handleUploadImageFile}
+              />
 
             </VStack>
 

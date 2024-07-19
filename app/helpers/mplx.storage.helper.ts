@@ -1,17 +1,28 @@
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { nftStorageUploader } from "@metaplex-foundation/umi-uploader-nft-storage"
 
+import { PUBLIC_STORAGE_RPC_URL } from "@helpers/solana.storage.helper";
 import {
   MPL_T_Umi,
 } from '@imports/mtplx.imports';
-import { STORAGE_RPC_URL } from "./solana.storage.helper";
-import { createBrowserFileFromGenericFile, createGenericFile, createGenericFileFromBrowserFile, createGenericFileFromJson, parseJsonFromGenericFile } from '@metaplex-foundation/umi';
+//  import {
+//   createBrowserFileFromGenericFile, createGenericFile,
+//   createGenericFileFromBrowserFile, createGenericFileFromJson,
+//   parseJsonFromGenericFile
+// } from '@metaplex-foundation/umi';
 
 const filePath = "app/helpers/mplx.storage.helpers.ts"
 
 // --------------------------------------------------
 
-const mplx_umi_storage: MPL_T_Umi = createUmi(STORAGE_RPC_URL).use(nftStorageUploader())
+const token = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY||""
+if (!token) {
+  throw new Error('NFT_STORAGE_API_KEY not found')
+}
+
+const mplx_umi_storage: MPL_T_Umi =
+  createUmi(PUBLIC_STORAGE_RPC_URL).use(nftStorageUploader({
+    token: process.env.NEXT_PUBLIC_NFT_STORAGE_KEY||"", }))
 if (!mplx_umi_storage) {
   throw new Error('mplx_umi_storage not found')
 }
