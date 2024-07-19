@@ -1,8 +1,9 @@
 import { AttachmentIcon, CheckCircleIcon, ExternalLinkIcon as ExternalLinkIconChakra, LinkIcon } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, IconButton, Input, InputGroup, InputLeftElement, Link, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useToast, VStack } from "@chakra-ui/react"
+import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, IconButton, Input, InputGroup, InputLeftElement, Link, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useToast, VStack, Heading, SimpleGrid, Fade, ScaleFade, SlideFade, useColorModeValue, useBreakpointValue } from "@chakra-ui/react"
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ExternalLinkIcon as ExternalLinkIconLucid, UploadCloudIcon } from "lucide-react"
+import { motion } from "framer-motion"
 import { useMemo, useState } from "react"
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
 import {
@@ -11,58 +12,47 @@ import {
   finalizeCmNftCollectionConfig_fromWallet as mplxH_finalizeCmNftCollectionConfig_fromWallet,
   setIdentityPayer_WalletAdapter,
 } from "@helpers/mplx.helper.dynamic"
-// import {
-//   createMyCollection as mplxH_createMyCollection,
-// } from "@helpers/mplx.helper.static"
 import { getUmiStorage } from '@helpers/mplx.storage.helper'
-import { getAddressUri,
-  // getTxUri
-} from "@helpers/solana.helper"
+import { getAddressUri } from "@helpers/solana.helper"
+import { MPL_F_createGenericFileFromBrowserFile } from '@imports/mtplx.storage.imports'
 import {
-  MPL_F_createGenericFileFromBrowserFile
-} from '@imports/mtplx.storage.imports'
-import {
-  // CollectionCreationResponseData,
   CreateCompleteCollectionCmConfigResponseData,
   mplhelp_T_CmNftCollection_Params,
   mplhelp_T_CreateCmNftCollection_fromWallet_Input,
   mplhelp_T_CreateCmNftCollection_Result,
-  mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_Result,
+  mplhelp_T_CreateNftCollection_fromWallet_Input,
+  mplhelp_T_CreateNftCollection_Result,
   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
   mplhelp_T_FinalizeCmNftCollectionConfig_Result,
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
 
-/* eslint-disable react/no-children-prop */
-
 const FILEPATH = 'app/pages/createCollection.tsx'
 
-export default function MintTestPage() {
-
+export default function CreateCollectionPage() {
   const SUCCESS_DELAY = 60_000
   const WARN_DELAY = 15_000
   const ERROR_DELAY = 60_000
 
-  const randomStringNumber = Math.random().toString(10).substring(2,5); // 3 random digits
-  const MAX_FILE_SIZE = 1000; // 1MB
+  const randomStringNumber = Math.random().toString(10).substring(2,5)
+  const MAX_FILE_SIZE = 1000 // 1MB
 
   const minNftCount = 0
 
-  // TODO: remove/reset test values
   const defaultCollectionName = `Test coll. name ${randomStringNumber}`
   const defaultCollectionDescription = `Test coll. desc. ${randomStringNumber}`
   const defaultNftNamePrefix = `Test NFT prefix ${randomStringNumber}`
-  const defaultNftUploadedImageUri = "" // `https://arweave.net/HXICxOzfIczePkXD5MVmXbCorwFZuSRNK4J1Opr2NxI`
-  const defaultNftCollectionUploadedMetadataUri = "" //
-  const defaultUploadedCollectionUploadedNftsNameUriArray:mplhelp_T_NameUriArray = []//
+  const defaultNftUploadedImageUri = ""
+  const defaultNftCollectionUploadedMetadataUri = ""
+  const defaultUploadedCollectionUploadedNftsNameUriArray:mplhelp_T_NameUriArray = []
 
-  const [collectionName, setCollectionName] = useState<string>( defaultCollectionName );
-  const [collectionDescription, setCollectionDescription] = useState<string>( defaultCollectionDescription );
+  const [collectionName, setCollectionName] = useState<string>(defaultCollectionName)
+  const [collectionDescription, setCollectionDescription] = useState<string>(defaultCollectionDescription)
   const [nftNamePrefix, setNftNamePrefix] = useState<string>(defaultNftNamePrefix)
-  const [image, setImage] = useState<File | undefined>();
+  const [image, setImage] = useState<File | undefined>()
   const [nftCount, setNftCount] = useState<number>(minNftCount)
-  const [mintFee, setmMintFee] = useState<number>(MINT_FEE_DEFAULT_AMOUNT)
+  const [mintFee, setMintFee] = useState<number>(MINT_FEE_DEFAULT_AMOUNT)
   const [uploadedImageUri, setUploadedImageUri] = useState<string>(defaultNftUploadedImageUri)
   const [uploadedCollectionUploadedMetadataUri, setUploadedCollectionUploadedMetadataUri] = useState<string>(defaultNftCollectionUploadedMetadataUri)
   const [uploadedCollectionUploadedNftsNameUriArray, setUploadedCollectionUploadedNftsNameUriArray] = useState<mplhelp_T_NameUriArray>(defaultUploadedCollectionUploadedNftsNameUriArray)
@@ -74,69 +64,26 @@ export default function MintTestPage() {
   const toast = useToast()
 
   const isConnected = useMemo(() => {
-    // console.debug(`${FILEPATH}:isConnected: `, connected && connectedWalletPublicKey)
     return connected && connectedWalletPublicKey
-  }, [connected, connectedWalletPublicKey]);
-
-  // ----------------------------
-
-  // const isValidCollectionUploadedNftsNameUriArray = useMemo(() => {
-  //   const LOGPREFIX = `${FILEPATH}:isValidCollectionUploadedNftsNameUriArray: `
-  //   let isValid = false
-  //   try {
-  //     isValid = (
-  //       uploadedCollectionUploadedNftsNameUriArray &&
-  //       uploadedCollectionUploadedNftsNameUriArray.length === nftCount
-  //     )
-  //     ;
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  //   console.debug(`${FILEPATH}isValid=${isValid}`, )
-  //   return isValid
-  // }, [nftCount, uploadedCollectionUploadedNftsNameUriArray]);
-
-  // ----------------------------
+  }, [connected, connectedWalletPublicKey])
 
   const isValidFileInput = useMemo(() => {
-    const LOGPREFIX = `${FILEPATH}:isValidFileInput: `
-    let isValid = false
-    try {
-      isValid = image !== undefined
-      ;
-    } catch (error) {
-      console.error(`${LOGPREFIX}error: `, error)
-    }
-    console.debug(`${FILEPATH}isValid=${isValid}`, )
-    return isValid
-  }, [image]);
-
-  // ----------------------------
+    return image !== undefined
+  }, [image])
 
   const isValidCollectionInput = useMemo(() => {
-    const LOGPREFIX = `${FILEPATH}:isValidCollectionInput: `
-    let isValid = false
-    try {
-      isValid = nftCount > minNftCount &&
+    return nftCount > minNftCount &&
       nftCount <= NFT_COUNT_MAX &&
       collectionName.trim().length > 0 &&
       collectionDescription.trim().length > 0 &&
-      // image !== undefined
       uploadedImageUri.trim().length > 0 &&
       uploadedCollectionUploadedMetadataUri.trim().length > 0 &&
       uploadedCollectionUploadedNftsNameUriArray &&
       uploadedCollectionUploadedNftsNameUriArray.length === nftCount
-    ;
-    } catch (error) {
-      console.error(`${LOGPREFIX}:error: `, error)
-    }
-    console.debug(`${LOGPREFIX}isValid=${isValid}`, )
-    return isValid
-  }, [nftCount, collectionName, collectionDescription, uploadedImageUri, uploadedCollectionUploadedMetadataUri, uploadedCollectionUploadedNftsNameUriArray]);
+  }, [nftCount, collectionName, collectionDescription, uploadedImageUri, uploadedCollectionUploadedMetadataUri, uploadedCollectionUploadedNftsNameUriArray])
 
   const warnIsNotConnected = () => {
-    const LOGPREFIX = `${FILEPATH}:warnIsNotConnected: `
-    console.warn(`${LOGPREFIX} Wallet not connected`)
+    console.warn(`${FILEPATH}:warnIsNotConnected: Wallet not connected`)
     toast({
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
@@ -146,8 +93,6 @@ export default function MintTestPage() {
       position: 'top-right',
     })
   }
-
-  // ----------------------------
 
   const createCompleteNftCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createCompleteNftCollection: `
@@ -603,160 +548,76 @@ export default function MintTestPage() {
     }
   } // createCompleteNftCollectionSponsored
 
-
-  // ----------------------------
-
-  const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-  } // handleDefaultSubmit
-
-  // ----------------------------
-
   const handleChangeCollectionName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeCollectionName: `
-    console.debug(`${LOGPREFIX} handleChangeCollectionName:event: `, event)
-
-    if (!event.target) {
-      return
-    }
-    setCollectionName(event.target.value);
-  } // handleChangeCollectionName
-
-  // ----------------------------
+    setCollectionName(event.target.value)
+  }
 
   const handleChangeCollectionDescription = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeCollectionName: `
-    console.debug(`${LOGPREFIX} handleChangeCollectionName:event: `, event)
+    setCollectionDescription(event.target.value)
+  }
 
-    if (!event.target) {
-      return
-    }
-    setCollectionDescription(event.target.value);
-  } // handleChangeCollectionDescription
-
-  // ----------------------------
-
-  const handleChangeNftCount = (_value: number|string) => { // event: React.ChangeEvent<HTMLInputElement> => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeNftCount: `
-    console.debug(`${LOGPREFIX}_value: `, _value)
-    let value:number
+  const handleChangeNftCount = (_value: number|string) => {
+    let value: number
     if (typeof _value === 'string') {
       value = parseInt(_value)
-      if (isNaN(value)) {
-        return
-      }
-      // setNftCount(value)
+      if (isNaN(value)) return
     } else {
       value = _value
     }
     setNftCount(value)
-  } // handleChangeNftCount
-
-  // ----------------------------
-
-  const handleChangeNftNamePrefix = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeNftNamePrefix: `
-    console.debug(`${LOGPREFIX} handleChangeNftNamePrefix:event: `, event)
-
-    if (!event.target) {
-      return
-    }
-    setNftNamePrefix(event.target.value);
-  } // handleChangeNftNamePrefix
-
-  // ----------------------------
-
-  //   const handleChangeImage = (event: { target: { files: SetStateAction<File | undefined>[] } }) => {
-  const handleChangeImage = /* async */ (event: React.ChangeEvent<HTMLInputElement>) => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeImage: `
-    console.debug(`${LOGPREFIX} event: `, event)
-    // debugger
-    if (!event.target.files || !event.target.files[0]) {
-      event.target.value = '';
-      setUploadedImageUri('') // Clear (previous) uploaded image uri (if any)
-      return;
-    }
-    const file = event.target.files[0]
-    const fileSizeKiloBytes = file.size / 1024;
-    if (fileSizeKiloBytes > MAX_FILE_SIZE) {
-        alert(`File size is greater than maximum limit of ${MAX_FILE_SIZE}.`);
-        event.target.value = '';
-        setUploadedImageUri('') // Clear (previous) uploaded image uri (if any)
-        return;
-    }
-    setImage(file);
-    setUploadedImageUri('') // Clear (previous) uploaded image uri (if any)
-
-    // const p = await event.target.files[0].arrayBuffer() // ArrayBuffer
-    // console.dir(p)
   }
 
-  // ----------------------------
+  const handleChangeNftNamePrefix = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNftNamePrefix(event.target.value)
+  }
+
+  const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files[0]) {
+      event.target.value = ''
+      setUploadedImageUri('')
+      return
+    }
+    const file = event.target.files[0]
+    const fileSizeKiloBytes = file.size / 1024
+    if (fileSizeKiloBytes > MAX_FILE_SIZE) {
+      alert(`File size is greater than maximum limit of ${MAX_FILE_SIZE}.`)
+      event.target.value = ''
+      setUploadedImageUri('')
+      return
+    }
+    setImage(file)
+    setUploadedImageUri('')
+  }
 
   const handleChangeNftMintFee = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const LOGPREFIX = `${FILEPATH}:handleChangeNftMintFee: `
-    try {
-      console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-      let value:number
-      // debugger
-      if (typeof event.target.value === 'string') {
-        value = parseFloat(event.target.value)
-        if (isNaN(value)) {
-          return
-        }
-        if (value > MINT_FEE_MAX_AMOUNT) {
-          toast({
-            title: 'Mint fee amount too high',
-            description: `Mint fee amount must be at most ${MINT_FEE_MAX_AMOUNT}`,
-            status: 'warning',
-            duration: WARN_DELAY,
-            isClosable: true,
-            position: 'top-right',
-          })
-          value = MINT_FEE_MAX_AMOUNT
-        }
-        if (value < MINT_FEE_MIN_AMOUNT) {
-          toast({
-            title: 'Mint fee amount too low',
-            description: `Mint fee amount must be at least ${MINT_FEE_MIN_AMOUNT}`,
-            status: 'warning',
-            duration: WARN_DELAY,
-            isClosable: true,
-            position: 'top-right',
-          })
-          value = MINT_FEE_MIN_AMOUNT
-        }
-        setmMintFee(value)
-      }
-    } catch (error) {
-      console.error(`${LOGPREFIX}error: `, error)
+    let value = parseFloat(event.target.value)
+    if (isNaN(value)) return
+    if (value > MINT_FEE_MAX_AMOUNT) {
+      toast({
+        title: 'Mint fee amount too high',
+        description: `Mint fee amount must be at most ${MINT_FEE_MAX_AMOUNT}`,
+        status: 'warning',
+        duration: WARN_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+      value = MINT_FEE_MAX_AMOUNT
     }
-  } // handleChangeNftMintFee
-
-  // ----------------------------
-
-/*
-  const uploadImageFile = async (file: File) => {
-    const LOGPREFIX = `${FILEPATH}:uploadImageFile: `
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      console.debug(`${LOGPREFIX}data`, data);
-      return data;
-    } catch (error) {
-      console.error(`${LOGPREFIX}error`, error);
+    if (value < MINT_FEE_MIN_AMOUNT) {
+      toast({
+        title: 'Mint fee amount too low',
+        description: `Mint fee amount must be at least ${MINT_FEE_MIN_AMOUNT}`,
+        status: 'warning',
+        duration: WARN_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
+      value = MINT_FEE_MIN_AMOUNT
     }
-  } // uploadImageFile
-*/
+    setMintFee(value)
+  }
 
-  // ----------------------------
-
-  const handleUploaJsonFiles = async () => {
+  const handleUploadJsonFiles = async () => {
     const LOGPREFIX = `${FILEPATH}:handleUploaJsonFiles: `
     try {
       if (!isConnected || !wallet /* useless but prevents warning on setIdentity */) {
@@ -867,8 +728,6 @@ export default function MintTestPage() {
     }
   } // handleUploaJsonFiles
 
-    // ----------------------------
-
   const handleUploadImageFile = async () => {
     const LOGPREFIX = `${FILEPATH}:handleUploadImageFile: `
     try {
@@ -939,223 +798,207 @@ export default function MintTestPage() {
     }
   } // handleUploadImageFile
 
+  const bgColor = useColorModeValue("gray.50", "gray.800")
+  const cardBgColor = useColorModeValue("white", "gray.700")
+  const textColor = useColorModeValue("gray.800", "white")
+
+  const columnCount = useBreakpointValue({ base: 1, md: 2 })
+
   return (
-    <div className="mx-auto my-20 flex w-full max-w-lg flex-col gap-6 rounded-2xl p-6">
-      <Text fontSize='3xl'>Create collection</Text>
-      <div className="flex flex-col gap-4 ">
-        <form onSubmit={handleDefaultSubmit} className="">
+    <Container maxW="container.xl" py={10}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Heading as="h1" size="2xl" textAlign="center" mb={10}>
+          Create Your NFT Collection
+        </Heading>
 
-          <Container maxW='2xl' bg='blue.600' borderRadius='lg' centerContent padding={3}>
+        <SimpleGrid columns={columnCount} spacing={10}>
+          <Box>
+            <ScaleFade initialScale={0.9} in={true}>
+              <FormControl>
+                <VStack spacing={6} align="stretch">
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <AttachmentIcon color="gray.300" />
+                    </InputLeftElement>
+                    <Input
+                      value={collectionName}
+                      onChange={handleChangeCollectionName}
+                      placeholder="Collection name"
+                      bg={cardBgColor}
+                      borderRadius="full"
+                    />
+                  </InputGroup>
 
-            <FormControl>
+                  <InputGroup>
+                    <Input
+                      value={collectionDescription}
+                      onChange={handleChangeCollectionDescription}
+                      placeholder="Collection description"
+                      bg={cardBgColor}
+                      borderRadius="full"
+                    />
+                  </InputGroup>
 
-              <FormLabel>
-                Name
-              </FormLabel>
-              <InputGroup>
-                <Input
-                  value={collectionName}
-                  onChange={handleChangeCollectionName}
-                  placeholder='Collection name'
-                />
-              </InputGroup>
+                  <InputGroup>
+                    <Input
+                      value={nftNamePrefix}
+                      onChange={handleChangeNftNamePrefix}
+                      placeholder="NFT name prefix"
+                      bg={cardBgColor}
+                      borderRadius="full"
+                    />
+                  </InputGroup>
 
-              <FormLabel className="pt-1">
-                Description
-              </FormLabel>
-              <InputGroup>
-                <Input
-                  value={collectionDescription}
-                  onChange={handleChangeCollectionDescription}
-                  placeholder='Collection description'
-                />
-              </InputGroup>
+                  <InputGroup>
+                    <Input
+                      value={mintFee}
+                      onChange={handleChangeNftMintFee}
+                      placeholder="Set mint fee"
+                      bg={cardBgColor}
+                      borderRadius="full"
+                    />
+                  </InputGroup>
 
-              <FormLabel className="pt-1">
-                Nft Name Prefix
-              </FormLabel>
-              <InputGroup>
-                <Input
-                  value={nftNamePrefix}
-                  onChange={handleChangeNftNamePrefix}
-                  placeholder='Nft name prefix: NFT name will be prefix + mint number'
-                />
-              </InputGroup>
+                  <Box>
+                    <FormLabel>NFT Count</FormLabel>
+                    <Flex>
+                      <NumberInput
+                        maxW="100px"
+                        mr="2rem"
+                        value={nftCount}
+                        onChange={handleChangeNftCount}
+                        min={minNftCount}
+                        max={NFT_COUNT_MAX}
+                        bg={cardBgColor}
+                        borderRadius="md"
+                      >
+                        <NumberInputField />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <Slider
+                        flex="1"
+                        focusThumbOnChange={false}
+                        value={nftCount}
+                        onChange={handleChangeNftCount}
+                        min={minNftCount}
+                        max={NFT_COUNT_MAX}
+                      >
+                        <SliderTrack>
+                          <SliderFilledTrack />
+                        </SliderTrack>
+                        <SliderThumb fontSize="sm" boxSize="32px" children={nftCount} />
+                      </Slider>
+                    </Flex>
+                  </Box>
+                </VStack>
+              </FormControl>
+            </ScaleFade>
+          </Box>
 
-              <FormLabel className="pt-1">
-                Nft mint fee
-              </FormLabel>
-              <InputGroup>
-                <Input
-                  value={mintFee}
-                  onChange={handleChangeNftMintFee}
-                  placeholder='Set mint fee'
-                />
-              </InputGroup>
+          <Box>
+            <SlideFade in={true} offsetY="20px">
+              <VStack spacing={6} align="stretch">
+                <Box>
+                  <FormLabel>Upload Image</FormLabel>
+                  <input
+                    type="file"
+                    onChange={handleChangeImage}
+                    accept="image/jpeg, image/png"
+                    style={{ display: "none" }}
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button as="span" leftIcon={<UploadCloudIcon />} colorScheme="teal" variant="outline" width="full">
+                      Choose Image
+                    </Button>
+                  </label>
+                </Box>
 
-              <FormLabel className="pt-1">
-                Image
-              </FormLabel>
-              <InputGroup>
-                <InputLeftElement pointerEvents='none'>
-                  <AttachmentIcon color='gray.300' />
-                </InputLeftElement>
-                {/*
-                    {image && (
-                      <Text>
-                        {image.name} ({image.size} bytes)
-                      </Text>
-                    )}
-                */}
-                {/* <input type="file" accept="image/jpeg, image/png" onChange={handleChangeImage} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" /> */}
-                <input name={"image"}
-                  type="file"
-                  multiple={false}
-                  // onChange={(e) => onChange(e.target.files)}
-                  onChange={handleChangeImage}
-                  // accept={"image/*"}
-                  accept="image/jpeg, image/png"
-                  // style={{ display: "none" }}
-                  aria-hidden="true"
-                />
-               {/*
-                <Input
-                  type='text'
-                  placeholder='Choose an image'
-                  value={""}
-                  onChange={() => { console.log('Input image onChange') }}
-                />
-              */}
-              </InputGroup>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <ExternalLinkIconChakra color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    value={uploadedImageUri}
+                    placeholder="Uploaded image URL"
+                    isReadOnly
+                    bg={cardBgColor}
+                    borderRadius="full"
+                  />
+                </InputGroup>
 
-              <FormLabel>
-                Image URL
-              </FormLabel>
-              <InputGroup>
-                <InputLeftElement pointerEvents='none'>
-                  <ExternalLinkIconChakra color='gray.300' />
-                </InputLeftElement>
-                <Input
-                  value={uploadedImageUri}
-                  placeholder='Uploaded image URL'
-                />
-              </InputGroup>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <ExternalLinkIconChakra color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    value={uploadedCollectionUploadedMetadataUri}
+                    placeholder="Uploaded metadata URL"
+                    isReadOnly
+                    bg={cardBgColor}
+                    borderRadius="full"
+                  />
+                </InputGroup>
 
-              <FormLabel>
-                Image URL
-              </FormLabel>
-              <InputGroup>
-                <InputLeftElement pointerEvents='none'>
-                  <ExternalLinkIconChakra color='gray.300' />
-                </InputLeftElement>
-                <Input
-                  value={uploadedCollectionUploadedMetadataUri}
-                  placeholder='Uploaded metadata URL'
-                />
-              </InputGroup>
-
-
-              <Flex>
-                <NumberInput
-                  maxW='100px' mr='2rem'
-                  value={nftCount}
-                  color={nftCount > minNftCount ? 'white' : 'red.500'}
-                  onChange={handleChangeNftCount}
-                  min={minNftCount} max={NFT_COUNT_MAX}
+                <Button
+                  leftIcon={<UploadCloudIcon />}
+                  colorScheme="purple"
+                  isDisabled={!connected || !isValidFileInput}
+                  onClick={handleUploadImageFile}
+                  width="full"
                 >
-                  <NumberInputField min={minNftCount} max={NFT_COUNT_MAX} />
-                  <NumberInputStepper
-                    >
-                    <NumberIncrementStepper  />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <Slider
-                  flex='1'
-                  focusThumbOnChange={false}
-                  value={nftCount}
-                  onChange={handleChangeNftCount}
-                  min={minNftCount}
-                  max={NFT_COUNT_MAX}
+                  Upload Image
+                </Button>
+
+                <Button
+                  leftIcon={<UploadCloudIcon />}
+                  colorScheme="blue"
+                  isDisabled={!connected || !isValidFileInput}
+                  onClick={handleUploadJsonFiles}
+                  width="full"
                 >
-                  <SliderTrack>
-                    <SliderFilledTrack />
-                  </SliderTrack>
-                  {/* // eslint-disable-next-line react/no-children-prop */}
-                  <SliderThumb fontSize='sm' boxSize='32px' children={nftCount} />
-                </Slider>
-              </Flex>
+                  Upload Metadata
+                </Button>
+              </VStack>
+            </SlideFade>
+          </Box>
+        </SimpleGrid>
 
-              {/*
-              <Input placeholder='Select Date and Time' size='md' type='datetime-local' />
-              */}
+        <Fade in={true}>
+          <VStack spacing={4} mt={10}>
+          <Button
+          size="lg"
+          isDisabled={!connected || !isValidCollectionInput}
+          isLoading={isProcessingNftCollectionCreation}
+          onClick={createCompleteNftCollection}
+          colorScheme="purple"
+          width="full"
+          borderRadius="full"
+        >
+          Create NFT Collection (Wallet Fees)
+        </Button>
 
-            </FormControl>
-
-            <VStack className=''>
-
-              <IconButton aria-label='Upload Image'
-                icon={<UploadCloudIcon />}
-                color={
-                 isValidFileInput ?
-                  (uploadedImageUri ? 'green.500': 'yellow.500')
-                  :
-                  'red.500'
-                }
-                isDisabled={!connected || !isValidFileInput}
-                onClick={handleUploadImageFile}
-              />
-
-              <IconButton aria-label='Upload Metadata'
-                icon={<UploadCloudIcon />}
-                color={
-                 isValidFileInput ?
-                  (uploadedCollectionUploadedMetadataUri ? 'green.500': 'yellow.500')
-                  :
-                  'red.500'
-                }
-                isDisabled={!connected || !isValidFileInput}
-                onClick={handleUploaJsonFiles}
-              />
-              <Button
-                size={"sm"}
-                isDisabled={!connected || !isValidCollectionInput}
-                isLoading={isProcessingNftCollectionCreation}
-                onClick={createCompleteNftCollection}
-                colorScheme='purple'
-              >
-                Create NFT collection (fees paid by wallet owner)
-              </Button>
-
-              <Button
-                size={"sm"}
-                isDisabled={!connected || !isValidCollectionInput}
-                isLoading={isProcessingSponsoredNftCollectionCreation}
-                onClick={createCompleteNftCollectionSponsored}
-                colorScheme='green'
-              >
-                Create NFT collection (Fees sponsored)
-              </Button>
-{/* 
-              <Button
-                size={"sm"}
-                isDisabled={!connected || !isValidCollectionInput}
-                isLoading={isProcessingSponsoredNftCollectionCreation}
-                onClick={()=>{alert('TODO')}}
-                colorScheme='gray'
-              >
-                Upload file
-              </Button>
-*/}
-
-            </VStack>
-
-          </Container>
-
-        </form>
-
-
-      </div>
-    </div>
-  )
+        <Button
+          size="lg"
+          isDisabled={!connected || !isValidCollectionInput}
+          isLoading={isProcessingSponsoredNftCollectionCreation}
+          onClick={createCompleteNftCollectionSponsored}
+          colorScheme="green"
+          width="full"
+          borderRadius="full"
+        >
+          Create NFT Collection (Sponsored Fees)
+        </Button>
+      </VStack>
+    </Fade>
+  </motion.div>
+</Container>
+)
 }
