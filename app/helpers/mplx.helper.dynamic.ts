@@ -789,8 +789,8 @@ export async function createCmNftCollection(
         guards: guards_rules, // Guards
       })
       const candyMachineTxResult = await coreCM_CreateIx.sendAndConfirm(_umi, MPL_TX_BUILDR_OPTIONS);
-      console.debug(`${LOGPREFIX} createIx result`, candyMachineTxResult)
-      console.dir(candyMachineTxResult)
+      // console.debug(`${LOGPREFIX} createIx result`, candyMachineTxResult)
+      // console.dir(candyMachineTxResult)
 
       if (candyMachineTxResult.result.value.err !== null) {
         console.error(`${LOGPREFIX}❌ Error creating Candy Machine.`)
