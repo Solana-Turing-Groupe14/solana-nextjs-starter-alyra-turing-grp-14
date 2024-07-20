@@ -9,7 +9,7 @@ import {
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
-import { ExternalLinkIcon as ExternalLinkIconLucid, UploadCloudIcon } from "lucide-react"
+import { ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
 import {
@@ -654,11 +654,11 @@ export default function CreateCollectionPage() {
   const handleUploadJsonFiles = async () => {
     const LOGPREFIX = `${FILEPATH}:handleUploaJsonFiles: `
     try {
-      if (!isConnected || !wallet /* useless but prevents warning on setIdentity */) {
+      if (!isConnected || !wallet /* useless but prevents warning on setIdentity :) */) {
         warnIsNotConnected(); return
       }
       if (!nftCount || nftCount <= 0) {
-        console.error(`${LOGPREFIX}NFT count must be greater than 0`)
+        console.warn(`${LOGPREFIX}NFT count must be greater than 0`)
         toast({
           title: 'NFT count must be greater than 0',
           description: "Please increase NFT count to at least 1.",
@@ -796,7 +796,7 @@ export default function CreateCollectionPage() {
 
       const fileUris = await umiStorage.uploader.upload([genericF], {
         // signal: myAbortSignal,
-        onProgress: (percent) => {
+        onProgress: (percent: number) => {
           console.log(`${percent * 100}% uploaded...`);
         },
       })
@@ -825,8 +825,10 @@ export default function CreateCollectionPage() {
         position: 'top-right',
       })
 
-      console.debug(`${LOGPREFIX}fileUris`, fileUris);
-      console.dir(fileUris)
+      // console.debug(`${LOGPREFIX}fileUris`, fileUris);
+      // console.dir(fileUris)
+      console.debug(`${LOGPREFIX}fileUri`, fileUri);
+
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }
@@ -955,7 +957,7 @@ export default function CreateCollectionPage() {
                     id="image-upload"
                   />
                   <label htmlFor="image-upload">
-                    <Button as="span" leftIcon={<UploadCloudIcon />}
+                    <Button as="span" leftIcon={image?<ImageLucid />:<ImagePlus />}
                       colorScheme={isValidFileInput ? 'green' : 'yellow'}
                       variant="outline" width="full">
                       Choose Image
