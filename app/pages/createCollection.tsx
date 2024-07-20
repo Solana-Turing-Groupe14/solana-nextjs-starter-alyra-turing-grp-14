@@ -1,5 +1,6 @@
 import { AttachmentIcon, CheckCircleIcon, ExternalLinkIcon as ExternalLinkIconChakra } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, Container, Fade, Flex, FormControl, FormLabel,
+import {
+  Box, Button, CloseButton, Container, Fade, Flex, FormControl, FormLabel,
   Heading, Input, InputGroup, InputLeftElement, Link,
   NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper,
   ScaleFade, SimpleGrid, SlideFade, Slider, SliderFilledTrack, SliderThumb, SliderTrack,
@@ -42,7 +43,7 @@ export default function CreateCollectionPage() {
   const WARN_DELAY = 15_000
   const ERROR_DELAY = 60_000
 
-  const randomStringNumber = Math.random().toString(10).substring(2,5)
+  const randomStringNumber = Math.random().toString(10).substring(2, 5)
   const MAX_FILE_SIZE = 1000 // 1MB
 
   const minNftCount = 0
@@ -52,7 +53,7 @@ export default function CreateCollectionPage() {
   const defaultNftNamePrefix = `Test NFT prefix ${randomStringNumber}`
   const defaultNftUploadedImageUri = ""
   const defaultNftCollectionUploadedMetadataUri = ""
-  const defaultUploadedCollectionUploadedNftsNameUriArray:mplhelp_T_NameUriArray = []
+  const defaultUploadedCollectionUploadedNftsNameUriArray: mplhelp_T_NameUriArray = []
 
   const [collectionName, setCollectionName] = useState<string>(defaultCollectionName)
   const [collectionDescription, setCollectionDescription] = useState<string>(defaultCollectionDescription)
@@ -69,6 +70,8 @@ export default function CreateCollectionPage() {
   const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
 
   const toast = useToast()
+  const toastSuccessBgColor = useColorModeValue("green.600", "green.600")
+  const toastTestColor = useColorModeValue("white", "black")
 
   const isConnected = useMemo(() => {
     return connected && connectedWalletPublicKey
@@ -212,12 +215,12 @@ export default function CreateCollectionPage() {
 
 
       // 1 - create Collection
-      const createNftCollectionInput:mplhelp_T_CreateNftCollection_fromWallet_Input = {
+      const createNftCollectionInput: mplhelp_T_CreateNftCollection_fromWallet_Input = {
         walletAdapter: wallet.adapter,
         collectionName: collectionName,
         collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
       }
-      const createNftCollectionResponse:mplhelp_T_CreateNftCollection_Result
+      const createNftCollectionResponse: mplhelp_T_CreateNftCollection_Result
         = await mplxH_createNftCollection_fromWallet(
           createNftCollectionInput
         )
@@ -229,9 +232,13 @@ export default function CreateCollectionPage() {
           duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+            <Box
+              bg={toastSuccessBgColor}
+              color={toastTestColor}
+              borderRadius='lg'
+            >
               <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                 <Text fontWeight="bold">NFT Collection created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
@@ -250,14 +257,14 @@ export default function CreateCollectionPage() {
         }) // toast
 
         // 2 - create Candy Machine
-        const cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params = {
+        const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
           itemsCount: nftCount,
           mintFee: mintFee,
           maxMintPerwallet: 1, // TODO: maxMintPerwallet
           startDateTime,
           endDateTime
         }
-        const createCmNftCollectionInput:mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
+        const createCmNftCollectionInput: mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
           walletAdapter: wallet.adapter,
           collectionSigner: createNftCollectionResponse.collectionSigner,
           nftNamePrefix: nftNamePrefix,
@@ -265,7 +272,7 @@ export default function CreateCollectionPage() {
           metadataPrefixUri: '',
           cmNftCollectioNParams,
         }
-        const createCmNftCollectionResponse:mplhelp_T_CreateCmNftCollection_Result
+        const createCmNftCollectionResponse: mplhelp_T_CreateCmNftCollection_Result
           = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
 
         console.debug(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
@@ -277,14 +284,14 @@ export default function CreateCollectionPage() {
             render: ({ onClose }) => (
               <Box color='black' p={3} bg='green.200' borderRadius='lg'>
                 <div className='flex'>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                    <div className='flex'>
-                      <Text fontWeight="normal">NFT Collection</Text>
-                      <Text className='mx-1' fontWeight="bold">Candy Machine</Text>
-                      <Text fontWeight="normal">created.</Text>
-                    </div>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <div className='flex'>
+                    <Text fontWeight="normal">NFT Collection</Text>
+                    <Text className='mx-1' fontWeight="bold">Candy Machine</Text>
+                    <Text fontWeight="normal">created.</Text>
+                  </div>
 
-                    <CloseButton size='sm' onClick={onClose} />
+                  <CloseButton size='sm' onClick={onClose} />
                 </div>
                 <div className='m-2'>
                   {uriCandyMachine &&
@@ -301,14 +308,14 @@ export default function CreateCollectionPage() {
           }) // toast
 
           // 3 - finalize Candy Machine: add NFTs to Candy Machine
-          const finalizeCmNftCollectionConfigInput:mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
+          const finalizeCmNftCollectionConfigInput: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
             walletAdapter: wallet.adapter,
             collectionSigner: createNftCollectionResponse.collectionSigner,
             candyMachineSigner: createCmNftCollectionResponse.candyMachineSigner,
             itemsCount: nftCount,
             nameUriArray: uploadedCollectionUploadedNftsNameUriArray,
           }
-          const finalizeCmNftCollectionConfigResponse:mplhelp_T_FinalizeCmNftCollectionConfig_Result
+          const finalizeCmNftCollectionConfigResponse: mplhelp_T_FinalizeCmNftCollectionConfig_Result
             = await mplxH_finalizeCmNftCollectionConfig_fromWallet(finalizeCmNftCollectionConfigInput)
 
           console.debug(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
@@ -322,7 +329,7 @@ export default function CreateCollectionPage() {
               render: ({ onClose }) => (
                 <Box color='black' p={3} bg='green.200' borderRadius='lg'>
                   <div className='flex'>
-                    <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                    <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                     <Text fontWeight="bold">NFT(s) added to Candy Machine</Text>
                     <CloseButton size='sm' onClick={onClose} />
                   </div>
@@ -456,7 +463,7 @@ export default function CreateCollectionPage() {
       // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
       const endDateTime = null;
 
-      const cmNftCollectioNParams:mplhelp_T_CmNftCollection_Params = {
+      const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
         itemsCount: nftCount,
         mintFee: mintFee,
         maxMintPerwallet: 1, // TODO: maxMintPerwallet
@@ -465,7 +472,7 @@ export default function CreateCollectionPage() {
       }
 
 
-      const createCompleteCollectionCmConfigInputData:T_CreateCompleteCollectionCmConfigInputData = {
+      const createCompleteCollectionCmConfigInputData: T_CreateCompleteCollectionCmConfigInputData = {
         collectionName: collectionName,
         // collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
         collectionUri: uploadedCollectionUploadedMetadataUri,
@@ -483,9 +490,9 @@ export default function CreateCollectionPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-      body: JSON.stringify(createCompleteCollectionCmConfigInputData)
-    });
-    const response:CreateCompleteCollectionCmConfigResponseData = await res.json();
+        body: JSON.stringify(createCompleteCollectionCmConfigInputData)
+      });
+      const response: CreateCompleteCollectionCmConfigResponseData = await res.json();
       console.debug(`${LOGPREFIX}`, response);
 
       if (response && response.success) {
@@ -496,9 +503,14 @@ export default function CreateCollectionPage() {
           duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+            <Box
+              bg={toastSuccessBgColor}
+              color={toastTestColor}
+              p={3}
+              borderRadius='lg'
+            >
               <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
+                <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                 <Text fontWeight="bold">NFT Collection created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
@@ -526,7 +538,7 @@ export default function CreateCollectionPage() {
 
       } else {
         // Error
-        const errorMsg = (response && response.success === false ? response.error : 'Unknown error') 
+        const errorMsg = (response && response.success === false ? response.error : 'Unknown error')
         console.error(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, errorMsg);
         toast({
           title: 'Collection creation failed',
@@ -563,7 +575,7 @@ export default function CreateCollectionPage() {
     setCollectionDescription(event.target.value)
   }
 
-  const handleChangeNftCount = (_value: number|string) => {
+  const handleChangeNftCount = (_value: number | string) => {
     let value: number
     if (typeof _value === 'string') {
       value = parseInt(_value)
@@ -656,7 +668,7 @@ export default function CreateCollectionPage() {
             {
               uri: uploadedImageUri,
               // type: 'image',
-              type: (image?image?.type:'image'),
+              type: (image ? image?.type : 'image'),
             }
           ],
           category: "image",
@@ -722,10 +734,10 @@ export default function CreateCollectionPage() {
       ]
       for (let i = 0; i < nftCount; i++) {
         // TODO: generate/upload NFT JSON
-        nameUriArray.push({ name: `NFT${i+1}`, uri: `https://example.com/nft${i+1}.json` })
+        nameUriArray.push({ name: `NFT${i + 1}`, uri: `https://example.com/nft${i + 1}.json` })
       }
 
-      setUploadedCollectionUploadedNftsNameUriArray( nameUriArray )
+      setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
 
 
       console.debug(`${LOGPREFIX}metadataJsonUri`, metadataJsonUri);
@@ -805,9 +817,12 @@ export default function CreateCollectionPage() {
     }
   } // handleUploadImageFile
 
-  const bgColor = useColorModeValue("gray.50", "gray.800")
+  // const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
-  const textColor = useColorModeValue("gray.800", "white")
+  const textNormalColor = useColorModeValue("gray.800", "white")
+  const textWarnColor = useColorModeValue("orange.600", "orange.300")
+  const textNormalSliderColor = useColorModeValue("gray.800", "gray.800")
+
 
   const columnCount = useBreakpointValue({ base: 1, md: 2 })
 
@@ -835,6 +850,7 @@ export default function CreateCollectionPage() {
                       value={collectionName}
                       onChange={handleChangeCollectionName}
                       placeholder="Collection name"
+                      // color={textWarnColor}
                       bg={cardBgColor}
                       borderRadius="full"
                     />
@@ -878,7 +894,7 @@ export default function CreateCollectionPage() {
                         mr="2rem"
                         value={nftCount}
                         onChange={handleChangeNftCount}
-                        color={nftCount > minNftCount ? 'white' : 'red.500'}
+                        color={nftCount > minNftCount ? textNormalColor : textWarnColor}
                         min={minNftCount}
                         max={NFT_COUNT_MAX}
                         bg={cardBgColor}
@@ -895,6 +911,7 @@ export default function CreateCollectionPage() {
                         focusThumbOnChange={false}
                         value={nftCount}
                         onChange={handleChangeNftCount}
+                        color={nftCount > minNftCount ? textNormalSliderColor : textWarnColor}
                         min={minNftCount}
                         max={NFT_COUNT_MAX}
                       >
@@ -961,10 +978,10 @@ export default function CreateCollectionPage() {
                   leftIcon={<UploadCloudIcon />}
                   colorScheme={
                     isValidFileInput ?
-                     (uploadedImageUri ? 'green': 'yellow')
-                     :
-                     'red'
-                   }
+                      (uploadedImageUri ? 'green' : 'orange')
+                      :
+                      'red'
+                  }
                   // colorScheme="purple"
                   isDisabled={!connected || !isValidFileInput}
                   onClick={handleUploadImageFile}
@@ -978,10 +995,10 @@ export default function CreateCollectionPage() {
                   // colorScheme="blue"
                   colorScheme={
                     isValidFileInput ?
-                     (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri ? 'green' : (nftCount>0?'yellow':'orange')): 'orange')
-                     :
-                     'red'
-                   }
+                      (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri ? 'green' : (nftCount > 0 ? 'yellow' : 'orange')) : 'orange')
+                      :
+                      'red'
+                  }
                   isDisabled={!connected || !isValidFileInput}
                   onClick={handleUploadJsonFiles}
                   width="full"
@@ -995,38 +1012,38 @@ export default function CreateCollectionPage() {
 
         <Fade in={true}>
           <VStack spacing={4} mt={10}>
-          <Button
-          size="lg"
-          isDisabled={!connected || !isValidCollectionInput}
-          isLoading={isProcessingNftCollectionCreation}
-          onClick={createCompleteNftCollection}
-          colorScheme="purple"
-          width="full"
-          borderRadius="full"
-        >
-          Create NFT Collection (Wallet Fees)
-        </Button>
+            <Button
+              size="lg"
+              isDisabled={!connected || !isValidCollectionInput}
+              isLoading={isProcessingNftCollectionCreation}
+              onClick={createCompleteNftCollection}
+              colorScheme="purple"
+              width="full"
+              borderRadius="full"
+            >
+              Create NFT Collection (Wallet Fees)
+            </Button>
 
-        <Button
-          size="lg"
-          isDisabled={!connected || !isValidCollectionInput}
-          isLoading={isProcessingSponsoredNftCollectionCreation}
-          onClick={createCompleteNftCollectionSponsored}
-          // colorScheme="green"
-          colorScheme={
-            isValidFileInput ?
-              (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri  && nftCount > minNftCount? 'green' :'yellow'): 'orange')
-              :
-              'red'
-            }
-          width="full"
-          borderRadius="full"
-        >
-          Create NFT Collection (Sponsored Fees)
-        </Button>
-      </VStack>
-    </Fade>
-  </motion.div>
-</Container>
-)
+            <Button
+              size="lg"
+              isDisabled={!connected || !isValidCollectionInput}
+              isLoading={isProcessingSponsoredNftCollectionCreation}
+              onClick={createCompleteNftCollectionSponsored}
+              // colorScheme="green"
+              colorScheme={
+                isValidFileInput ?
+                  (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri && nftCount > minNftCount ? 'green' : 'yellow') : 'orange')
+                  :
+                  'red'
+              }
+              width="full"
+              borderRadius="full"
+            >
+              Create NFT Collection (Sponsored Fees)
+            </Button>
+          </VStack>
+        </Fade>
+      </motion.div>
+    </Container>
+  )
 }
