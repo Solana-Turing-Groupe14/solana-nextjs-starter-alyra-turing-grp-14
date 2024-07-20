@@ -11,7 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX } from '@consts/commons'
+import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH } from '@consts/commons'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
@@ -885,8 +885,17 @@ export default function CreateCollectionPage() {
   const textWarnColor = useColorModeValue("orange.600", "orange.300")
   const textNormalSliderColor = useColorModeValue("gray.800", "gray.800")
 
-
   const columnCount = useBreakpointValue({ base: 1, md: 2 })
+
+  const nftNamePrefixMaxLength = useMemo(() => {
+    // const LOGPREFIX = `${FILEPATH}:nftNamePrefixMaxLength: `
+    // console.debug(`${LOGPREFIX}nftCount=${nftCount} NFT_NAME_PREFIX_MAXLENGTH=${NFT_NAME_PREFIX_MAXLENGTH}`)
+    const nftNamePostfix = ` #${nftCount.toString()}`
+    // `${_nftNamePrefix}${nftNamePostfix}`.length
+    const maxLen = NFT_NAME_PREFIX_MAXLENGTH - nftNamePostfix.length
+    // console.debug(`${LOGPREFIX}maxLen=${maxLen}`)
+    return maxLen
+  }, [nftCount]);
 
   return (
     <Container maxW="container.xl" py={10}>
@@ -933,6 +942,7 @@ export default function CreateCollectionPage() {
                       value={nftNamePrefix}
                       onChange={handleChangeNftNamePrefix}
                       placeholder="NFT name prefix"
+                      maxLength={nftNamePrefixMaxLength}
                       bg={cardBgColor}
                       borderRadius="full"
                     />
