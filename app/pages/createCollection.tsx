@@ -1,9 +1,14 @@
-import { AttachmentIcon, CheckCircleIcon, ExternalLinkIcon as ExternalLinkIconChakra, LinkIcon } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, Container, Flex, FormControl, FormLabel, IconButton, Input, InputGroup, InputLeftElement, Link, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useToast, VStack, Heading, SimpleGrid, Fade, ScaleFade, SlideFade, useColorModeValue, useBreakpointValue } from "@chakra-ui/react"
+import { AttachmentIcon, CheckCircleIcon, ExternalLinkIcon as ExternalLinkIconChakra } from '@chakra-ui/icons'
+import { Box, Button, CloseButton, Container, Fade, Flex, FormControl, FormLabel,
+  Heading, Input, InputGroup, InputLeftElement, Link,
+  NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper,
+  ScaleFade, SimpleGrid, SlideFade, Slider, SliderFilledTrack, SliderThumb, SliderTrack,
+  Text, useBreakpointValue, useColorModeValue, useToast, VStack
+} from "@chakra-ui/react"
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { useWallet } from "@solana/wallet-adapter-react"
-import { ExternalLinkIcon as ExternalLinkIconLucid, UploadCloudIcon } from "lucide-react"
 import { motion } from "framer-motion"
+import { ExternalLinkIcon as ExternalLinkIconLucid, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
 import {
@@ -27,6 +32,8 @@ import {
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
+
+/* eslint-disable react/no-children-prop */
 
 const FILEPATH = 'app/pages/createCollection.tsx'
 
