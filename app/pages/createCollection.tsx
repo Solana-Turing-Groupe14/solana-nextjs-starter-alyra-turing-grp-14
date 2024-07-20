@@ -240,8 +240,6 @@ export default function CreateCollectionPage() {
               p={3}
               borderRadius='lg'
             >
-
-
               <div className='flex justify-between'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                 <Text fontWeight="bold">NFT Collection created.</Text>
