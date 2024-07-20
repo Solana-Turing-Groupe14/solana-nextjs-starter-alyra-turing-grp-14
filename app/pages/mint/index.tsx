@@ -1,12 +1,14 @@
 import { AddIcon, AtSignIcon, CheckCircleIcon } from '@chakra-ui/icons'
-import { Box, Button, CloseButton, FormControl, Input, InputGroup, InputLeftElement, Link, Text, useToast, VStack, Heading, Container, useColorModeValue, Fade, ScaleFade } from "@chakra-ui/react"
+import {
+  Box, Button, CloseButton, Container, Fade, FormControl, Heading, Input, InputGroup,
+  InputLeftElement, Link, ScaleFade, Text, useColorModeValue, useToast, VStack
+} from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { motion } from "framer-motion"
 import { ExternalLinkIcon } from 'lucide-react'
 import { NextPage } from "next"
 import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
-import { motion } from "framer-motion"
-import { mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic"
-import { getUmi } from '@helpers/mplx.helper.static'
+import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic"
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
@@ -26,12 +28,12 @@ const MintTestPage: NextPage = (/* props */) => {
   const [isProcessingMintPaidByApp, setisProcessingMintPaidByApp] = useState(false)
   const [isValidCandyMachineAddress, setisValidCandyMachineAddress] = useState<boolean>(false)
 
-  const [candyMachineAddress, setCandyMachineAddress] = useState( defaultCandyMachineAddress )
+  const [candyMachineAddress, setCandyMachineAddress] = useState(defaultCandyMachineAddress)
   const [itemsRemaining, setItemsRemaining] = useState<number>(0)
 
-  const bgColor = useColorModeValue("gray.50", "gray.800")
+  // const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
-  const textColor = useColorModeValue("gray.800", "white")
+  // const textColor = useColorModeValue("gray.800", "white")
   const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
@@ -42,7 +44,7 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const toast = useToast()
 
-  const handleChangeCandyMachineAddress = async(event: { target: { value: SetStateAction<string> } }) => {
+  const handleChangeCandyMachineAddress = async (event: { target: { value: SetStateAction<string> } }) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
     try {
       setCandyMachineAddress(event.target.value)
@@ -53,7 +55,7 @@ const MintTestPage: NextPage = (/* props */) => {
           const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
           // Load CM
           const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
-          const valid =  (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
+          const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
           console.debug(`${LOGPREFIX}VALID: ${valid}`)
           setisValidCandyMachineAddress(true)
           toast({
@@ -119,7 +121,7 @@ const MintTestPage: NextPage = (/* props */) => {
         walletAdapter: wallet.adapter,
         candyMachineAddress,
       }
-      const mintResponse:mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
+      const mintResponse: mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
         mintInput
       )
       console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
@@ -134,8 +136,8 @@ const MintTestPage: NextPage = (/* props */) => {
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex justify-between'>
                 <div className='flex '>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                  <Text fontWeight= "bold" >Mint done</Text>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >Mint done</Text>
                 </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
@@ -147,7 +149,7 @@ const MintTestPage: NextPage = (/* props */) => {
                 {mintAddressUri &&
                   <Link href={mintAddressUri} isExternal className="flex text-end">
                     <div className='mr-2'>
-                      {nftName?nftName:shortenedAddress}
+                      {nftName ? nftName : shortenedAddress}
                     </div>
                     <ExternalLinkIcon size='16px' />
                   </Link>
@@ -159,7 +161,7 @@ const MintTestPage: NextPage = (/* props */) => {
         })
 
       } else {
-        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error') 
+        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
         toast({
           title: 'Mint failed',
@@ -181,7 +183,7 @@ const MintTestPage: NextPage = (/* props */) => {
         isClosable: true,
         position: 'top-right',
       })
-  } finally {
+    } finally {
       setIsProcessingMintPaidByWallet(false)
     }
   } // submitMintPaidByWallet
@@ -204,7 +206,7 @@ const MintTestPage: NextPage = (/* props */) => {
           candyMachineAddress: candyMachineAddress,
         })
       });
-      const mintResponse:mintFromCmFromAppResponseData = await res.json();
+      const mintResponse: mintFromCmFromAppResponseData = await res.json();
 
       console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
       if (mintResponse.success) {
@@ -218,8 +220,8 @@ const MintTestPage: NextPage = (/* props */) => {
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex justify-between'>
                 <div className='flex '>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                  <Text fontWeight= "bold" >Mint done</Text>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >Mint done</Text>
                 </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
@@ -231,7 +233,7 @@ const MintTestPage: NextPage = (/* props */) => {
                 {mintAddressUri &&
                   <Link href={mintAddressUri} isExternal className="flex text-end">
                     <div className='mr-2'>
-                      {nftName?nftName:shortenedAddress}
+                      {nftName ? nftName : shortenedAddress}
                     </div>
                     <ExternalLinkIcon size='16px' />
                   </Link>
@@ -243,7 +245,7 @@ const MintTestPage: NextPage = (/* props */) => {
         })
 
       } else {
-        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error') 
+        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
         toast({
           title: 'Mint failed',
@@ -265,19 +267,19 @@ const MintTestPage: NextPage = (/* props */) => {
         isClosable: true,
         position: 'top-right',
       })
-  } finally {
+    } finally {
       setisProcessingMintPaidByApp(false)
     }
   } // submitMintPaidByApp
 
-  
+
 
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
   };
 
-  const getRemainingItems = useCallback(async (_candyMachineAddress:string):Promise<number> => {
+  const getRemainingItems = useCallback(async (_candyMachineAddress: string): Promise<number> => {
     try {
       const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
       // Load CM
@@ -290,13 +292,13 @@ const MintTestPage: NextPage = (/* props */) => {
       console.error(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
       return 0
     }
-  } , [])
+  }, [])
 
   const updateRemainingItems = useCallback(async () => {
     const remaining = await getRemainingItems(candyMachineAddress)
     setItemsRemaining(remaining)
   }
-  , [candyMachineAddress, getRemainingItems])
+    , [candyMachineAddress, getRemainingItems])
 
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
@@ -316,8 +318,8 @@ const MintTestPage: NextPage = (/* props */) => {
     // cleanup
     return () => {
       if (interval) clearInterval(interval)
-      }
-    }, [candyMachineAddress, updateRemainingItems]
+    }
+  }, [candyMachineAddress, updateRemainingItems]
   )
 
   return (
