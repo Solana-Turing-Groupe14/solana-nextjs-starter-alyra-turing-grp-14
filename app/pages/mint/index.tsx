@@ -298,10 +298,16 @@ const MintTestPage: NextPage = (/* props */) => {
     try {
       const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
       // Load CM
-      const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
-      const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
-      console.log('getRemainingItems:remainingItems', remainingItems)
-      return remainingItems
+      try {
+        const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+        const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
+        console.log('getRemainingItems:remainingItems', remainingItems)
+        return remainingItems
+      } catch (error) {
+          const errorMsg = (error instanceof Error ? error.message : `${error}`)
+          console.warn(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
+          return 0
+      }
     } catch (error) {
       const errorMsg = (error instanceof Error ? error.message : `${error}`)
       console.error(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
@@ -323,7 +329,7 @@ const MintTestPage: NextPage = (/* props */) => {
   useEffect(() => {
     let interval = null
     try {
-      if (candyMachineAddress) {
+      if (candyMachineAddress && isValidCandyMachineAddress) {
         updateRemainingItems()
         interval = setInterval(() => {
           updateRemainingItems()
@@ -337,7 +343,7 @@ const MintTestPage: NextPage = (/* props */) => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [candyMachineAddress, updateRemainingItems]
+  }, [candyMachineAddress, updateRemainingItems, isValidCandyMachineAddress]
   )
 
   return (
