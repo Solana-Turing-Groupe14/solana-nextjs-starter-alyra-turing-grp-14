@@ -18,8 +18,10 @@ const FILEPATH = 'app/pages/mint/index.tsx'
 const MintTestPage: NextPage = (/* props */) => {
 
   const SUCCESS_DELAY = 15_000
-  // const WARN_DELAY = 15_000
+  const WARN_DELAY = 15_000
   const ERROR_DELAY = 60_000
+
+  const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
   const defaultCandyMachineAddress = ``
 
@@ -43,6 +45,10 @@ const MintTestPage: NextPage = (/* props */) => {
   }, [connected, connectedWalletPublicKey]);
 
   const toast = useToast()
+  const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
+  const toastTestColor = useColorModeValue("white", "black")
+
+  // ------------------------------
 
   const handleChangeCandyMachineAddress = async (event: { target: { value: SetStateAction<string> } }) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
@@ -67,12 +73,12 @@ const MintTestPage: NextPage = (/* props */) => {
           })
         } catch (error) {
           const errorMsg = (error instanceof Error ? error.message : `${error}`)
-          console.error(`${LOGPREFIX}error: ${errorMsg}`)
+          console.warn(`${LOGPREFIX}error: ${errorMsg}`)
           toast({
             title: 'Invalid Candy Machine address',
             description: `${errorMsg}`,
-            status: 'error',
-            duration: ERROR_DELAY,
+            status: 'warning',
+            duration: WARN_DELAY,
             isClosable: true,
             position: 'top-right',
           })
@@ -88,7 +94,9 @@ const MintTestPage: NextPage = (/* props */) => {
       setisValidCandyMachineAddress(false)
       setItemsRemaining(0)
     }
-  }
+  } // handleChangeCandyMachineAddress
+
+  // ------------------------------
 
   const warnIsNotConnected = () => {
     const LOGPREFIX = `${FILEPATH}:warnIsNotConnected: `
@@ -188,6 +196,7 @@ const MintTestPage: NextPage = (/* props */) => {
     }
   } // submitMintPaidByWallet
 
+  // ------------------------------
 
   const submitMintPaidByApp = async () => {
     const LOGPREFIX = `${FILEPATH}:submitMintPaidByApp: `
@@ -217,7 +226,12 @@ const MintTestPage: NextPage = (/* props */) => {
           duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+            <Box
+              bg={toastSuccessBgColor}
+              color={toastTestColor}
+              p={3}
+              borderRadius='lg'
+            >
               <div className='flex justify-between'>
                 <div className='flex '>
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
@@ -272,12 +286,13 @@ const MintTestPage: NextPage = (/* props */) => {
     }
   } // submitMintPaidByApp
 
-
-
+  // ------------------------------
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
-  };
+  }
+
+  // ------------------------------
 
   const getRemainingItems = useCallback(async (_candyMachineAddress: string): Promise<number> => {
     try {
@@ -292,15 +307,18 @@ const MintTestPage: NextPage = (/* props */) => {
       console.error(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
       return 0
     }
-  }, [])
+  }, []) // getRemainingItems
+
+  // --------------
 
   const updateRemainingItems = useCallback(async () => {
+    if (!isValidCandyMachineAddress) return
     const remaining = await getRemainingItems(candyMachineAddress)
     setItemsRemaining(remaining)
   }
-    , [candyMachineAddress, getRemainingItems])
+    , [candyMachineAddress, getRemainingItems, isValidCandyMachineAddress])
 
-  const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
+  // ------------------------------
 
   useEffect(() => {
     let interval = null
