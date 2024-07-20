@@ -1,9 +1,9 @@
 import { CheckCircleIcon } from '@chakra-ui/icons'
 import { Box, Button, Center, CloseButton, FormControl, FormLabel, Input, InputGroup, Link, VStack, Text, useToast, Container, Heading, SimpleGrid, useColorModeValue } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { motion } from "framer-motion"
 import { ExternalLinkIcon, SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { motion } from "framer-motion"
 import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
@@ -31,6 +31,8 @@ export default function ToolsPage() {
   }, [connected, connectedWalletPublicKey]);
 
   const toast = useToast()
+  const toastSuccessBgColor = useColorModeValue("green.600", "green.600")
+  const toastTestColor = useColorModeValue("white", "black")
 
   const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
@@ -99,7 +101,12 @@ export default function ToolsPage() {
           duration: SUCCESS_DELAY,
           position: 'top-right',
           render: ({ onClose }) => (
-            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+            <Box
+              bg={toastSuccessBgColor}
+              color={toastTestColor}
+              borderRadius='lg'
+              p={4}
+              >
               <div className='flex justify-between'>
                 <div className='flex '>
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
