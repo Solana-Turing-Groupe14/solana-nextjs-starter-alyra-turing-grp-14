@@ -11,7 +11,9 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH } from '@consts/commons'
+import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
+  NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH
+} from '@consts/commons'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
