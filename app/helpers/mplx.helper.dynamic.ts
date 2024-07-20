@@ -944,7 +944,7 @@ export async function finalizeCmNftCollectionConfig(
       }
       console.debug(`${LOGPREFIX} _itemsCount: ${_itemsCount}`)
       console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
-      console.dir(nameUriArray)
+      // console.dir(nameUriArray)
 
       try {
         const configLines = [];
@@ -953,7 +953,7 @@ export async function finalizeCmNftCollectionConfig(
             configLines.push(
               {
                 name: `${nameUri.name}`,
-                uri: `${nameUri.uri}.json`,
+                uri: `${nameUri.uri}`,
               })
           } // for
         } else {
