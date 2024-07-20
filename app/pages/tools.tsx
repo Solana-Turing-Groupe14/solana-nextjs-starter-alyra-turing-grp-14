@@ -15,7 +15,6 @@ const FILEPATH = 'app/pages/tools.tsx'
 
 export default function ToolsPage() {
 
-
   const SUCCESS_DELAY = 10_000
   const WARN_DELAY = 15_000
   const ERROR_DELAY = 30_000
@@ -92,14 +91,6 @@ export default function ToolsPage() {
       if (response && response.success && response.amount) {
         const addressUri = getAddressUri(address)
         const shortenedAddress = shortenAddress(address)
-        // toast({
-        //   title: 'Wallet airdropped.',
-        //   description: `${response.address} received ${response.amount} sol.`,
-        //   status: 'success',
-        //   duration: 10_000,
-        //   isClosable: true,
-        //   position: 'top-right',
-        // })
         toast({
           duration: SUCCESS_DELAY,
           position: 'top-right',
