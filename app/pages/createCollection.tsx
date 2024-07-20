@@ -878,6 +878,7 @@ export default function CreateCollectionPage() {
                         mr="2rem"
                         value={nftCount}
                         onChange={handleChangeNftCount}
+                        color={nftCount > minNftCount ? 'white' : 'red.500'}
                         min={minNftCount}
                         max={NFT_COUNT_MAX}
                         bg={cardBgColor}
@@ -922,7 +923,9 @@ export default function CreateCollectionPage() {
                     id="image-upload"
                   />
                   <label htmlFor="image-upload">
-                    <Button as="span" leftIcon={<UploadCloudIcon />} colorScheme="teal" variant="outline" width="full">
+                    <Button as="span" leftIcon={<UploadCloudIcon />}
+                      colorScheme={isValidFileInput ? 'green' : 'yellow'}
+                      variant="outline" width="full">
                       Choose Image
                     </Button>
                   </label>
@@ -956,7 +959,13 @@ export default function CreateCollectionPage() {
 
                 <Button
                   leftIcon={<UploadCloudIcon />}
-                  colorScheme="purple"
+                  colorScheme={
+                    isValidFileInput ?
+                     (uploadedImageUri ? 'green': 'yellow')
+                     :
+                     'red'
+                   }
+                  // colorScheme="purple"
                   isDisabled={!connected || !isValidFileInput}
                   onClick={handleUploadImageFile}
                   width="full"
@@ -966,7 +975,13 @@ export default function CreateCollectionPage() {
 
                 <Button
                   leftIcon={<UploadCloudIcon />}
-                  colorScheme="blue"
+                  // colorScheme="blue"
+                  colorScheme={
+                    isValidFileInput ?
+                     (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri ? 'green' : (nftCount>0?'yellow':'orange')): 'orange')
+                     :
+                     'red'
+                   }
                   isDisabled={!connected || !isValidFileInput}
                   onClick={handleUploadJsonFiles}
                   width="full"
@@ -997,7 +1012,13 @@ export default function CreateCollectionPage() {
           isDisabled={!connected || !isValidCollectionInput}
           isLoading={isProcessingSponsoredNftCollectionCreation}
           onClick={createCompleteNftCollectionSponsored}
-          colorScheme="green"
+          // colorScheme="green"
+          colorScheme={
+            isValidFileInput ?
+              (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri  && nftCount > minNftCount? 'green' :'yellow'): 'orange')
+              :
+              'red'
+            }
           width="full"
           borderRadius="full"
         >
