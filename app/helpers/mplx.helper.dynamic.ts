@@ -502,7 +502,7 @@ export async function createNftCollection(
         collectionAddress: collectionSigner.publicKey,
         collectionSigner: collectionSigner,
       }
-      console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
+      // console.debug(`${LOGPREFIX} collectionResult`, collectionResult)
       return collectionResult
     } catch (error) {
       console.error(`${LOGPREFIX}`, error)
@@ -817,7 +817,7 @@ export async function createCmNftCollection(
       candyMachineAddress: candyMachineSigner.publicKey,
       candyMachineSigner: candyMachineSigner,
     }
-    console.debug(`${LOGPREFIX} cmCollectionResult`, cmCollectionResult)
+    // console.debug(`${LOGPREFIX} cmCollectionResult`, cmCollectionResult)
     return cmCollectionResult
   } catch (error) {
     console.error(`${LOGPREFIX}`, error)
@@ -941,9 +941,13 @@ export async function finalizeCmNftCollectionConfig(
         }
         return collectionResultError
       }
+      console.debug(`${LOGPREFIX} _itemsCount: ${_itemsCount}`)
+      console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
+      console.dir(nameUriArray)
+
       try {
         const configLines = [];
-        if (nameUriArray) {
+        if (nameUriArray && nameUriArray.length > 0) {
           for (const nameUri of nameUriArray) {
             configLines.push(
               {
@@ -962,7 +966,7 @@ export async function finalizeCmNftCollectionConfig(
         } // nameUriArray
 
         console.debug(`${LOGPREFIX} configLines:`, configLines);
-        console.dir(configLines);
+        // console.dir(configLines);
 
         await MPL_F_addConfigLines(_umi, {
           candyMachine: _candyMachineSigner.publicKey,
