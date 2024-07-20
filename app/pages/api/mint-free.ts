@@ -18,6 +18,7 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
     // console.debug('req.body', req.body)
     const { 
       candyMachineAddress: _candyMachineAddress,
+      minterAddress: _minterAddress,
     } = req.body
     // console.debug(`${LOGPREFIX} _candyMachineAddress = `, _candyMachineAddress)
 
@@ -25,8 +26,13 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
       res.status(200).json({ success: false, error: 'candyMachineAddress is required' })
       return
     }
+    if (!_minterAddress) {
+      res.status(200).json({ success: false, error: 'minterAddress is required' })
+      return
+    }
     const input:mplhelp_T_MintNftCm_fromApp_Input = {
       candyMachineAddress: _candyMachineAddress,
+      minterAddress: _minterAddress,
     }
     const mintResult = await mintNftFromCm_fromApp(input)
     if (mintResult.success) {

@@ -19,6 +19,7 @@ import {
   MPL_F_setComputeUnitLimit,
   MPL_F_sol,
   MPL_F_some, MPL_F_transactionBuilder, MPL_Keypair, MPL_P_KeypairIdentity, 
+  MPL_P_KeypairPayer,
   MPL_P_walletAdapterIdentity,
   MPL_P_walletAdapterPayer,
   MPL_T_GuardSetArgs,
@@ -164,7 +165,7 @@ export const airdrop = async (
 
 // https://developers.metaplex.com/umi/public-keys-and-signers
 // Umi interface stores two instances of Signer:
-// - identity using the app and payer paying for transaction
+// - identity using the app
 // - payer paying for transaction
 
 // Umi provides plugins to quickly assign new signers to these attributes.
@@ -216,6 +217,37 @@ export async function setIdentityPayer_WalletAdapter(
     return false
   }
 } // setIdentityPayer_WalletAdapter
+
+// --------------------------
+
+export async function setPayer_APP(
+  _umi: MPL_T_Umi,
+  _checkSigner = false
+): Promise<boolean>
+{
+  const LOGPREFIX = `${filePath}:setPayer_APP: `
+  try {
+    const APP_1_KEYPAIR_SIGNER = 'MINT_APP_01_KEYPAIR'
+    const creator_keyPair: MPL_Keypair | null = getMplKeypair_fromEnv(APP_1_KEYPAIR_SIGNER)
+    if (!creator_keyPair) {
+      return false
+    }
+    const appSigner = MPL_F_createSignerFromKeypair(_umi, creator_keyPair)
+    // Set payer ONLY
+    // _umi.use(MPL_P_KeypairIdentity(appSigner));
+    _umi.use(MPL_P_KeypairPayer(appSigner));
+
+    if (_checkSigner && !MPL_F_isSigner(_umi.identity)) {
+      console.error(`${LOGPREFIX}❌ wallet ${_umi.identity} is not a valid signer`)
+      return false
+    }
+    return true
+  } catch (error) {
+    const errorMsg = (error instanceof Error) ? error.message : `${error}`
+    console.error(`${LOGPREFIX}error`, errorMsg)
+    return false
+  }
+} // setPayer_APP
 
 // --------------------------
 
@@ -1031,14 +1063,19 @@ export async function finalizeCmNftCollectionConfig(
 
   export async function mintNftFromCm_fromApp({
     candyMachineAddress,
+    minterAddress,
   }: mplhelp_T_MintNftCm_fromApp_Input): Promise<mplhelp_T_MintNftCMResult> {
   const LOGPREFIX = `${filePath}:mintNftFromCm_fromApp: `
   try {
     const umi = mplx_umi
     console.debug(`${LOGPREFIX} -> candyMachineAddress=${candyMachineAddress}`)
+    // setPayer_APP(umi)
     setIdentityPayer_APP(umi)
+      const ownerPublicKey: MPL_T_PublicKey = MPL_F_publicKey(minterAddress)
+
     return mintNftFromCm({
       candyMachineAddress,
+      ownerPublicKey,
       umi: umi,
     })
   } catch (error) {
@@ -1191,6 +1228,8 @@ export async function mintNftFromCm_fromWallet({
     setIdentityPayer_WalletAdapter(_walletAdapter, umi, true)
     return mintNftFromCm({
       candyMachineAddress: _candyMachineAddress,
+      // minterAddress: _walletAdapter.publicKey.toString(),
+      ownerPublicKey: _walletAdapter.publicKey,
       umi: umi,
     })
   } catch (error) {
@@ -1208,6 +1247,8 @@ export async function mintNftFromCm_fromWallet({
 
 export async function mintNftFromCm({
   candyMachineAddress: _candyMachineAddress,
+  // minterAddress: _minterAddress,
+  ownerPublicKey: _ownerPublicKey,
   umi: _umi,
 }: mplhelp_T_MintNftCm): Promise<mplhelp_T_MintNftCMResult> {
 const LOGPREFIX = `${filePath}:mintNftFromCM: `
@@ -1251,6 +1292,7 @@ try {
   }
 
   const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
+  // const ownerPublicKey: MPL_T_PublicKey = MPL_F_publicKey(_minterAddress)
 
   // Load CM
   const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey, MPL_TX_BUILDR_OPTIONS.confirm);
@@ -1267,7 +1309,8 @@ try {
   console.table({
     candyMachinePublicKey: candyMachinePublicKey.toString(),
     collectionPublicKey: collectionPublicKey.toString(),
-    owner: umi.identity.publicKey.toString(),
+    // owner: umi.identity.publicKey.toString(),
+    owner: _ownerPublicKey.toString(),
     payer: umi.payer.publicKey.toString(),
     assetSigner: assetSigner.publicKey,
   })
@@ -1288,14 +1331,15 @@ try {
           // mintArgs: {
           //   solPayment: MPL_F_some({ destination: treasury }),
           // },
+          owner: _ownerPublicKey///// TODO
         })
       )
       .sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
 
-      console.debug(`${LOGPREFIX} mintTx`, mintTx)
-      console.dir(mintTx)
-      console.dir(mintTx.result)
-      console.log(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
+      // console.debug(`${LOGPREFIX} mintTx`, mintTx)
+      // console.dir(mintTx)
+      // console.dir(mintTx.result)
+      // console.log(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
 
       if (mintTx.result.value.err !== null) {
         console.error(`${LOGPREFIX}❌ Error minting NFT.`)

@@ -33,6 +33,7 @@ import {
   transactionBuilder as MPL_F_transactionBuilder,
   Keypair as MPL_Keypair,
   keypairIdentity as MPL_P_KeypairIdentity,
+  keypairPayer as MPL_P_KeypairPayer,
   KeypairSigner as MPL_T_KeypairSigner,
   PublicKey as MPL_T_PublicKey,
   RpcConfirmTransactionResult as MPL_T_RpcConfirmTransactionResult,
@@ -54,6 +55,7 @@ const MPL_TX_BUILDR_OPTIONS: TransactionBuilderSendAndConfirmOptions = {
 export {
   MPL_TX_BUILDR_OPTIONS,
   MPL_P_KeypairIdentity,
+  MPL_P_KeypairPayer,
   MPL_F_sol,
   MPL_F_createSignerFromKeypair,
   MPL_F_publicKey,

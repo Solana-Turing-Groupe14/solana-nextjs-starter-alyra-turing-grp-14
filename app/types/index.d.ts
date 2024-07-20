@@ -71,11 +71,14 @@ export type mplhelp_T_CreateCMNftCollectionResult =
 export type mplhelp_T_MintNftCm_fromApp_Input =
   {
     candyMachineAddress: string,
+    minterAddress: string,
   }
 
   export type mplhelp_T_MintNftCm =
   {
     candyMachineAddress: string
+    // minterAddress: string,
+    ownerPublicKey: MPL_T_PublicKey,
     umi: MPL_T_Umi,
   }
 

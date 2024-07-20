@@ -218,6 +218,7 @@ const MintTestPage: NextPage = (/* props */) => {
         },
         body: JSON.stringify({
           candyMachineAddress: candyMachineAddress,
+          minterAddress: connectedWalletPublicKey?.toBase58()
         })
       });
       const mintResponse: mintFromCmFromAppResponseData = await res.json();
