@@ -70,7 +70,7 @@ export default function CreateCollectionPage() {
   const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
 
   const toast = useToast()
-  const toastSuccessBgColor = useColorModeValue("green.600", "green.600")
+  const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
   const toastTestColor = useColorModeValue("white", "black")
 
   const isConnected = useMemo(() => {
@@ -235,13 +235,17 @@ export default function CreateCollectionPage() {
             <Box
               bg={toastSuccessBgColor}
               color={toastTestColor}
+              p={3}
               borderRadius='lg'
             >
-              <div className='flex'>
+
+
+              <div className='flex justify-between'>
                 <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                 <Text fontWeight="bold">NFT Collection created.</Text>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
+
               <div className='m-2'>
                 {uriCollection &&
                   <Link href={uriCollection} isExternal className="flex text-end">
@@ -282,15 +286,19 @@ export default function CreateCollectionPage() {
             duration: SUCCESS_DELAY,
             position: 'top-right',
             render: ({ onClose }) => (
-              <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-                <div className='flex'>
+              <Box
+                color='black'
+                bg={toastSuccessBgColor}
+                p={3}
+                borderRadius='lg'
+              >
+                <div className='flex justify-between'>
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                   <div className='flex'>
                     <Text fontWeight="normal">NFT Collection</Text>
                     <Text className='mx-1' fontWeight="bold">Candy Machine</Text>
                     <Text fontWeight="normal">created.</Text>
                   </div>
-
                   <CloseButton size='sm' onClick={onClose} />
                 </div>
                 <div className='m-2'>
@@ -327,8 +335,13 @@ export default function CreateCollectionPage() {
               duration: SUCCESS_DELAY,
               position: 'top-right',
               render: ({ onClose }) => (
-                <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-                  <div className='flex'>
+                <Box
+                  bg={toastSuccessBgColor}
+                  color={toastTestColor}
+                  p={3}
+                  borderRadius='lg'
+                >
+                  <div className='flex justify-between'>
                     <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
                     <Text fontWeight="bold">NFT(s) added to Candy Machine</Text>
                     <CloseButton size='sm' onClick={onClose} />
@@ -509,9 +522,11 @@ export default function CreateCollectionPage() {
               p={3}
               borderRadius='lg'
             >
-              <div className='flex'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                <Text fontWeight="bold">NFT Collection created.</Text>
+              <div className='flex justify-between'>
+                <div className='flex '>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >NFT Collection created</Text>
+                </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='m-2'>

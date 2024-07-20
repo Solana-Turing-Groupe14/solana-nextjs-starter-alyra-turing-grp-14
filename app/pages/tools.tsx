@@ -33,7 +33,7 @@ export default function ToolsPage() {
   }, [connected, connectedWalletPublicKey]);
 
   const toast = useToast()
-  const toastSuccessBgColor = useColorModeValue("green.600", "green.600")
+  const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
   const toastTestColor = useColorModeValue("white", "black")
 
   const bgColor = useColorModeValue("gray.50", "gray.800")
