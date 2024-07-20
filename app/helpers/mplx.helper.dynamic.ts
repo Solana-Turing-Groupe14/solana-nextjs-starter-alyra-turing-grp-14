@@ -771,6 +771,7 @@ export async function createCmNftCollection(
         nameLength: 0, // Everything is a prefix
         prefixUri: _metadataPrefixUri,
         uriLength: _metadataPrefixUri.length,
+        // symbol: 'NFT',
         isSequential: false,
       });
 
@@ -1319,7 +1320,7 @@ try {
     success: true,
     mintAddress: assetSigner.publicKey, // TODO: check this
   }
-  console.debug(`${LOGPREFIX} mintResult`, mintResult)
+  // console.debug(`${LOGPREFIX} mintResult`, mintResult)
   return mintResult
 } catch (error) {
   const errorMsg = (error instanceof Error) ? error.message : `${error}`

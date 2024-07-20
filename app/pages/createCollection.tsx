@@ -11,7 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from '@consts/commons'
+import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX } from '@consts/commons'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
@@ -51,12 +51,14 @@ export default function CreateCollectionPage() {
   const defaultCollectionName = `Test coll. name ${randomStringNumber}`
   const defaultCollectionDescription = `Test coll. desc. ${randomStringNumber}`
   const defaultNftNamePrefix = `Test NFT prefix ${randomStringNumber}`
+  const defaultCollectionSymbol = `SYM ${randomStringNumber}`
   const defaultNftUploadedImageUri = ""
   const defaultNftCollectionUploadedMetadataUri = ""
   const defaultUploadedCollectionUploadedNftsNameUriArray: mplhelp_T_NameUriArray = []
 
   const [collectionName, setCollectionName] = useState<string>(defaultCollectionName)
   const [collectionDescription, setCollectionDescription] = useState<string>(defaultCollectionDescription)
+  const [collectionSymbol, setcollectionSymbol] = useState(defaultCollectionSymbol)
   const [nftNamePrefix, setNftNamePrefix] = useState<string>(defaultNftNamePrefix)
   const [image, setImage] = useState<File | undefined>()
   const [nftCount, setNftCount] = useState<number>(minNftCount)
@@ -343,7 +345,8 @@ export default function CreateCollectionPage() {
                 >
                   <div className='flex justify-between'>
                     <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                    <Text fontWeight="bold">NFT(s) added to Candy Machine</Text>
+                    <Text fontWeight="bold" className='pr-2'>NFT(s) added to</Text>
+                    <Text fontWeight="normal">Candy Machine</Text>
                     <CloseButton size='sm' onClick={onClose} />
                   </div>
                   <div className='m-2'>
@@ -605,6 +608,10 @@ export default function CreateCollectionPage() {
     setNftNamePrefix(event.target.value)
   }
 
+  const handleChangeNftCollectionSymbol = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setcollectionSymbol(event.target.value)
+  }
+
   const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || !event.target.files[0]) {
       event.target.value = ''
@@ -674,6 +681,7 @@ export default function CreateCollectionPage() {
         name: collectionName,
         description: collectionDescription,
         // symbol: 'NFT',
+        symbol: collectionSymbol,
         // external_url: "https://mywebsite.com",
         // seller_fee_basis_points: 100,
         uri: uploadedImageUri, // UPLOADED IMAGE
@@ -747,16 +755,55 @@ export default function CreateCollectionPage() {
         // { name: 'NFT4', uri: 'https://example.com/nft4.json' },
         // { name: 'NFT5', uri: 'https://example.com/nft5.json' },
       ]
+      /*
       for (let i = 0; i < nftCount; i++) {
         // TODO: generate/upload NFT JSON
         nameUriArray.push({ name: `NFT${i + 1}`, uri: `https://example.com/nft${i + 1}.json` })
       }
+      */
+      for (let i = 0; i < nftCount; i++) {
+        // NFT JSON
+        const nftJsonData = {
+          name: `${collectionName} ${i + 1}`,
+          description: collectionDescription,
+          // symbol: 'NFT',
+          symbol: collectionSymbol,
+          // external_url: "https://mywebsite.com",
+          // seller_fee_basis_points: 100,
+          // uri: uploadedImageUri, // UPLOADED IMAGE
+          image: (image ? image.name : 'image'),
+          // attributes: [],
+          properties: {
+            files: [
+              {
+                uri: uploadedImageUri,
+                // type: 'image',
+                type: (image ? image?.type : 'image'),
+              }
+            ],
+            category: "image",
+            // creators: [
+            //   {
+            //     "address": ".....",
+            //     "share": 100
+            //   }
+            // ]
+          },
+        }
+        // Upload NFT JSON
+        const nftJsonUri = await umiStorage.uploader.uploadJson(nftJsonData)
+        nameUriArray.push({ name: `NFT${i + 1}`, uri: nftJsonUri })
+      } // for (let i = 0; i < nftCount; i++)
 
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
 
 
       console.debug(`${LOGPREFIX}metadataJsonUri`, metadataJsonUri);
       console.dir(metadataJsonUri)
+
+      console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
+      console.dir(nameUriArray)
+
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }
@@ -895,6 +942,16 @@ export default function CreateCollectionPage() {
 
                   <InputGroup>
                     <Input
+                      value={collectionSymbol}
+                      onChange={handleChangeNftCollectionSymbol}
+                      placeholder="NFT symbol"
+                      bg={cardBgColor}
+                      maxLength={NFT_COLLECTION_SYMBOL_MAXLENGTH}
+                      borderRadius="full"
+                    />
+                  </InputGroup>
+                  <InputGroup>
+                    <Input
                       value={mintFee}
                       onChange={handleChangeNftMintFee}
                       placeholder="Set mint fee"
@@ -957,7 +1014,7 @@ export default function CreateCollectionPage() {
                     id="image-upload"
                   />
                   <label htmlFor="image-upload">
-                    <Button as="span" leftIcon={image?<ImageLucid />:<ImagePlus />}
+                    <Button as="span" leftIcon={image ? <ImageLucid /> : <ImagePlus />}
                       colorScheme={isValidFileInput ? 'green' : 'yellow'}
                       variant="outline" width="full">
                       Choose Image
@@ -1012,7 +1069,9 @@ export default function CreateCollectionPage() {
                   // colorScheme="blue"
                   colorScheme={
                     isValidFileInput ?
-                      (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri ? 'green' : (nftCount > 0 ? 'yellow' : 'orange')) : 'orange')
+                      (uploadedImageUri ?
+                        ((uploadedCollectionUploadedMetadataUri && uploadedCollectionUploadedNftsNameUriArray.length === nftCount)
+                          ? 'green' : (nftCount > 0 ? 'yellow' : 'orange')) : 'orange')
                       :
                       'red'
                   }
