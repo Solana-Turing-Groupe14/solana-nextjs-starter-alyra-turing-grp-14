@@ -1,5 +1,8 @@
 import { CheckCircleIcon } from '@chakra-ui/icons'
-import { Box, Button, Center, CloseButton, FormControl, FormLabel, Input, InputGroup, Link, VStack, Text, useToast, Container, Heading, SimpleGrid, useColorModeValue } from "@chakra-ui/react"
+import {
+  Box, Button, Center, CloseButton, Container, FormControl, FormLabel,
+  Heading, Input, InputGroup, Link, SimpleGrid, Text, useColorModeValue, useToast, VStack
+} from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, SendIcon } from "lucide-react"
@@ -55,16 +58,16 @@ export default function ToolsPage() {
   //   return amount >= 0 && amount <= AIRDROP_MAX_AMOUNT
   // } // isValidAirdropAmount
 
-  const isValidAirdropAmount = useMemo(() => { 
+  const isValidAirdropAmount = useMemo(() => {
     return airdropAmount > 0 && airdropAmount <= AIRDROP_MAX_AMOUNT
-  } , [airdropAmount])
+  }, [airdropAmount])
 
   // ----------------------------
 
   const airdropWallet = async (
-    address:string,
-    amount:number,
-    name: string|null|undefined
+    address: string,
+    amount: number,
+    name: string | null | undefined
   ) => {
     // Guard
     if (!isConnected) {
@@ -84,7 +87,7 @@ export default function ToolsPage() {
           amount: amount,
         })
       });
-      const response:AirdropResponseData = await res.json();
+      const response: AirdropResponseData = await res.json();
       console.debug('app/pages/mintTest.tsx:aidrop: response', response);
       if (response && response.success && response.amount) {
         const addressUri = getAddressUri(address)
@@ -106,19 +109,19 @@ export default function ToolsPage() {
               color={toastTestColor}
               borderRadius='lg'
               p={4}
-              >
+            >
               <div className='flex justify-between'>
                 <div className='flex '>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2'/>
-                  <Text fontWeight= "bold" >Wallet airdropped</Text>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >Wallet airdropped</Text>
                 </div>
                 <CloseButton size='sm' onClick={onClose} />
               </div>
               <div className='px-2 py-1'>
-                {name?
+                {name ?
                   <div className='p-1'>
                     <div className='flex'>
-                    <Text>{name}</Text>
+                      <Text>{name}</Text>
                       <Text className='p-1'>received</Text>
                       <Text className='p-1' fontWeight="bold">{response.amount}</Text>
                       <Text>SOL.</Text>
@@ -126,21 +129,21 @@ export default function ToolsPage() {
                   </div>
                   :
                   <div className='p-1'>
-                      <Text>{address}</Text>
-                      <div className='flex'>
-                        <Text className='p-1'>received</Text>
-                        <Text className='p-1' fontWeight="bold">{response.amount}</Text>
-                        <Text>SOL.</Text>
+                    <Text>{address}</Text>
+                    <div className='flex'>
+                      <Text className='p-1'>received</Text>
+                      <Text className='p-1' fontWeight="bold">{response.amount}</Text>
+                      <Text>SOL.</Text>
                     </div>
                   </div>
-                  }
+                }
               </div>
               <div className='m-2'>
                 {addressUri &&
                   <Link href={addressUri} isExternal className="flex text-end">
                     <div className='mr-2'>
                       {/* {name?name:shortenedAddress} */}
-                      {name?name:shortenedAddress}
+                      {name ? name : shortenedAddress}
                     </div>
                     <ExternalLinkIcon size='16px' />
                   </Link>
@@ -151,7 +154,7 @@ export default function ToolsPage() {
         })
 
       } else {
-        const error = (response && response.success === false ? response.error : 'Unknown error') 
+        const error = (response && response.success === false ? response.error : 'Unknown error')
         toast({
           title: 'Airdrop failed',
           description: error,
@@ -175,7 +178,7 @@ export default function ToolsPage() {
     }
     try {
       setIsProcessingConnectedWalletAirdrop(true)
-      const address:string = connectedWalletPublicKey?.toBase58()||''
+      const address: string = connectedWalletPublicKey?.toBase58() || ''
       airdropWallet(address, airdropAmount, null)
     } catch (error) {
       console.error(error)
@@ -187,7 +190,7 @@ export default function ToolsPage() {
   const airdropApp1Wallet = async () => {
     try {
       setIsProcessingApp1AddressAirdrop(true)
-      const address:string = process.env.NEXT_PUBLIC_MINTAP01||''
+      const address: string = process.env.NEXT_PUBLIC_MINTAP01 || ''
       airdropWallet(address, airdropAmount, 'App 1')
     } catch (error) {
       console.error(error)
@@ -199,7 +202,7 @@ export default function ToolsPage() {
   const airdropApp2Wallet = async () => {
     try {
       setIsProcessingApp2AddressAirdrop(true)
-      const address:string = process.env.NEXT_PUBLIC_MINTAP02||''
+      const address: string = process.env.NEXT_PUBLIC_MINTAP02 || ''
       airdropWallet(address, airdropAmount, 'App 2')
     } catch (error) {
       console.error(error)
@@ -211,7 +214,7 @@ export default function ToolsPage() {
   const airdropAppDefaultWallet = async () => {
     try {
       setIsProcessingAppDefaultAddressAirdrop(true)
-      const address:string = process.env.NEXT_PUBLIC_MINT_APP_DEFAULT||''
+      const address: string = process.env.NEXT_PUBLIC_MINT_APP_DEFAULT || ''
       airdropWallet(address, airdropAmount, 'App Default')
     } catch (error) {
       console.error(error)
@@ -230,7 +233,7 @@ export default function ToolsPage() {
     const LOGPREFIX = `${FILEPATH}:handleChangeAirdropAmount: `
     try {
       console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-      let value:number
+      let value: number
       if (typeof event.target.value === 'string') {
         value = parseInt(event.target.value)
         if (isNaN(value)) {
@@ -257,94 +260,94 @@ export default function ToolsPage() {
     }
   } // handleChangeAirdropAmount
 
-    // ----------------------------
+  // ----------------------------
 
-    return (
-      <Container maxW="container.md" py={10}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <VStack spacing={8}>
-            <Heading as="h1" size="2xl" textAlign="center" mb={6}>
-              Airdrop Tools
-            </Heading>
-  
-            <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
-              <Center w='100%' h='100%' mb={6}>
-                <SendIcon size={64} />
-              </Center>
-  
-              <SimpleGrid columns={[1, 2]} spacing={4}>
-                <Button
-                  isDisabled={!connected || !isValidAirdropAmount}
-                  isLoading={isProcessingConnectedWalletAirdrop}
-                  onClick={airdropConnectedWallet}
-                  colorScheme='green'
-                  variant='outline'
-                  size="lg"
-                  color={buttonTextColor}
-                >
-                  Airdrop Connected Wallet
-                </Button>
-  
-                <Button
-                  isDisabled={!connected || !isValidAirdropAmount}
-                  isLoading={isProcessingApp1AddressAirdrop}
-                  onClick={airdropApp1Wallet}
-                  colorScheme='orange'
-                  variant='outline'
-                  size="lg"
-                  color={buttonTextColor}
-                >
-                  Airdrop APP 1 Wallet
-                </Button>
-  
-                <Button
-                  isDisabled={!connected || !isValidAirdropAmount}
-                  isLoading={isProcessingApp2AddressAirdrop}
-                  onClick={airdropApp2Wallet}
-                  colorScheme='purple'
-                  variant='outline'
-                  size="lg"
-                  color={buttonTextColor}
-                >
-                  Airdrop APP 2 Wallet
-                </Button>
-  
-                <Button
-                  isDisabled={!connected || !isValidAirdropAmount}
-                  isLoading={isProcessingAppDefaultAddressAirdrop}
-                  onClick={airdropAppDefaultWallet}
-                  colorScheme='red'
-                  variant='outline'
-                  size="lg"
-                  color={buttonTextColor}
-                >
-                  Airdrop APP Default Wallet
-                </Button>
-              </SimpleGrid>
-  
-              <form onSubmit={handleDefaultSubmit} className="mt-6">
-                <FormControl>
-                  <FormLabel>Airdrop Amount</FormLabel>
-                  <InputGroup>
-                    <Input
-                      type='number'
-                      min={0}
-                      max={AIRDROP_MAX_AMOUNT}
-                      value={airdropAmount}
-                      onChange={handleChangeAirdropAmount}
-                      placeholder='Airdrop amount'
-                      bg={bgColor}
-                    />
-                  </InputGroup>
-                </FormControl>
-              </form>
-            </Box>
-          </VStack>
-        </motion.div>
-      </Container>
-    )
-  }
+  return (
+    <Container maxW="container.md" py={10}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <VStack spacing={8}>
+          <Heading as="h1" size="2xl" textAlign="center" mb={6}>
+            Airdrop Tools
+          </Heading>
+
+          <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
+            <Center w='100%' h='100%' mb={6}>
+              <SendIcon size={64} />
+            </Center>
+
+            <SimpleGrid columns={[1, 2]} spacing={4}>
+              <Button
+                isDisabled={!connected || !isValidAirdropAmount}
+                isLoading={isProcessingConnectedWalletAirdrop}
+                onClick={airdropConnectedWallet}
+                colorScheme='green'
+                variant='outline'
+                size="lg"
+                color={buttonTextColor}
+              >
+                Airdrop Connected Wallet
+              </Button>
+
+              <Button
+                isDisabled={!connected || !isValidAirdropAmount}
+                isLoading={isProcessingApp1AddressAirdrop}
+                onClick={airdropApp1Wallet}
+                colorScheme='orange'
+                variant='outline'
+                size="lg"
+                color={buttonTextColor}
+              >
+                Airdrop APP 1 Wallet
+              </Button>
+
+              <Button
+                isDisabled={!connected || !isValidAirdropAmount}
+                isLoading={isProcessingApp2AddressAirdrop}
+                onClick={airdropApp2Wallet}
+                colorScheme='purple'
+                variant='outline'
+                size="lg"
+                color={buttonTextColor}
+              >
+                Airdrop APP 2 Wallet
+              </Button>
+
+              <Button
+                isDisabled={!connected || !isValidAirdropAmount}
+                isLoading={isProcessingAppDefaultAddressAirdrop}
+                onClick={airdropAppDefaultWallet}
+                colorScheme='red'
+                variant='outline'
+                size="lg"
+                color={buttonTextColor}
+              >
+                Airdrop APP Default Wallet
+              </Button>
+            </SimpleGrid>
+
+            <form onSubmit={handleDefaultSubmit} className="mt-6">
+              <FormControl>
+                <FormLabel>Airdrop Amount</FormLabel>
+                <InputGroup>
+                  <Input
+                    type='number'
+                    min={0}
+                    max={AIRDROP_MAX_AMOUNT}
+                    value={airdropAmount}
+                    onChange={handleChangeAirdropAmount}
+                    placeholder='Airdrop amount'
+                    bg={bgColor}
+                  />
+                </InputGroup>
+              </FormControl>
+            </form>
+          </Box>
+        </VStack>
+      </motion.div>
+    </Container>
+  )
+}
