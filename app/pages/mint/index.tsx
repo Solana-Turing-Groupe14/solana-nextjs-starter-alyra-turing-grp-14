@@ -21,6 +21,8 @@ const MintTestPage: NextPage = (/* props */) => {
   const WARN_DELAY = 15_000
   const ERROR_DELAY = 60_000
 
+  const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
+
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
   const defaultCandyMachineAddress = ``
@@ -167,7 +169,10 @@ const MintTestPage: NextPage = (/* props */) => {
             </Box>
           ),
         })
-
+        // wait few seconds before updating the remaining items
+        setTimeout(() => {
+          updateRemainingItems()
+        }, AFTER_MINT_REFRESH_COUNT_DELAY)
       } else {
         const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
@@ -257,7 +262,10 @@ const MintTestPage: NextPage = (/* props */) => {
             </Box>
           ),
         })
-
+        // wait few seconds before updating the remaining items
+        setTimeout(() => {
+          updateRemainingItems()
+        }, AFTER_MINT_REFRESH_COUNT_DELAY)
       } else {
         const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
@@ -300,6 +308,8 @@ const MintTestPage: NextPage = (/* props */) => {
       // Load CM
       try {
         const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+        console.log('getRemainingItems:candyMachine', candyMachine)
+        console.dir(candyMachine)
         const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
         console.log('getRemainingItems:remainingItems', remainingItems)
         return remainingItems
