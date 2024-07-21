@@ -9,9 +9,10 @@ import {
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
-import { ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
+import { ExternalLinkIcon, ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
+  MINT_URI_PATH,
   NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH
 } from '@consts/commons'
 import {
@@ -35,6 +36,7 @@ import {
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
+import { HOST, PORT } from '@consts/host'
 
 /* eslint-disable react/no-children-prop */
 
@@ -47,6 +49,7 @@ export default function CreateCollectionPage() {
 
   const randomStringNumber = Math.random().toString(10).substring(2, 5)
   const MAX_FILE_SIZE = 1000 // 1MB
+  const DEFAULT_CANDY_MACHINE_ADDRESS = ''
 
   const minNftCount = 0
 
@@ -69,6 +72,8 @@ export default function CreateCollectionPage() {
   const [uploadedCollectionUploadedMetadataUri, setUploadedCollectionUploadedMetadataUri] = useState<string>(defaultNftCollectionUploadedMetadataUri)
   const [uploadedCollectionUploadedNftsNameUriArray, setUploadedCollectionUploadedNftsNameUriArray] = useState<mplhelp_T_NameUriArray>(defaultUploadedCollectionUploadedNftsNameUriArray)
 
+  const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
+  
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingNftCollectionCreation, setIsProcessingNftCollectionCreation] = useState(false)
   const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
@@ -95,6 +100,11 @@ export default function CreateCollectionPage() {
       uploadedCollectionUploadedNftsNameUriArray &&
       uploadedCollectionUploadedNftsNameUriArray.length === nftCount
   }, [nftCount, collectionName, collectionDescription, uploadedImageUri, uploadedCollectionUploadedMetadataUri, uploadedCollectionUploadedNftsNameUriArray])
+
+  const candyMachineMintUri = useMemo(() => {
+    const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + candyMachineAddress
+    return mintPath
+  }, [candyMachineAddress])
 
   const warnIsNotConnected = () => {
     console.warn(`${FILEPATH}:warnIsNotConnected: Wallet not connected`)
@@ -333,6 +343,7 @@ export default function CreateCollectionPage() {
           if (finalizeCmNftCollectionConfigResponse && finalizeCmNftCollectionConfigResponse.success) {
             const uriCandyMachine = getAddressUri(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
             const uriCollection = getAddressUri(finalizeCmNftCollectionConfigResponse.collectionAddress)
+            setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
             toast({
               duration: SUCCESS_DELAY,
               position: 'top-right',
@@ -515,6 +526,7 @@ export default function CreateCollectionPage() {
 
         const uriCollection = getAddressUri(response.collectionAddress)
         const uriCandyMachine = getAddressUri(response.candyMachineAddress)
+        setCandyMachineAddress(response.candyMachineAddress)
         toast({
           duration: SUCCESS_DELAY,
           position: 'top-right',
@@ -1128,6 +1140,55 @@ export default function CreateCollectionPage() {
               Create NFT Collection (Sponsored Fees)
             </Button>
           </VStack>
+
+
+          <Box
+            className='mt-3 flex'
+            display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
+          >
+            <Text className='pr-2'>
+              Mint page Url:
+            </Text>
+            <Text className='pr-2'>
+              <ExternalLinkIcon size='16px' />
+            </Text>
+            <Link color='teal.500' href={candyMachineMintUri}>
+                {candyMachineMintUri}
+              </Link>
+
+{/* 
+              <Link color='teal.500' href={candyMachineMintUri}>
+                {candyMachineMintUri}
+              </Link>
+
+
+            <Text>
+              <ExternalLinkIconChakra color="gray.300" />
+            </Text>
+
+
+            <Link
+              href={candyMachineMintUri} isExternal className="flex text-end"
+            >
+              <div className='mr-2'>
+                {"Mint"}
+              </div>
+              <ExternalLinkIcon size='16px' />
+            </Link>
+
+ */}
+          </Box>
+{/* 
+          <Link
+            href={candyMachineMintUri} isExternal className="flex text-end"
+            display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
+          >
+            <div className='mr-2'>
+              {"Mint"}
+            </div>
+            <ExternalLinkIcon size='16px' />
+          </Link>
+ */}
         </Fade>
       </motion.div>
     </Container>

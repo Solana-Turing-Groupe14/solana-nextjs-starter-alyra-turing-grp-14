@@ -12,6 +12,7 @@ import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helper
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
+import { useRouter } from 'next/router'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
@@ -25,7 +26,14 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
+
+  const router = useRouter();
+  const { query } = router;
+  // console.log('query', query)
+  const { candyMachineAddress: queryCandyMachineAddress } = query
+
   const defaultCandyMachineAddress = ``
+  // const defaultCandyMachineAddress = queryCandyMachineAddress ? queryCandyMachineAddress.toString() : ''
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingMintPaidByWallet, setIsProcessingMintPaidByWallet] = useState(false)
@@ -42,13 +50,39 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const isConnected = useMemo(() => {
     const LOGPREFIX = `${FILEPATH}:isConnected: `
-    console.debug(`${LOGPREFIX} ${connected && connectedWalletPublicKey}`)
+    // console.debug(`${LOGPREFIX} ${connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
   const toast = useToast()
   const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
   const toastTestColor = useColorModeValue("white", "black")
+
+  // ------------------------------
+
+  const checkIsValidCandyMachineAddress = async (_candyMachineAddress: string): Promise<boolean> => {
+    const LOGPREFIX = `${FILEPATH}:checkIsValidCandyMachineAddress: `
+    try {
+      const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
+      // Load CM
+      try {
+        const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+        console.log(`${LOGPREFIX}candyMachine`, candyMachine)
+        console.dir(candyMachine)
+        const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
+        console.debug(`${LOGPREFIX}VALID: ${valid}`)
+        return valid
+      } catch (error) {
+        const errorMsg = (error instanceof Error ? error.message : `${error}`)
+        console.warn(`${LOGPREFIX}error: ${errorMsg}`)
+        return false
+      }
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}error: ${errorMsg}`)
+      return false
+    }
+  } // checkIsValidCandyMachineAddress
 
   // ------------------------------
 
@@ -59,20 +93,35 @@ const MintTestPage: NextPage = (/* props */) => {
       const newCandyMachineAddress = event.target.value.toString()
       if (newCandyMachineAddress.length > 0) {
         try {
-          // Check if the address is a valid Candy Machine
-          const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
-          // Load CM
-          const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
-          const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
-          console.debug(`${LOGPREFIX}VALID: ${valid}`)
-          setisValidCandyMachineAddress(true)
-          toast({
-            title: 'Valid Candy Machine address',
-            status: 'success',
-            duration: SUCCESS_DELAY,
-            isClosable: true,
-            position: 'top-right',
-          })
+          // // Check if the address is a valid Candy Machine
+          // const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
+          // // Load CM
+          // const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+          // const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
+          // console.debug(`${LOGPREFIX}VALID: ${valid}`)
+          // setisValidCandyMachineAddress(true)
+
+          const isValid = await checkIsValidCandyMachineAddress(newCandyMachineAddress)
+          setisValidCandyMachineAddress(isValid)
+
+          if (isValid) {
+            toast({
+              title: 'Valid Candy Machine address',
+              status: 'success',
+              duration: SUCCESS_DELAY,
+              isClosable: true,
+              position: 'top-right',
+            })
+          } else {
+            toast({
+              title: 'Invalid Candy Machine address',
+              description: 'Please enter a valid Candy Machine address',
+              status: 'warning',
+              duration: WARN_DELAY,
+              isClosable: true,
+              position: 'top-right',
+            })
+          }
         } catch (error) {
           const errorMsg = (error instanceof Error ? error.message : `${error}`)
           console.warn(`${LOGPREFIX}error: ${errorMsg}`)
@@ -298,6 +347,7 @@ const MintTestPage: NextPage = (/* props */) => {
   // ------------------------------
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
+    console.log('handleDefaultSubmit')
     event.preventDefault();
   }
 
@@ -333,29 +383,54 @@ const MintTestPage: NextPage = (/* props */) => {
     const remaining = await getRemainingItems(candyMachineAddress)
     setItemsRemaining(remaining)
   }
-    , [candyMachineAddress, getRemainingItems, isValidCandyMachineAddress])
+  , [candyMachineAddress, getRemainingItems, isValidCandyMachineAddress])
 
   // ------------------------------
 
   useEffect(() => {
-    let interval = null
-    try {
-      if (candyMachineAddress && isValidCandyMachineAddress) {
-        updateRemainingItems()
-        interval = setInterval(() => {
+      let interval = null
+      try {
+        if (candyMachineAddress && isValidCandyMachineAddress) {
           updateRemainingItems()
-        }, REMAINING_ITEMS_UPDATE_INTERVAL)
+          interval = setInterval(() => {
+            updateRemainingItems()
+          }, REMAINING_ITEMS_UPDATE_INTERVAL)
+        }
+      } catch (error) {
+        const errorMsg = (error instanceof Error ? error.message : `${error}`)
+        console.error(`${FILEPATH}:useEffect:fetchRemainingItems: error: ${errorMsg}`)
       }
-    } catch (error) {
-      const errorMsg = (error instanceof Error ? error.message : `${error}`)
-      console.error(`${FILEPATH}:useEffect:fetchRemainingItems: error: ${errorMsg}`)
-    }
-    // cleanup
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [candyMachineAddress, updateRemainingItems, isValidCandyMachineAddress]
+      // cleanup
+      return () => {
+        if (interval) clearInterval(interval)
+      }
+    },
+    [candyMachineAddress, updateRemainingItems, isValidCandyMachineAddress]
   )
+
+  useEffect(() => {
+    const init = async () => {
+      console.log('useEffect: queryCandyMachineAddress', queryCandyMachineAddress)
+      if (!candyMachineAddress && queryCandyMachineAddress) {
+        setCandyMachineAddress(queryCandyMachineAddress.toString())
+        // getRemainingItems(queryCandyMachineAddress.toString())
+        // updateRemainingItems()
+        if (await checkIsValidCandyMachineAddress(queryCandyMachineAddress.toString())) {
+          setisValidCandyMachineAddress(true)
+          updateRemainingItems()
+        } else {
+          setisValidCandyMachineAddress(false)
+          setItemsRemaining(0)
+      }
+    } // if queryCandyMachineAddress
+  } // init
+    init()
+  // Run once
+  // Xeslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    queryCandyMachineAddress
+    , updateRemainingItems
+  ])
 
   return (
     <Container maxW="container.md" py={10}>
