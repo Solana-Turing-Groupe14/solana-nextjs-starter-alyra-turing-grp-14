@@ -7,29 +7,25 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon } from 'lucide-react'
 import { NextPage } from "next"
+import { useRouter } from 'next/router'
 import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
 import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic"
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
-import { useRouter } from 'next/router'
+import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
 const MintTestPage: NextPage = (/* props */) => {
 
-  const SUCCESS_DELAY = 15_000
-  const WARN_DELAY = 15_000
-  const ERROR_DELAY = 60_000
-
   const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
 
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
-
-  const router = useRouter();
+  const router = useRouter()
   const { query } = router;
-  // console.log('query', query)
+  console.log(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
 
   const defaultCandyMachineAddress = ``
@@ -49,7 +45,7 @@ const MintTestPage: NextPage = (/* props */) => {
   const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
-    const LOGPREFIX = `${FILEPATH}:isConnected: `
+    // const LOGPREFIX = `${FILEPATH}:isConnected: `
     // console.debug(`${LOGPREFIX} ${connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
@@ -419,6 +415,7 @@ const MintTestPage: NextPage = (/* props */) => {
           setisValidCandyMachineAddress(true)
           updateRemainingItems()
         } else {
+          console.warn('useEffect: queryCandyMachineAddress: Invalid Candy Machine address')
           setisValidCandyMachineAddress(false)
           setItemsRemaining(0)
       }
@@ -427,10 +424,7 @@ const MintTestPage: NextPage = (/* props */) => {
     init()
   // Run once
   // Xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    queryCandyMachineAddress
-    , updateRemainingItems
-  ])
+  }, [candyMachineAddress, queryCandyMachineAddress, updateRemainingItems])
 
   return (
     <Container maxW="container.md" py={10}>

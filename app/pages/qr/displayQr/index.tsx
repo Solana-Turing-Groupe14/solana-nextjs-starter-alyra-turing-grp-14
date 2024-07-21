@@ -1,26 +1,41 @@
-import { CheckCircleIcon } from '@chakra-ui/icons'
 import {
-  Box, Button, Center, CloseButton, Container, FormControl, FormLabel,
+  Box, Center, Container, FormControl, FormLabel,
   Heading, Input, InputGroup, Link, SimpleGrid, Text, useColorModeValue, useToast, VStack
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
-import { ExternalLinkIcon, SendIcon } from "lucide-react"
+import { ExternalLinkIcon, QrCode,
+  // ExternalLinkIcon
+} from "lucide-react"
+import { useRouter } from "next/router"
 import { useMemo, useState } from "react"
-import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
-import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
-import { AirdropResponseData } from "types"
+import { MINT_URI_PATH, WARN_DELAY } from '@consts/client'
+import { ADDRESS_LENGTH } from '@consts/commons'
+// import { usePathname } from "next/navigation"
+import { HOST, PORT } from "@consts/host"
+// import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 
-const FILEPATH = 'app/pages/tools.tsx'
+const FILEPATH = 'app/pages/qr/displayQr/index.tsx'
 
 export default function ToolsPage() {
 
-  const SUCCESS_DELAY = 10_000
-  const WARN_DELAY = 15_000
-  const ERROR_DELAY = 30_000
+  const DEFAULT_CANDY_MACHINE_ADDRESS = ''
+  const DEFAULT_URL = ''
 
-  const { connected, publicKey: connectedWalletPublicKey } = useWallet()
-  const [url, setUrl] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
+  const router = useRouter()
+  const { query } = router;
+  console.log(`${FILEPATH}: query`, query)
+  const { candyMachineAddress: queryCandyMachineAddress } = query
+
+  const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
+
+  const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
+
+  const [url, setUrl] = useState<string>(DEFAULT_URL)
+
+
+  // const pathname = usePathname()
+  // console.dir(pathname)
 
   const isConnected = useMemo(() => {
     // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -48,9 +63,24 @@ export default function ToolsPage() {
   }
 
   // ----------------------------
+
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
   } // handleDefaultSubmit
+
+  // ----------------------------
+
+  const handleChangeCandyMachineAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
+    try {
+      console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
+      const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + event.target.value
+      setCandyMachineAddress(event.target.value)
+      setUrl(mintPath)
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+  } // handleChangeCandyMachineAddress
 
   // ----------------------------
 
@@ -58,17 +88,7 @@ export default function ToolsPage() {
     const LOGPREFIX = `${FILEPATH}:handleChangeUrl: `
     try {
       console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-      let value: number
-      if (typeof event.target.value === 'string') {
-        value = parseInt(event.target.value)
-        if (isNaN(value)) {
-          return
-        }
-        if (value < 0) {
-          value = 0
-        }
-        setUrl(value)
-      }
+      // setUrl(event.target.value)
     } catch (error) {
       console.error(`${LOGPREFIX}error: `, error)
     }
@@ -90,23 +110,43 @@ export default function ToolsPage() {
 
           <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
             <Center w='100%' h='100%' mb={6}>
-              <SendIcon size={64} />
+              <QrCode className="sm:size-12 md:size-24 xl:size-32 transition-all delay-500" />
             </Center>
 
             <form onSubmit={handleDefaultSubmit} className="mt-6">
               <FormControl>
+
+                <FormLabel>Candy Machine</FormLabel>
+                <InputGroup>
+                  <Input
+                    type='string'
+                    maxLength={ADDRESS_LENGTH}
+                    value={candyMachineAddress}
+                    onChange={handleChangeCandyMachineAddress}
+                    placeholder='Candy Machine Address'
+                    bg={bgColor}
+                  />
+                </InputGroup>
+
                 <FormLabel>Url</FormLabel>
                 <InputGroup>
                   <Input
-                    type='number'
-                    min={0}
-                    max={AIRDROP_MAX_AMOUNT}
+                    type='string'
+
                     value={url}
                     onChange={handleChangeUrl}
                     placeholder='Url'
                     bg={bgColor}
                   />
                 </InputGroup>
+
+                <Link href={url} isExternal className="flex text-end">
+                  <div className='mr-2'>
+                    {"Mint"}
+                  </div>
+                  <ExternalLinkIcon size='16px' />
+                </Link>
+
               </FormControl>
             </form>
           </Box>
