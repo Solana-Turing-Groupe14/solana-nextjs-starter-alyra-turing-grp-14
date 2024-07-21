@@ -11,7 +11,6 @@ import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
 import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
-import { FILE } from 'dns'
 
 const FILEPATH = 'app/pages/tools.tsx'
 

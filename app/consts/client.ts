@@ -14,7 +14,18 @@ import {
  const ERROR_DELAY = 30_000
  
  const MINT_URI_PATH = '/mint'
+
+ // Page which displays the QR code to the Mint page
  const MINT_QR_URI_PATH = '/qr/displayQrToMintPage'
+
+ // Page which displays the QR code for minting
+ const DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH = '/qr/displayDirectMintQr'
+
+ // Page which calls the NFT minting API
+ const DIRECT_MINT_FROM_QR_URI_PATH = '/directMintFromQr'
+
+// Page which actually mints the NFT
+const API_MINT_FREE_PATH = '/api/mint-free-qr.ts'
 
 export {
   AIRDROP_DEFAULT_AMOUNT,
@@ -35,4 +46,7 @@ export {
  
   MINT_URI_PATH,
   MINT_QR_URI_PATH,
+  DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH,
+  DIRECT_MINT_FROM_QR_URI_PATH,
+  API_MINT_FREE_PATH,
 }

@@ -1,21 +1,20 @@
 import {
   Box, Center, Container, FormControl, FormLabel,
-  Heading, Input, InputGroup, Link, SimpleGrid, Text, useColorModeValue, useToast, VStack
+  Heading, Input, InputGroup, Link, Text, useColorModeValue, VStack
+  // , useToast
 } from "@chakra-ui/react"
-import { useMediaQuery } from "@chakra-ui/react"
 // import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
-import { ExternalLinkIcon, QrCode,
+import { ExternalLinkIcon, QrCode as QrCodeLucid,
   // ExternalLinkIcon
 } from "lucide-react"
 import { useRouter } from "next/router"
-import { useEffect, useMemo, useState } from "react"
-import { QRCode } from 'react-qrcode-logo';
-import { MINT_URI_PATH } from '@consts/client'
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { QrCode } from "@components/ui/qrCode"
+import { DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH, MINT_URI_PATH } from '@consts/client'
 import { ADDRESS_LENGTH } from '@consts/commons'
 // import { usePathname } from "next/navigation"
 import { HOST, PORT } from "@consts/host"
-import { text } from "stream/consumers"
 // import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 
 const FILEPATH = 'app/pages/qr/displayQrToMintPage/index.tsx'
@@ -34,14 +33,12 @@ export default function ToolsPage() {
 
   const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
 
-  const [url, setUrl] = useState<string>(DEFAULT_URL)
+  const [urlToMintPage, setUrlToMintPage] = useState<string>(DEFAULT_URL)
+  const [urlToDirectMintQrPage, setUrlToDirectMintQrPage] = useState<string>(DEFAULT_URL)
 
 
   // const pathname = usePathname()
   // console.dir(pathname)
-
-  const [isSmall] = useMediaQuery("(max-width: 768px)")
-  const [isMediuml] = useMediaQuery("(max-width: 1280px)")
 
   // const isConnected = useMemo(() => {
   //   // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
@@ -56,10 +53,45 @@ export default function ToolsPage() {
   const cardBgColor = useColorModeValue("white", "gray.700")
   // const buttonTextColor = useColorModeValue("gray.800", "white")
 
-  const candyMachineMintUri = useMemo(() => {
-    const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + candyMachineAddress
-    return mintPath
-  }, [candyMachineAddress])
+  // ----------------------------
+
+  const getMintPageUri = useCallback((_candyMachineAddress: string) => {
+    const LOGPREFIX = `${FILEPATH}:getMintPageUri: `
+    try {
+      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
+      const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
+      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
+      return mintPath
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+    return ''
+  }, 
+  []
+  ) // getMintPageUri
+
+  const getDirectMintQrPageUri = useCallback((_candyMachineAddress: string) => {
+    const LOGPREFIX = `${FILEPATH}:getMintPageUri: `
+    try {
+      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
+      const mintPath = HOST + (PORT?`:${PORT}`:'') + DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
+      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
+      return mintPath
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: `, error)
+    }
+    return ''
+  }, 
+  []
+  ) // getDirectMintQrPageUri
+
+  const candyMachineMintPageUri = useMemo(() => {
+    return getMintPageUri(candyMachineAddress)
+  }, [candyMachineAddress, getMintPageUri])
+
+  const candyMachineDirectMintQr = useMemo(() => {
+    return getDirectMintQrPageUri(candyMachineAddress)
+  }, [candyMachineAddress, getDirectMintQrPageUri])
 
   // const warnIsNotConnected = () => {
   //   console.warn('app/pages/mintTest.tsx: Wallet not connected')
@@ -79,20 +111,21 @@ export default function ToolsPage() {
     event.preventDefault();
   } // handleDefaultSubmit
 
+
   // ----------------------------
 
-  const getMintUri = (_candyMachineAddress: string) => {
-    const LOGPREFIX = `${FILEPATH}:getMintUri: `
-    try {
-      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
-      const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
-      return mintPath
-    } catch (error) {
-      console.error(`${LOGPREFIX}error: `, error)
-    }
-    return ''
-  } // getMintUri
+  // const getDirectMintQrUri = (_candyMachineAddress: string) => {
+  //   const LOGPREFIX = `${FILEPATH}:getDirectMintQrUri: `
+  //   try {
+  //     // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
+  //     const mintPath = HOST + (PORT?`:${PORT}`:'') + DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
+  //     // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
+  //     return mintPath
+  //   } catch (error) {
+  //     console.error(`${LOGPREFIX}error: `, error)
+  //   }
+  //   return ''
+  // } // getDirectMintQrUri
 
   // ----------------------------
 
@@ -102,9 +135,11 @@ export default function ToolsPage() {
       const newCandyMachineAddress = event.target.value
       // console.debug(`${LOGPREFIX}newCandyMachineAddress=`, newCandyMachineAddress)
       setCandyMachineAddress(newCandyMachineAddress)
-      const mintPath =  getMintUri(newCandyMachineAddress)
+      const mintPagePath = getMintPageUri(newCandyMachineAddress)
       // const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + event.target.value
-      setUrl(mintPath)
+      setUrlToMintPage(mintPagePath)
+      const directMintQrPagePath =  getDirectMintQrPageUri(newCandyMachineAddress)
+      setUrlToDirectMintQrPage(directMintQrPagePath)
     } catch (error) {
       console.error(`${LOGPREFIX}error: `, error)
     }
@@ -116,7 +151,7 @@ export default function ToolsPage() {
   //   const LOGPREFIX = `${FILEPATH}:handleChangeUrl: `
   //   try {
   //     // console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-  //     // setUrl(event.target.value)
+  //     // setUrlToMintPage(event.target.value)
   //   } catch (error) {
   //     console.error(`${LOGPREFIX}error: `, error)
   //   }
@@ -129,7 +164,8 @@ export default function ToolsPage() {
       console.log('useEffect: queryCandyMachineAddress', queryCandyMachineAddress)
       if (!candyMachineAddress && queryCandyMachineAddress) {
         setCandyMachineAddress(queryCandyMachineAddress.toString())
-        setUrl(getMintUri(queryCandyMachineAddress.toString()))
+        setUrlToMintPage(getMintPageUri(queryCandyMachineAddress.toString()))
+        setUrlToDirectMintQrPage(getDirectMintQrPageUri(queryCandyMachineAddress.toString()))
     } // if
   } // init
     init()
@@ -156,7 +192,7 @@ export default function ToolsPage() {
 
           <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
             <Center w='100%' h='100%' mb={6}>
-              <QrCode className="sm:size-12 md:size-24 xl:size-32 transition-all delay-500" />
+              <QrCodeLucid className="sm:size-12 md:size-24 xl:size-32 transition-all delay-500" />
             </Center>
 
             <form onSubmit={handleDefaultSubmit} className="mt-6">
@@ -174,12 +210,12 @@ export default function ToolsPage() {
                   />
                 </InputGroup>
 
-                <FormLabel>Url</FormLabel>
+                <FormLabel>Url to Mint page</FormLabel>
                 <InputGroup>
                   <Input
                     type='string'
 
-                    value={url}
+                    value={urlToMintPage}
                     // onChange={handleChangeUrl}
                     isReadOnly={true}
                     placeholder='Url'
@@ -187,6 +223,19 @@ export default function ToolsPage() {
                   />
                 </InputGroup>
 
+                <FormLabel>Url to Direct Mint QR page</FormLabel>
+                <InputGroup>
+                  <Input
+                    type='string'
+
+                    value={urlToDirectMintQrPage}
+                    // onChange={handleChangeUrl}
+                    isReadOnly={true}
+                    placeholder='Url'
+                    bg={bgColor}
+                  />
+                </InputGroup>
+{/* 
                 <Box
                   className='mt-3 p-1 overflow-hidden'
                   border={'1px solid '}
@@ -203,7 +252,7 @@ export default function ToolsPage() {
                       {candyMachineAddress}
                   </Link>
                 </Box>
-
+ */}
               </FormControl>
             </form>
 
@@ -213,22 +262,57 @@ export default function ToolsPage() {
       </motion.div>
 
       <Box
-        className='mt-3 flex p-1 justify-center'
-        border={'none '}
+        className='mt-3 p-1 justify-center'
+        border={'1px solid '}
         borderRadius={'md'}
-        display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
+        display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
       >
-        <QRCode
-          value={candyMachineMintUri}
-          id={candyMachineAddress}
-          size={isSmall? 192 : (isMediuml?512:1024)}
-          bgColor={'white'}
-          fgColor={'black'}
-          quietZone={4}
-          ecLevel={'Q'} // error correction : L, M, Q, H (default is 'M', the bigger the logo, the higher the error correction level)
-          logoImage={'/favicon-96x96.png'}
-          removeQrCodeBehindLogo={true}
-        />
+      <Box
+            className='mt-1 p-1 overflow-hidden'
+            border={'none '}
+            borderRadius={'md'}
+            display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
+          >
+            <Text className='pr-2 flex'>
+              Mint page:
+            </Text>
+            <Link color={linkColor} isExternal href={candyMachineMintPageUri} className='flex'>
+              <Text className='pr-2' color={textColor}>
+                <ExternalLinkIcon size='16px' />
+              </Text>
+                {candyMachineAddress}
+            </Link>
+        </Box>
+
+        <QrCode text={candyMachineMintPageUri} id={candyMachineAddress} />
+
+      </Box>
+
+      <Box
+        className='mt-3 p-1 justify-center'
+        border={'1px solid '}
+        borderRadius={'md'}
+        display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
+      >
+      <Box
+            className='mt-1 p-1 overflow-hidden'
+            border={'none '}
+            borderRadius={'md'}
+            display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
+          >
+            <Text className='pr-2 flex'>
+              QR Direct Mint:
+            </Text>
+            <Link color={linkColor} isExternal href={candyMachineDirectMintQr} className='flex'>
+              <Text className='pr-2' color={textColor}>
+                <ExternalLinkIcon size='16px' />
+              </Text>
+                {candyMachineAddress}
+            </Link>
+        </Box>
+
+        <QrCode text={candyMachineDirectMintQr} id={candyMachineAddress} />
+
       </Box>
 
     </Container>

@@ -317,3 +317,8 @@ export type CreateCompleteCollectionCmConfigResponseData =
   error: string
 };
 
+
+interface I_QrCode {
+  text: string,
+  id: string, 
+}
