@@ -2,7 +2,7 @@ import {
   mplCandyMachine as mplCoreCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
-import { AIRDROP_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT } from "@consts/commons";
+import { AIRDROP_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from "@consts/commons";
 import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH } from "@consts/mtplx";
 import { RPC_URL } from '@helpers/solana.helper';
 import {
@@ -691,6 +691,14 @@ export async function createCmNftCollection(
         const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
           success: false,
           error: `Error creating CM Collection: itemsCount < 1`
+        }
+        return collectionResultError
+      }
+      if (cmNftCollectioNParams.itemsCount > NFT_COUNT_MAX) {
+        console.error(`${LOGPREFIX}❌ itemsCount > ${NFT_COUNT_MAX}`)
+        const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
+          success: false,
+          error: `Error creating CM Collection: itemsCount > ${NFT_COUNT_MAX}`
         }
         return collectionResultError
       }
