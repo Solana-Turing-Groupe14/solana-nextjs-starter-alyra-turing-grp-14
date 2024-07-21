@@ -11,6 +11,7 @@ import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
 import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
+import { FILE } from 'dns'
 
 const FILEPATH = 'app/pages/tools.tsx'
 
@@ -25,7 +26,7 @@ export default function ToolsPage() {
   const [airdropAmount, setAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
 
   const isConnected = useMemo(() => {
-    // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
+    console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
@@ -38,7 +39,7 @@ export default function ToolsPage() {
   const buttonTextColor = useColorModeValue("gray.800", "white")
 
   const warnIsNotConnected = () => {
-    console.warn('app/pages/mintTest.tsx: Wallet not connected')
+    console.warn(`${FILEPATH}:  Wallet not connected`)
     // throw new WalletNotConnectedError()
     toast({
       title: 'Wallet not connected.',
