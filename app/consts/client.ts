@@ -14,6 +14,7 @@ import {
  const ERROR_DELAY = 30_000
  
  const MINT_URI_PATH = '/mint'
+ const MINT_QR_URI_PATH = '/qr/displayQr'
 
 export {
   AIRDROP_DEFAULT_AMOUNT,
@@ -33,4 +34,5 @@ export {
   ERROR_DELAY,
  
   MINT_URI_PATH,
+  MINT_QR_URI_PATH,
 }

@@ -912,6 +912,14 @@ export default function CreateCollectionPage() {
     return maxLen
   }, [nftCount]);
 
+
+  // ----------------------------
+
+  const textColor = useColorModeValue("black", "white")
+  const linkColor = useColorModeValue("teal.500", "teal.300")
+
+  // ----------------------------
+
   return (
     <Container maxW="container.xl" py={10}>
       <motion.div
@@ -1142,23 +1150,22 @@ export default function CreateCollectionPage() {
             </Button>
           </VStack>
 
-
           <Box
-            className='mt-3 flex p-1 overflow-hidden'
+            className='mt-3 p-1 overflow-hidden'
             border={'1px solid '}
             borderRadius={'md'}
-            display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
+            display={ (candyMachineAddress && candyMachineMintUri.length ? '' : 'none') }
           >
-            <Text className='pr-2'>
+            <Text className='pr-2 flex'>
               Mint page Url:
             </Text>
-            <Text className='pr-2'>
-              <ExternalLinkIcon size='16px' />
-            </Text>
-            <Link color='teal.500' isExternal href={candyMachineMintUri}>
+            <Link color={linkColor} isExternal href={candyMachineMintUri} className='flex'>
+              <Text className='pr-2' color={textColor}>
+                <ExternalLinkIcon size='16px' />
+              </Text>
                 {candyMachineAddress}
-              </Link>
-           </Box>
+            </Link>
+          </Box>
 
         </Fade>
       </motion.div>

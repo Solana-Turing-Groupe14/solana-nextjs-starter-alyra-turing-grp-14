@@ -13,7 +13,8 @@ import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helper
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
-import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { ERROR_DELAY, MINT_QR_URI_PATH, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { HOST, PORT } from '@consts/host'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
@@ -79,6 +80,13 @@ const MintTestPage: NextPage = (/* props */) => {
       return false
     }
   } // checkIsValidCandyMachineAddress
+
+  // ------------------------------
+
+  const candyMachineMintQrUri = useMemo(() => {
+    const mintQrPath = HOST + (PORT?`:${PORT}`:'') + MINT_QR_URI_PATH + '?candyMachineAddress=' + candyMachineAddress
+    return mintQrPath
+  }, [candyMachineAddress])
 
   // ------------------------------
 
@@ -404,6 +412,8 @@ const MintTestPage: NextPage = (/* props */) => {
     [candyMachineAddress, updateRemainingItems, isValidCandyMachineAddress]
   )
 
+  // ----------------------------
+
   useEffect(() => {
     const init = async () => {
       console.log('useEffect: queryCandyMachineAddress', queryCandyMachineAddress)
@@ -422,9 +432,14 @@ const MintTestPage: NextPage = (/* props */) => {
     } // if queryCandyMachineAddress
   } // init
     init()
-  // Run once
-  // Xeslint-disable-next-line react-hooks/exhaustive-deps
   }, [candyMachineAddress, queryCandyMachineAddress, updateRemainingItems])
+
+  // ----------------------------
+
+  const textColor = useColorModeValue("black", "white")
+  const linkColor = useColorModeValue("teal.500", "teal.300")
+
+  // ----------------------------
 
   return (
     <Container maxW="container.md" py={10}>
@@ -471,6 +486,24 @@ const MintTestPage: NextPage = (/* props */) => {
                   />
                 </InputGroup>
               </FormControl>
+
+
+              <Box
+                className='mt-3 flex p-1 overflow-hidden'
+                border={'1px solid '}
+                borderRadius={'md'}
+                display={ (candyMachineAddress && candyMachineMintQrUri.length ? 'flex' : 'none') }
+              >
+                <Text className='pr-2 flex'>
+                  QR Mint page Url:
+                </Text>
+                <Link color={linkColor} isExternal href={candyMachineMintQrUri} className='flex'>
+                  <Text className='pr-2' color={textColor}>
+                    <ExternalLinkIcon size='16px' />
+                  </Text>
+                    {candyMachineAddress}
+                </Link>
+              </Box>
 
               <Fade in={true}>
                 <Button
