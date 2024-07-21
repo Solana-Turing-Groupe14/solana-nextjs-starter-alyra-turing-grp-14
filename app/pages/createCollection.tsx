@@ -1144,7 +1144,9 @@ export default function CreateCollectionPage() {
 
 
           <Box
-            className='mt-3 flex'
+            className='mt-3 flex p-1 overflow-hidden'
+            border={'1px solid '}
+            borderRadius={'md'}
             display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
           >
             <Text className='pr-2'>
@@ -1154,42 +1156,10 @@ export default function CreateCollectionPage() {
               <ExternalLinkIcon size='16px' />
             </Text>
             <Link color='teal.500' isExternal href={candyMachineMintUri}>
-                {candyMachineMintUri}
+                {candyMachineAddress}
               </Link>
-          </Box>
+           </Box>
 
-{/* 
-              <Link color='teal.500' href={candyMachineMintUri}>
-                {candyMachineMintUri}
-              </Link>
-
-
-            <Text>
-              <ExternalLinkIconChakra color="gray.300" />
-            </Text>
-
-
-            <Link
-              href={candyMachineMintUri} isExternal className="flex text-end"
-            >
-              <div className='mr-2'>
-                {"Mint"}
-              </div>
-              <ExternalLinkIcon size='16px' />
-            </Link>
-
- */}
-{/* 
-          <Link
-            href={candyMachineMintUri} isExternal className="flex text-end"
-            display={ (candyMachineAddress && candyMachineMintUri.length ? 'flex' : 'none') }
-          >
-            <div className='mr-2'>
-              {"Mint"}
-            </div>
-            <ExternalLinkIcon size='16px' />
-          </Link>
- */}
         </Fade>
       </motion.div>
     </Container>
