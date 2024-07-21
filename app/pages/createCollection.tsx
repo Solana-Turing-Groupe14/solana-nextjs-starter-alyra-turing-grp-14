@@ -122,308 +122,89 @@ export default function CreateCollectionPage() {
   const createCompleteNftCollection = async () => {
     const LOGPREFIX = `${FILEPATH}:createCompleteNftCollection: `
     try {
-      // Guard
-      if (!isConnected) {
-        warnIsNotConnected(); return
-      }
-      setIsProcessingNftCollectionCreation(true)
-      if (!wallet) {
-        console.error(`${LOGPREFIX}Wallet not found`)
-        return
-      }
-      if (!uploadedImageUri) {
-        console.error(`${LOGPREFIX}Image not found / uploaded`)
-        return
-      }
-      if (!uploadedCollectionUploadedMetadataUri) {
-        console.error(`${LOGPREFIX}Metadata not found / uploaded`)
+      // Vérifications initiales
+      if (!isConnected || !wallet || !uploadedImageUri || !uploadedCollectionUploadedMetadataUri || !uploadedCollectionUploadedNftsNameUriArray || uploadedCollectionUploadedNftsNameUriArray.length !== nftCount) {
+        console.error(`${LOGPREFIX}Missing required data`)
         toast({
-          title: 'Metadata not found',
-          description: "Please upload metadata.",
-          status: 'warning',
-          duration: WARN_DELAY,
-          isClosable: true,
-          position: 'top-right',
-        })
-        return
-      }
-      if (!uploadedCollectionUploadedNftsNameUriArray || uploadedCollectionUploadedNftsNameUriArray.length !== nftCount) {
-        console.error(`${LOGPREFIX}NFTs not found / uploaded`)
-        toast({
-          title: 'NFTs not found',
-          description: "Please upload NFTs.",
-          status: 'warning',
-          duration: WARN_DELAY,
-          isClosable: true,
-          position: 'top-right',
-        })
-        return
-      }
-
-      const year = 2024;
-      const month = 6;
-      const day = 28;
-      const hour = 16;
-      const minute = 33;
-      const second = 59;
-      const millisecond = 0;
-      const startDateTime = new Date(year, month, day, hour, minute, second, millisecond);
-      // const endDateTime = new Date(year+1, month, day, hour, minute, second, millisecond);
-      const endDateTime = null;
-
-      // const createMyFullNftCollectionInput:mplhelp_T_CreateMyFullNftCollectionInput = {
-      //   walletAdapter: wallet.adapter,
-      //   collectionName: collectionName,
-      //   collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
-      //   nftNamePrefix: nftNamePrefix, // TODO: NFT prefix name
-      //   itemsCount: nftCount,
-      //   metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
-      //   startDateTime,
-      //   endDateTime
-      // }
-      // const response = await mplxH_createMyFullNftCollection(
-      //   wallet.adapter,
-      //   'MyNftCollection', // Collection name
-      //   'https://example.com2/my-collection.json', // Collection uri
-      //   'Quick NFT', // NFT prefix name
-      //   5, // NFT count
-      //   'https://example.com/metadata/', // NFT metadata prefix uri
-      //   startDateTime,
-      //   endDateTime
-      // )
-      // const response = await mplxH_createMyFullNftCollection(
-      //   createMyFullNftCollectionInput
-      // )
-
-      // Image: uploadedImageUri
-
-      // // Create collection Metadata JSON
-      // const metadataJson = {
-      //   name: collectionName,
-      //   description: collectionDescription,
-      //   // symbol: 'NFT',
-      //   uri: uploadedImageUri, // UPLOADED IMAGE
-      //   // attributes: [],
-      //   properties: {
-      //     files: [
-      //       {
-      //         uri: uploadedImageUri,
-      //         // type: 'image',
-      //         type: (image?image?.type:'image'),
-      //       }
-      //     ]
-      //   },
-      // }
-
-      // console.debug(`${LOGPREFIX}metadataJson`, metadataJson);
-      // const umiStorage = getUmiStorage()
-      // setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
-      // umiStorage.use(irysUploader())
-
-      // const metadataJsonUri = await umiStorage.uploader.uploadJson(metadataJson)
-      // console.debug(`${LOGPREFIX}uri`, metadataJsonUri);
-
-
-      // throw new Error('Check Metadata upload')
-
-      // Create collection uri
-
-
-      // 1 - create Collection
-      const createNftCollectionInput: mplhelp_T_CreateNftCollection_fromWallet_Input = {
-        walletAdapter: wallet.adapter,
-        collectionName: collectionName,
-        collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
-      }
-      const createNftCollectionResponse: mplhelp_T_CreateNftCollection_Result
-        = await mplxH_createNftCollection_fromWallet(
-          createNftCollectionInput
-        )
-
-      console.debug(`${LOGPREFIX}createNftCollectionResponse`, createNftCollectionResponse);
-      if (createNftCollectionResponse && createNftCollectionResponse.success) {
-        const uriCollection = getAddressUri(createNftCollectionResponse.collectionAddress)
-        toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
-          render: ({ onClose }) => (
-            <Box
-              bg={toastSuccessBgColor}
-              color={toastTestColor}
-              p={3}
-              borderRadius='lg'
-            >
-              <div className='flex justify-between'>
-                <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                <Text fontWeight="bold">NFT Collection created.</Text>
-                <CloseButton size='sm' onClick={onClose} />
-              </div>
-
-              <div className='m-2'>
-                {uriCollection &&
-                  <Link href={uriCollection} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      Collection
-                    </div>
-                    <ExternalLinkIconLucid size='16px' />
-                  </Link>
-                }
-              </div>
-            </Box>
-          ),
-        }) // toast
-
-        // 2 - create Candy Machine
-        const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
-          itemsCount: nftCount,
-          mintFee: mintFee,
-          maxMintPerwallet: 1, // TODO: maxMintPerwallet
-          startDateTime,
-          endDateTime
-        }
-        const createCmNftCollectionInput: mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
-          walletAdapter: wallet.adapter,
-          collectionSigner: createNftCollectionResponse.collectionSigner,
-          nftNamePrefix: nftNamePrefix,
-          // metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`,
-          metadataPrefixUri: '',
-          cmNftCollectioNParams,
-        }
-        const createCmNftCollectionResponse: mplhelp_T_CreateCmNftCollection_Result
-          = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
-
-        console.debug(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
-        if (createCmNftCollectionResponse && createCmNftCollectionResponse.success) {
-          const uriCandyMachine = getAddressUri(createCmNftCollectionResponse.candyMachineAddress)
-          toast({
-            duration: SUCCESS_DELAY,
-            position: 'top-right',
-            render: ({ onClose }) => (
-              <Box
-                color='black'
-                bg={toastSuccessBgColor}
-                p={3}
-                borderRadius='lg'
-              >
-                <div className='flex justify-between'>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                  <div className='flex'>
-                    <Text fontWeight="normal">NFT Collection</Text>
-                    <Text className='mx-1' fontWeight="bold">Candy Machine</Text>
-                    <Text fontWeight="normal">created.</Text>
-                  </div>
-                  <CloseButton size='sm' onClick={onClose} />
-                </div>
-                <div className='m-2'>
-                  {uriCandyMachine &&
-                    <Link href={uriCandyMachine} isExternal className="flex text-end">
-                      <div className='mr-2'>
-                        Candy Machine
-                      </div>
-                      <ExternalLinkIconLucid size='16px' />
-                    </Link>
-                  }
-                </div>
-              </Box>
-            ),
-          }) // toast
-
-          // 3 - finalize Candy Machine: add NFTs to Candy Machine
-          const finalizeCmNftCollectionConfigInput: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
-            walletAdapter: wallet.adapter,
-            collectionSigner: createNftCollectionResponse.collectionSigner,
-            candyMachineSigner: createCmNftCollectionResponse.candyMachineSigner,
-            itemsCount: nftCount,
-            nameUriArray: uploadedCollectionUploadedNftsNameUriArray,
-          }
-          const finalizeCmNftCollectionConfigResponse: mplhelp_T_FinalizeCmNftCollectionConfig_Result
-            = await mplxH_finalizeCmNftCollectionConfig_fromWallet(finalizeCmNftCollectionConfigInput)
-
-          console.debug(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
-
-          if (finalizeCmNftCollectionConfigResponse && finalizeCmNftCollectionConfigResponse.success) {
-            const uriCandyMachine = getAddressUri(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
-            const uriCollection = getAddressUri(finalizeCmNftCollectionConfigResponse.collectionAddress)
-            setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
-            toast({
-              duration: SUCCESS_DELAY,
-              position: 'top-right',
-              render: ({ onClose }) => (
-                <Box
-                  bg={toastSuccessBgColor}
-                  color={toastTestColor}
-                  p={3}
-                  borderRadius='lg'
-                >
-                  <div className='flex justify-between'>
-                    <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                    <Text fontWeight="bold" className='pr-2'>NFT(s) added to</Text>
-                    <Text fontWeight="normal">Candy Machine</Text>
-                    <CloseButton size='sm' onClick={onClose} />
-                  </div>
-                  <div className='m-2'>
-                    {uriCollection &&
-                      <Link href={uriCollection} isExternal className="flex text-end">
-                        <div className='mr-2'>
-                          Collection
-                        </div>
-                        <ExternalLinkIconLucid size='16px' />
-                      </Link>
-                    }
-                    {uriCandyMachine &&
-                      <Link href={uriCandyMachine} isExternal className="flex text-end">
-                        <div className='mr-2'>
-                          Candy Machine
-                        </div>
-                        <ExternalLinkIconLucid size='16px' />
-                      </Link>
-                    }
-                  </div>
-                </Box>
-              ),
-            }) // toast
-          } else {
-            // Finalize Candy Machine failed
-            console.warn(`${LOGPREFIX}finalizeCmNftCollectionConfigResponse`, finalizeCmNftCollectionConfigResponse);
-            toast({
-              title: 'Finalize Candy Machine failed',
-              description: finalizeCmNftCollectionConfigResponse?.error,
-              status: 'error',
-              duration: ERROR_DELAY,
-              isClosable: true,
-              position: 'top-right',
-            })
-          }
-        } else {
-          // Candy Machine creation failed
-          console.warn(`${LOGPREFIX}createCmNftCollectionResponse`, createCmNftCollectionResponse);
-          toast({
-            title: 'Candy Machine creation failed',
-            description: createCmNftCollectionResponse?.error,
-            status: 'error',
-            duration: ERROR_DELAY,
-            isClosable: true,
-            position: 'top-right',
-          })
-        }
-
-      } else {
-        // Collection creation failed
-        console.warn(`${LOGPREFIX}createNftCollectionResponse`, createNftCollectionResponse);
-        toast({
-          title: 'Collection creation failed',
-          description: createNftCollectionResponse?.error,
+          title: 'Missing data',
+          description: "Please ensure all required data is provided.",
           status: 'error',
           duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
+        return
       }
-
+      setIsProcessingNftCollectionCreation(true)
+  
+      // 1. Créer la collection
+      console.log(`${LOGPREFIX}Creating collection with URI:`, uploadedCollectionUploadedMetadataUri);
+      const createNftCollectionInput: mplhelp_T_CreateNftCollection_fromWallet_Input = {
+        walletAdapter: wallet.adapter,
+        collectionName: collectionName,
+        collectionUri: uploadedCollectionUploadedMetadataUri,
+      }
+      const createNftCollectionResponse = await mplxH_createNftCollection_fromWallet(createNftCollectionInput)
+      if (!createNftCollectionResponse.success) {
+        throw new Error(`Failed to create collection: ${createNftCollectionResponse.error}`)
+      }
+      console.log(`${LOGPREFIX}Collection created successfully:`, createNftCollectionResponse);
+  
+      // 2. Créer la Candy Machine
+      const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
+        itemsCount: nftCount,
+        mintFee: mintFee,
+        maxMintPerwallet: 1,
+        startDateTime: new Date(),
+        endDateTime: null
+      }
+      const createCmNftCollectionInput: mplhelp_T_CreateCmNftCollection_fromWallet_Input = {
+        walletAdapter: wallet.adapter,
+        collectionSigner: createNftCollectionResponse.collectionSigner,
+        nftNamePrefix: nftNamePrefix,
+        metadataPrefixUri: '', // Laissé vide intentionnellement
+        cmNftCollectioNParams,
+      }
+      const createCmNftCollectionResponse = await mplxH_createCmNftCollection_fromWallet(createCmNftCollectionInput)
+      if (!createCmNftCollectionResponse.success) {
+        throw new Error(`Failed to create Candy Machine: ${createCmNftCollectionResponse.error}`)
+      }
+      console.log(`${LOGPREFIX}Candy Machine created successfully:`, createCmNftCollectionResponse);
+  
+      // 3. Finaliser la configuration de la Candy Machine
+      console.log(`${LOGPREFIX}Finalizing Candy Machine with metadata:`, uploadedCollectionUploadedNftsNameUriArray);
+      const finalizeCmNftCollectionConfigInput: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
+        walletAdapter: wallet.adapter,
+        collectionSigner: createNftCollectionResponse.collectionSigner,
+        candyMachineSigner: createCmNftCollectionResponse.candyMachineSigner,
+        itemsCount: nftCount,
+        nameUriArray: uploadedCollectionUploadedNftsNameUriArray,
+      }
+      const finalizeCmNftCollectionConfigResponse = await mplxH_finalizeCmNftCollectionConfig_fromWallet(finalizeCmNftCollectionConfigInput)
+      if (!finalizeCmNftCollectionConfigResponse.success) {
+        throw new Error(`Failed to finalize Candy Machine configuration: ${finalizeCmNftCollectionConfigResponse.error}`)
+      }
+      console.log(`${LOGPREFIX}Candy Machine finalized successfully:`, finalizeCmNftCollectionConfigResponse);
+  
+      // Mise à jour de l'adresse de la Candy Machine
+      setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
+  
+      // Vérification finale des métadonnées
+      console.log(`${LOGPREFIX}Final metadata check:`, {
+        collectionUri: uploadedCollectionUploadedMetadataUri,
+        nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
+      });
+  
+      // Affichage des toasts de succès
+      displaySuccessToasts(
+        createNftCollectionResponse,
+        createCmNftCollectionResponse,
+        finalizeCmNftCollectionConfigResponse
+      )
+  
     } catch (error) {
-      // Global error handling
-      const errorMsg = (error instanceof Error ? error.message : `${error}`)
-      console.error(`${LOGPREFIX}${errorMsg}`);
+      const errorMsg = error instanceof Error ? error.message : `${error}`
+      console.error(`${LOGPREFIX}Error:`, errorMsg);
       toast({
         title: 'Collection creation failed',
         description: errorMsg,
@@ -432,11 +213,48 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-
     } finally {
       setIsProcessingNftCollectionCreation(false)
     }
-  } // createCompleteNftCollection
+  }
+  
+  // Fonction auxiliaire pour afficher les toasts de succès
+  const displaySuccessToasts = (
+    collectionResponse: mplhelp_T_CreateNftCollection_Result,
+    cmResponse: mplhelp_T_CreateCmNftCollection_Result,
+    finalizeResponse: mplhelp_T_FinalizeCmNftCollectionConfig_Result
+  ) => {
+    const uriCollection = getAddressUri(collectionResponse.collectionAddress)
+    const uriCandyMachine = getAddressUri(finalizeResponse.candyMachineAddress)
+  
+    toast({
+      duration: SUCCESS_DELAY,
+      position: 'top-right',
+      render: ({ onClose }) => (
+        <Box bg={toastSuccessBgColor} color={toastTestColor} p={3} borderRadius='lg'>
+          <div className='flex justify-between'>
+            <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+            <Text fontWeight="bold">NFT Collection created successfully</Text>
+            <CloseButton size='sm' onClick={onClose} />
+          </div>
+          <div className='m-2'>
+            {uriCollection && (
+              <Link href={uriCollection} isExternal className="flex text-end">
+                <div className='mr-2'>Collection</div>
+                <ExternalLinkIconLucid size='16px' />
+              </Link>
+            )}
+            {uriCandyMachine && (
+              <Link href={uriCandyMachine} isExternal className="flex text-end">
+                <div className='mr-2'>Candy Machine</div>
+                <ExternalLinkIconLucid size='16px' />
+              </Link>
+            )}
+          </div>
+        </Box>
+      ),
+    })
+  }                      // createCompleteNftCollection
 
   // ----------------------------
 
@@ -692,78 +510,53 @@ export default function CreateCollectionPage() {
   
       const creatorAddress = wallet.adapter.publicKey?.toBase58() || "VOTRE_ADRESSE_SOLANA";
   
-      // Créer le JSON spécifique pour la collection en utilisant les valeurs saisies par l'utilisateur
+      // Créer le JSON spécifique pour la collection
       const collectionMetadataJson = {
         name: collectionName,
         symbol: collectionSymbol,
         description: collectionDescription,
         image: uploadedImageUri,
         attributes: [
-          {
-            "trait_type": "Niveau de Caféine",
-            "value": "Overdose"
-          },
-          {
-            "trait_type": "Bugs Squashés",
-            "value": "Plus que Solana"
-          },
-          {
-            "trait_type": "Santé Mentale",
-            "value": "404 Not Found"
-          },
-          {
-            "trait_type": "Skill Solana",
-            "value": "Über Maître"
-          },
-          {
-            "trait_type": "Diplôme Alyra",
-            "value": "En Vue"
-          }
+          { "trait_type": "Niveau de Caféine", "value": "Overdose" },
+          { "trait_type": "Bugs Squashés", "value": "Plus que Solana" },
+          { "trait_type": "Santé Mentale", "value": "404 Not Found" },
+          { "trait_type": "Skill Solana", "value": "Über Maître" },
+          { "trait_type": "Diplôme Alyra", "value": "En Vue" }
         ],
         properties: {
-          files: [
-            {
-              uri: uploadedImageUri,
-              type: image ? image.type : "image/png"
-            }
-          ],
+          files: [{ uri: uploadedImageUri, type: image ? image.type : "image/png" }],
           category: "image",
-          creators: [
-            {
-              address: creatorAddress,
-              share: 100
-            }
-          ]
+          creators: [{ address: creatorAddress, share: 100 }]
         }
       };
   
-      console.debug(`${LOGPREFIX}metadataJson`, collectionMetadataJson);
+      console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       umiStorage.use(irysUploader())
   
-      const metadataJsonUri = await umiStorage.uploader.uploadJson(collectionMetadataJson)
-      console.debug(`${LOGPREFIX}uri`, metadataJsonUri);
+      const collectionMetadataJsonUri = await umiStorage.uploader.uploadJson(collectionMetadataJson)
+      console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
   
-      if (!metadataJsonUri) {
-        console.error(`${LOGPREFIX}No metadataJsonUri`)
+      if (!collectionMetadataJsonUri) {
+        console.error(`${LOGPREFIX}No collectionMetadataJsonUri`)
         toast({
-          title: 'Metadata upload failed',
+          title: 'Collection metadata upload failed',
           description: "Invalid uri after upload",
-          status: 'warning',
-          duration: WARN_DELAY,
+          status: 'error',
+          duration: ERROR_DELAY,
           isClosable: true,
           position: 'top-right',
         })
-        setUploadedCollectionUploadedMetadataUri('') // Clear uploaded metadata uri
+        setUploadedCollectionUploadedMetadataUri('')
         return
       }
   
-      setUploadedCollectionUploadedMetadataUri(metadataJsonUri)
+      setUploadedCollectionUploadedMetadataUri(collectionMetadataJsonUri)
   
       toast({
-        title: 'Metadata uploaded',
-        description: "Metadata generated & uploaded successfully.",
+        title: 'Collection metadata uploaded',
+        description: "Collection metadata generated & uploaded successfully.",
         status: 'success',
         duration: SUCCESS_DELAY,
         isClosable: true,
@@ -774,25 +567,50 @@ export default function CreateCollectionPage() {
       const nameUriArray: mplhelp_T_NameUriArray = []
   
       for (let i = 0; i < nftCount; i++) {
-        // Créer un JSON légèrement différent pour chaque NFT
         const nftMetadataJson = {
-          ...collectionMetadataJson,
           name: `${nftNamePrefix} #${i + 1}`,
+          symbol: collectionSymbol,
+          description: `${collectionDescription} - NFT #${i + 1}`,
+          image: uploadedImageUri,
+          attributes: collectionMetadataJson.attributes,
+          properties: {
+            ...collectionMetadataJson.properties,
+            files: [{ uri: uploadedImageUri, type: image ? image.type : "image/png" }],
+          },
+          collection: {
+            name: collectionName,
+            family: collectionSymbol,
+          },
         };
+  
         const nftJsonUri = await umiStorage.uploader.uploadJson(nftMetadataJson)
+        console.debug(`${LOGPREFIX}NFT #${i + 1} metadata URI:`, nftJsonUri);
         nameUriArray.push({ name: nftMetadataJson.name, uri: nftJsonUri })
       }
   
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
   
-      console.debug(`${LOGPREFIX}metadataJsonUri`, metadataJsonUri);
-      console.dir(metadataJsonUri)
-  
       console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
-      console.dir(nameUriArray)
+  
+      toast({
+        title: 'NFT metadata uploaded',
+        description: `${nftCount} NFT metadata files generated & uploaded successfully.`,
+        status: 'success',
+        duration: SUCCESS_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
   
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
+      toast({
+        title: 'Metadata upload failed',
+        description: "An error occurred while uploading metadata.",
+        status: 'error',
+        duration: ERROR_DELAY,
+        isClosable: true,
+        position: 'top-right',
+      })
     }
   } // handleUploaJsonFiles
 
