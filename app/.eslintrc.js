@@ -26,6 +26,7 @@ module.exports = {
         varsIgnorePattern: "^_",
       },
     ],
+/*
     "sort-imports": [
       "error",
       {
@@ -33,7 +34,9 @@ module.exports = {
         ignoreDeclarationSort: true,
       },
     ],
+
     "tailwindcss/classnames-order": "off",
+
     "import/order": [
       1,
       {
@@ -64,6 +67,7 @@ module.exports = {
         },
       },
     ],
+ */
   },
 }
 
