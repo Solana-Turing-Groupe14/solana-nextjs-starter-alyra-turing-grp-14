@@ -11,11 +11,12 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
+import { MINT_URI_PATH } from '@consts/client'
 import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
   NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH
 } from '@consts/commons'
-import { MINT_URI_PATH } from '@consts/client'
 
+import { HOST, PORT } from '@consts/host'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
@@ -37,7 +38,6 @@ import {
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
-import { HOST, PORT } from '@consts/host'
 
 /* eslint-disable react/no-children-prop */
 
@@ -1156,6 +1156,7 @@ export default function CreateCollectionPage() {
             <Link color='teal.500' isExternal href={candyMachineMintUri}>
                 {candyMachineMintUri}
               </Link>
+          </Box>
 
 {/* 
               <Link color='teal.500' href={candyMachineMintUri}>
@@ -1178,7 +1179,6 @@ export default function CreateCollectionPage() {
             </Link>
 
  */}
-          </Box>
 {/* 
           <Link
             href={candyMachineMintUri} isExternal className="flex text-end"
