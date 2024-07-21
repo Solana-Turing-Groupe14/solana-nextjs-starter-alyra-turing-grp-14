@@ -672,9 +672,9 @@ export default function CreateCollectionPage() {
   }
 
   const handleUploadJsonFiles = async () => {
-    const LOGPREFIX = `${FILEPATH}:handleUploaJsonFiles: `
+    const LOGPREFIX = `${FILEPATH}:handleUploadJsonFiles: `
     try {
-      if (!isConnected || !wallet /* useless but prevents warning on setIdentity :) */) {
+      if (!isConnected || !wallet) {
         warnIsNotConnected(); return
       }
       if (!nftCount || nftCount <= 0) {
@@ -689,42 +689,62 @@ export default function CreateCollectionPage() {
         })
         return
       }
-      // Create collection Metadata JSON
+  
+      const creatorAddress = wallet.adapter.publicKey?.toBase58() || "VOTRE_ADRESSE_SOLANA";
+  
+      // Créer le JSON spécifique pour la collection en utilisant les valeurs saisies par l'utilisateur
       const collectionMetadataJson = {
         name: collectionName,
-        description: collectionDescription,
-        // symbol: 'NFT',
         symbol: collectionSymbol,
-        // external_url: "https://mywebsite.com",
-        // seller_fee_basis_points: 100,
-        uri: uploadedImageUri, // UPLOADED IMAGE
-        // attributes: [],
+        description: collectionDescription,
+        image: uploadedImageUri,
+        attributes: [
+          {
+            "trait_type": "Niveau de Caféine",
+            "value": "Overdose"
+          },
+          {
+            "trait_type": "Bugs Squashés",
+            "value": "Plus que Solana"
+          },
+          {
+            "trait_type": "Santé Mentale",
+            "value": "404 Not Found"
+          },
+          {
+            "trait_type": "Skill Solana",
+            "value": "Über Maître"
+          },
+          {
+            "trait_type": "Diplôme Alyra",
+            "value": "En Vue"
+          }
+        ],
         properties: {
           files: [
             {
               uri: uploadedImageUri,
-              // type: 'image',
-              type: (image ? image?.type : 'image'),
+              type: image ? image.type : "image/png"
             }
           ],
           category: "image",
-          // creators: [
-          //   {
-          //     "address": ".....",
-          //     "share": 100
-          //   }
-          // ]
-        },
-      }
-
+          creators: [
+            {
+              address: creatorAddress,
+              share: 100
+            }
+          ]
+        }
+      };
+  
       console.debug(`${LOGPREFIX}metadataJson`, collectionMetadataJson);
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       umiStorage.use(irysUploader())
-
+  
       const metadataJsonUri = await umiStorage.uploader.uploadJson(collectionMetadataJson)
       console.debug(`${LOGPREFIX}uri`, metadataJsonUri);
-
+  
       if (!metadataJsonUri) {
         console.error(`${LOGPREFIX}No metadataJsonUri`)
         toast({
@@ -738,9 +758,9 @@ export default function CreateCollectionPage() {
         setUploadedCollectionUploadedMetadataUri('') // Clear uploaded metadata uri
         return
       }
-
+  
       setUploadedCollectionUploadedMetadataUri(metadataJsonUri)
-
+  
       toast({
         title: 'Metadata uploaded',
         description: "Metadata generated & uploaded successfully.",
@@ -749,74 +769,28 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-
-
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      // TODO: Generate NFTs metadata
-      const nameUriArray: mplhelp_T_NameUriArray = [
-        // { name: 'NFT1', uri: 'https://example.com/nft1.json' },
-        // { name: 'NFT2', uri: 'https://example.com/nft2.json' },
-        // { name: 'NFT3', uri: 'https://example.com/nft3.json' },
-        // { name: 'NFT4', uri: 'https://example.com/nft4.json' },
-        // { name: 'NFT5', uri: 'https://example.com/nft5.json' },
-      ]
-      /*
+  
+      // Générer et uploader les métadonnées pour chaque NFT
+      const nameUriArray: mplhelp_T_NameUriArray = []
+  
       for (let i = 0; i < nftCount; i++) {
-        // TODO: generate/upload NFT JSON
-        nameUriArray.push({ name: `NFT${i + 1}`, uri: `https://example.com/nft${i + 1}.json` })
+        // Créer un JSON légèrement différent pour chaque NFT
+        const nftMetadataJson = {
+          ...collectionMetadataJson,
+          name: `${nftNamePrefix} #${i + 1}`,
+        };
+        const nftJsonUri = await umiStorage.uploader.uploadJson(nftMetadataJson)
+        nameUriArray.push({ name: nftMetadataJson.name, uri: nftJsonUri })
       }
-      */
-      for (let i = 0; i < nftCount; i++) {
-        // NFT JSON
-        const nftJsonData = {
-          name: `${collectionName} ${i + 1}`,
-          description: collectionDescription,
-          // symbol: 'NFT',
-          symbol: collectionSymbol,
-          // external_url: "https://mywebsite.com",
-          // seller_fee_basis_points: 100,
-          // uri: uploadedImageUri, // UPLOADED IMAGE
-          image: (image ? image.name : 'image'),
-          // attributes: [],
-          properties: {
-            files: [
-              {
-                uri: uploadedImageUri,
-                // type: 'image',
-                type: (image ? image?.type : 'image'),
-              }
-            ],
-            category: "image",
-            // creators: [
-            //   {
-            //     "address": ".....",
-            //     "share": 100
-            //   }
-            // ]
-          },
-        }
-        // Upload NFT JSON
-        const nftJsonUri = await umiStorage.uploader.uploadJson(nftJsonData)
-        nameUriArray.push({ name: `NFT${i + 1}`, uri: nftJsonUri })
-      } // for (let i = 0; i < nftCount; i++)
-
+  
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
-
-
+  
       console.debug(`${LOGPREFIX}metadataJsonUri`, metadataJsonUri);
       console.dir(metadataJsonUri)
-
+  
       console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
       console.dir(nameUriArray)
-
+  
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }
