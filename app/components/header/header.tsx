@@ -13,6 +13,7 @@ const MenuItems = [
   { text: "Home", href: "/" },
   { text: "Create Collection", href: "/createCollection" },
   { text: "Mint", href: "/mint/" },
+  { text: "Display QR", href: "/qr/displayQr" },
   { text: "Gallery", href: "/gallery" },
   { text: "Tools", href: "/tools" },
 ];
