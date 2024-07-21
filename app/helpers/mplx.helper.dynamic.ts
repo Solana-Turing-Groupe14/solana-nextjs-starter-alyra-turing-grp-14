@@ -1,7 +1,6 @@
 import {
   mplCandyMachine as mplCoreCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
 import { AIRDROP_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT } from "@consts/commons";
 import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH } from "@consts/mtplx";
@@ -11,6 +10,7 @@ import {
   MPL_F_create,
   MPL_F_createCollectionV1,
   MPL_F_createSignerFromKeypair,
+  MPL_F_createUmi,
   MPL_F_fetchCandyMachine, MPL_F_generateSigner,
   MPL_F_isSigner,
   MPL_F_mintV1,
@@ -50,7 +50,7 @@ const filePath = "app/helpers/mplx.helpers.ts"
 
 // ------------------------------------------------------------
 
-const mplx_umi: MPL_T_Umi = createUmi(RPC_URL).use(mplCoreCandyMachine());
+const mplx_umi: MPL_T_Umi = MPL_F_createUmi(RPC_URL).use(mplCoreCandyMachine());
 if (!mplx_umi) {
   throw new Error('mplx_umi not found')
 }

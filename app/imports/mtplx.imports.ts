@@ -42,6 +42,9 @@ import {
   TransactionBuilderSendAndConfirmOptions,
 } from '@metaplex-foundation/umi';
 import {
+  createUmi as MPL_F_createUmi,
+} from '@metaplex-foundation/umi-bundle-defaults'
+import {
   walletAdapterIdentity as MPL_P_walletAdapterIdentity,
   walletAdapterPayer as MPL_P_walletAdapterPayer,
   WalletAdapter as MPL_T_WalletAdapter,
@@ -74,6 +77,7 @@ export {
   MPL_F_setComputeUnitLimit,
   MPL_F_mintV1,
   MPL_F_deleteCandyMachine,
+  MPL_F_createUmi
 };
 export type {
   MPL_Keypair,
