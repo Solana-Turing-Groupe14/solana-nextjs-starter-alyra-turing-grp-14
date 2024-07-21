@@ -392,7 +392,7 @@ const MintTestPage: NextPage = (/* props */) => {
   // ------------------------------
 
   useEffect(() => {
-      let interval = null
+      let interval: NodeJS.Timeout|null = null
       try {
         if (candyMachineAddress && isValidCandyMachineAddress) {
           updateRemainingItems()
