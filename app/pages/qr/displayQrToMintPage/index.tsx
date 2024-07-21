@@ -18,7 +18,7 @@ import { HOST, PORT } from "@consts/host"
 import { text } from "stream/consumers"
 // import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 
-const FILEPATH = 'app/pages/qr/displayQr/index.tsx'
+const FILEPATH = 'app/pages/qr/displayQrToMintPage/index.tsx'
 
 export default function ToolsPage() {
 
@@ -151,7 +151,7 @@ export default function ToolsPage() {
       >
         <VStack spacing={8}>
           <Heading as="h1" size="2xl" textAlign="center" mb={6}>
-            Display (collection) QR Code
+            Display QR Code (link to) mint page
           </Heading>
 
           <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
