@@ -197,7 +197,7 @@ export default function ToolsPage() {
 
           <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
             <Center w='100%' h='100%' mb={6}>
-              <QrCodeLucid className="sm:size-12 md:size-24 xl:size-32 transition-all delay-500" />
+              <QrCodeLucid className="transition-all delay-500 sm:size-12 md:size-24 xl:size-32" />
             </Center>
 
             <form onSubmit={handleDefaultSubmit} className="mt-6">
@@ -215,7 +215,7 @@ export default function ToolsPage() {
                   />
                 </InputGroup>
 
-                <FormLabel>Url</FormLabel>
+                <FormLabel className="mt-2">Url</FormLabel>
                 <InputGroup>
                   <Input
                     type='string'
@@ -229,12 +229,12 @@ export default function ToolsPage() {
                 </InputGroup>
 
                 <Box
-                  className='mt-3 p-1 overflow-hidden'
+                  className='mt-3 overflow-hidden p-1'
                   border={'1px solid '}
                   borderRadius={'md'}
                   display={ (candyMachineAddress && candyMachinedisplayDirectMintQrUri.length ? '' : 'none') }
                 >
-                  <Text className='pr-2 flex'>
+                  <Text className='m-2 flex pr-2'>
                     Mint page Url:
                   </Text>
                   <Link color={linkColor} isExternal href={candyMachinedisplayDirectMintQrUri} className='flex'>
