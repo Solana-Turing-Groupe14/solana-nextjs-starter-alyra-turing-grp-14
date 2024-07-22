@@ -16,11 +16,11 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     // Accept only POST request
     if (req.method !== 'POST') {
       // Handle any other HTTP method
-      // console.log('req.body', req.body)
+      // console.debug('req.body', req.body)
       res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
     }
     // Process POST request
-    console.log('POST req.body', req.body)
+    // console.debug('POST req.body', req.body)
     const {
       collectionName,
       collectionUri,

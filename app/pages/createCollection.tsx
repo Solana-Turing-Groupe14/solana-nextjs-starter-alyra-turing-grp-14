@@ -139,7 +139,7 @@ export default function CreateCollectionPage() {
       setIsProcessingNftCollectionCreation(true)
 
       // 1. Créer la collection
-      console.log(`${LOGPREFIX}Creating collection with URI:`, uploadedCollectionUploadedMetadataUri);
+      // console.debug(`${LOGPREFIX}Creating collection with URI:`, uploadedCollectionUploadedMetadataUri);
       const createNftCollectionInput: mplhelp_T_CreateNftCollection_fromWallet_Input = {
         walletAdapter: wallet.adapter,
         collectionName: collectionName,
@@ -149,7 +149,7 @@ export default function CreateCollectionPage() {
       if (!createNftCollectionResponse.success) {
         throw new Error(`Failed to create collection: ${createNftCollectionResponse.error}`)
       }
-      console.log(`${LOGPREFIX}Collection created successfully:`, createNftCollectionResponse);
+      // console.debug(`${LOGPREFIX}Collection created successfully:`, createNftCollectionResponse);
 
       // 2. Créer la Candy Machine
       const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
@@ -170,10 +170,10 @@ export default function CreateCollectionPage() {
       if (!createCmNftCollectionResponse.success) {
         throw new Error(`Failed to create Candy Machine: ${createCmNftCollectionResponse.error}`)
       }
-      console.log(`${LOGPREFIX}Candy Machine created successfully:`, createCmNftCollectionResponse);
+      // console.debug(`${LOGPREFIX}Candy Machine created successfully:`, createCmNftCollectionResponse);
 
       // 3. Finaliser la configuration de la Candy Machine
-      console.log(`${LOGPREFIX}Finalizing Candy Machine with metadata:`, uploadedCollectionUploadedNftsNameUriArray);
+      // console.debug(`${LOGPREFIX}Finalizing Candy Machine with metadata:`, uploadedCollectionUploadedNftsNameUriArray);
       const finalizeCmNftCollectionConfigInput: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
         walletAdapter: wallet.adapter,
         collectionSigner: createNftCollectionResponse.collectionSigner,
@@ -185,16 +185,16 @@ export default function CreateCollectionPage() {
       if (!finalizeCmNftCollectionConfigResponse.success) {
         throw new Error(`Failed to finalize Candy Machine configuration: ${finalizeCmNftCollectionConfigResponse.error}`)
       }
-      console.log(`${LOGPREFIX}Candy Machine finalized successfully:`, finalizeCmNftCollectionConfigResponse);
+      // console.debug(`${LOGPREFIX}Candy Machine finalized successfully:`, finalizeCmNftCollectionConfigResponse);
 
       // Mise à jour de l'adresse de la Candy Machine
       setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
 
       // Vérification finale des métadonnées
-      console.log(`${LOGPREFIX}Final metadata check:`, {
-        collectionUri: uploadedCollectionUploadedMetadataUri,
-        nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
-      });
+      // console.debug(`${LOGPREFIX}Final metadata check:`, {
+      //   collectionUri: uploadedCollectionUploadedMetadataUri,
+      //   nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
+      // });
 
       // Affichage des toasts de succès
       displaySuccessToasts(

@@ -11,11 +11,11 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
     // Accept only POST request
     if (req.method !== 'POST') {
       // Reject any other HTTP method
-      // console.log('req.body', req.body)
+      // console.debug('req.body', req.body)
       res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
     }
     // Process POST request
-    // console.log('POST req.body', req.body)
+    // console.debug('POST req.body', req.body)
     const { 
       publicKey: _publicKey,
       amount: _amount
@@ -45,7 +45,7 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
   } catch (error) {
     const response: AirdropResponseData = { success: false, error: '' };
     if (error instanceof Error) {
-      console.log('error', error)
+      console.error('error', error)
       response.error = error.message
     } else {
       response.error = 'Error'

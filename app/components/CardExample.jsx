@@ -46,12 +46,12 @@ const CardExample = () => {
 		} 
 	}; 
 	const [darkTheme, setDarkTheme] = useState(true); 
-	console.log(transformText); 
+	// console.log(transformText); 
 	return ( 
 		<Box 
 			rounded={"xl"} 
 			// eslint-disable-next-line tailwindcss/no-custom-classname
-			className={`p-auto shadow-xl ${transformText} shadow-orange-600 bottom-20 duration-300 ease-in-out`} 
+			className={`p-auto shadow-xl ${transformText} bottom-20 shadow-orange-600 duration-300 ease-in-out`} 
 		> 
 			<Card 
 				rounded={"xl"} 
@@ -72,14 +72,14 @@ const CardExample = () => {
 				<CardBody> 
 					<Text 
 						className={darkTheme ? 
-							` text-cyan-300 p-2` : `text-cyan-600 p-2`} 
+							` p-2 text-cyan-300` : `p-2 text-cyan-600`} 
 					> 
 						You can use both chakraui and tailwind to 
 						gather for styling the webpages. 
 					</Text> 
 					<Text 
 						className={darkTheme ? 
-							` text-cyan-300 p-2` : `text-cyan-600 p-2`} 
+							` p-2 text-cyan-300` : `p-2 text-cyan-600`} 
 					> 
 						This card is made using both the ChakraUI and 
 						Tailwind CSS 

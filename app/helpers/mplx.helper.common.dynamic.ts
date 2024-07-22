@@ -11,22 +11,6 @@ import {
   MPL_T_WalletAdapter,
 } from '@imports/mtplx.imports'
 
-// import { I_ExpectedCandyMachineState, mplhelp_T_AirdropResult, mplhelp_T_CreateCmNftCollection_fromApp_Input, mplhelp_T_CreateCmNftCollection_fromWallet_Input, mplhelp_T_CreateCmNftCollection_Input, mplhelp_T_CreateCmNftCollection_Result, mplhelp_T_CreateCMNftCollectionResult,
-//   mplhelp_T_CreateCollectionResult, 
-//   mplhelp_T_CreateCompleteNftCollectionCmConfig_Input, 
-//   mplhelp_T_CreateCompleteNftCollectionCmConfig_Result, 
-//   mplhelp_T_CreateNftCollection_fromApp_Input,
-//   mplhelp_T_CreateNftCollection_fromWallet_Input, mplhelp_T_CreateNftCollection_Input, mplhelp_T_CreateNftCollection_Result,
-//   mplhelp_T_FinalizeCmNftCollectionConfig,
-//   mplhelp_T_FinalizeCmNftCollectionConfig_fromApp_Input,
-//   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
-//   mplhelp_T_FinalizeCmNftCollectionConfig_Result,
-//   mplhelp_T_MintNftCm,
-//   mplhelp_T_MintNftCm_fromApp_Input,
-//   mplhelp_T_MintNftCm_fromWallet_Input,
-//   mplhelp_T_MintNftCMResult
-// } from "types";
-
 const filePath = "app/helpers/mplx.helper.common.dynamic.ts"
 
 // ------------------------------------------------------------
@@ -37,7 +21,7 @@ export const getMplKeypair_fromEnv = (
   ): MPL_Keypair | null => {
   const LOGPREFIX = `${filePath}:getMplKeypair_fromEnv: `
   try {
-    console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
+    // console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
     if (!signerName) {
       console.warn(`${LOGPREFIX} signerName not provided`)
       console.warn(`${LOGPREFIX} using "MINT_APP_DEFAULT_KEYPAIR"`)
@@ -194,7 +178,7 @@ Promise<boolean>
       return false
     }
     const balance:MPL_T_SolAmount = await _umi.rpc.getBalance(publicKey);
-    console.debug(`${LOGPREFIX} balance `, balance);
+    // console.debug(`${LOGPREFIX} balance `, balance);
     if (balance.basisPoints < minAmount.basisPoints) {
       console.warn(`${LOGPREFIX}❌ Insufficient balance : ${Number(balance.basisPoints) / (10 ** balance.decimals)} SOL`);
       return false
