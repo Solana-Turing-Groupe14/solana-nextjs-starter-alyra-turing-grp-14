@@ -40,7 +40,7 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
         success: true,
         mintAddress: mintResult.mintAddress
       }
-      console.debug(`${LOGPREFIX} jsonResponse = `, jsonResponse)
+      // console.debug(`${LOGPREFIX} jsonResponse = `, jsonResponse)
       res.status(200).json(jsonResponse)
       return
     } else {

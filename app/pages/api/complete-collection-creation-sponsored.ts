@@ -23,17 +23,11 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
     console.log('POST req.body', req.body)
     const {
       collectionName,
-      // collectionDescription,
       collectionUri,
       nftNamePrefix,
       metadataPrefixUri,
       nameUriArray,
       cmNftCollectioNParams: _cmNftCollectioNParams,
-      // itemsCount,
-      // startDateTime,
-      // endDateTime,
-      // mintFee,
-      // maxMintPerwallet,
     } = req.body
 
     const {
@@ -44,18 +38,18 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       endDateTime,
     } = _cmNftCollectioNParams
 
-    console.debug(`${LOGPREFIX} collectionName = `, collectionName)
+    // console.debug(`${LOGPREFIX} collectionName = `, collectionName)
     // console.debug(`${LOGPREFIX} collectionDescription = `, collectionDescription) // unused for now
-    console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
-    console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
-    console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
-    console.debug(`${LOGPREFIX} nameUriArray = `, nameUriArray)
+    // console.debug(`${LOGPREFIX} collectionUri = `, collectionUri)
+    // console.debug(`${LOGPREFIX} nftNamePrefix = `, nftNamePrefix)
+    // console.debug(`${LOGPREFIX} metadataPrefixUri = `, metadataPrefixUri)
+    // console.debug(`${LOGPREFIX} nameUriArray = `, nameUriArray)
 
-    console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
-    console.debug(`${LOGPREFIX} mintFee = `, mintFee)
-    console.debug(`${LOGPREFIX} maxMintPerwallet = `, maxMintPerwallet)
-    console.debug(`${LOGPREFIX} startDateTime = `, startDateTime)
-    console.debug(`${LOGPREFIX} endDateTime = `, endDateTime)
+    // console.debug(`${LOGPREFIX} itemsCount = `, itemsCount)
+    // console.debug(`${LOGPREFIX} mintFee = `, mintFee)
+    // console.debug(`${LOGPREFIX} maxMintPerwallet = `, maxMintPerwallet)
+    // console.debug(`${LOGPREFIX} startDateTime = `, startDateTime)
+    // console.debug(`${LOGPREFIX} endDateTime = `, endDateTime)
 
 
     // Parameters checks

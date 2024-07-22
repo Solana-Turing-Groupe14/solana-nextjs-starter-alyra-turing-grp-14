@@ -19,8 +19,8 @@ export default async function mintFreeQrHandler(req: NextApiRequest, res: NextAp
       candyMachineAddress: _candyMachineAddress,
       minterAddress: _minterAddress,
     } = req.body
-    console.debug(`${LOGPREFIX} _candyMachineAddress = `, _candyMachineAddress)
-    console.debug(`${LOGPREFIX} _minterAddress = `, _minterAddress)
+    // console.debug(`${LOGPREFIX} _candyMachineAddress = `, _candyMachineAddress)
+    // console.debug(`${LOGPREFIX} _minterAddress = `, _minterAddress)
 
     if (!_candyMachineAddress) {
       res.status(200).json({ success: false, error: 'candyMachineAddress is required' })
@@ -40,7 +40,7 @@ export default async function mintFreeQrHandler(req: NextApiRequest, res: NextAp
         success: true,
         mintAddress: mintResult.mintAddress
       }
-      console.debug(`${LOGPREFIX} jsonResponse = `, jsonResponse)
+      // console.debug(`${LOGPREFIX} jsonResponse = `, jsonResponse)
       res.status(200).json(jsonResponse)
       return
     } else {
