@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
 import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
@@ -92,7 +92,7 @@ const NFTGallery: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchNFTs = async (retryCount = 0) => {
+  const fetchNFTs = useCallback(async (retryCount = 0) => {
     setLoading(true);
     setError(null);
     try {
@@ -137,15 +137,13 @@ const NFTGallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  } , [walletPublicKey]);
 
   useEffect(() => {
     if (walletPublicKey) {
       fetchNFTs();
     }
-  }, [walletPublicKey]);
-
-  const bgColor = useColorModeValue("gray.50", "gray.900");
+  }, [fetchNFTs, walletPublicKey]);
 
   if (!walletPublicKey) {
     return <Text textAlign="center" fontSize="xl">Please connect your wallet to view your NFTs.</Text>;
