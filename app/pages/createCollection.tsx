@@ -30,7 +30,6 @@ import {
   CreateCompleteCollectionCmConfigResponseData,
   mplhelp_T_CmNftCollection_Params,
   mplhelp_T_CreateCmNftCollection_fromWallet_Input,
-  mplhelp_T_CreateCmNftCollection_Result,
   mplhelp_T_CreateNftCollection_fromWallet_Input,
   mplhelp_T_CreateNftCollection_Result,
   mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input,
@@ -252,7 +251,7 @@ export default function CreateCollectionPage() {
         </Box>
       ),
     })
-  }                      // createCompleteNftCollection
+  } // displaySuccessToasts
 
   // ----------------------------
 
@@ -296,6 +295,7 @@ export default function CreateCollectionPage() {
         })
         return
       }
+      // TODO : create/display date inputs
       const year = 2024;
       const month = 6;
       const day = 28;
@@ -314,21 +314,16 @@ export default function CreateCollectionPage() {
         startDateTime,
         endDateTime
       }
-
-
       const createCompleteCollectionCmConfigInputData: T_CreateCompleteCollectionCmConfigInputData = {
         collectionName: collectionName,
-        // collectionUri: `https://example.com2/my-collection-${randomStringNumber}.json`, // TODO : UPLOAD COLLECTION
         collectionUri: uploadedCollectionUploadedMetadataUri,
-        // metadataPrefixUri: `https://example.com/metadata/${randomStringNumber}/`, // TODO : UPLOAD METADATA
         metadataPrefixUri: '',
         collectionDescription,
         nftNamePrefix,
         nameUriArray: uploadedCollectionUploadedNftsNameUriArray,
         cmNftCollectioNParams,
       }
-      console.debug(`${LOGPREFIX}createCompleteCollectionCmConfigInputData`, createCompleteCollectionCmConfigInputData);
-
+      // console.debug(`${LOGPREFIX}createCompleteCollectionCmConfigInputData`, createCompleteCollectionCmConfigInputData);
       const res = await fetch('/api/complete-collection-creation-sponsored', {
         method: 'post',
         headers: {
@@ -630,20 +625,13 @@ export default function CreateCollectionPage() {
         })
         return
       }
-      // 
-      // image.
-      // UploaderUploadOptions
+      // Image Upload
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
 
-      // umiStorage.use(myproviderUploader)
-      // IrysUploaderOptions
       umiStorage.use(irysUploader())
 
       const genericF = await MPL_F_createGenericFileFromBrowserFile(image)
-      // const fileUris = await nftStorageUploader.upload([genericF] );
-      // const fileUris = await umiStorage.uploader.upload([genericF]);
-
       const fileUris = await umiStorage.uploader.upload([genericF], {
         // signal: myAbortSignal,
         onProgress: (percent: number) => {
@@ -684,7 +672,6 @@ export default function CreateCollectionPage() {
     }
   } // handleUploadImageFile
 
-  // const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
   const textNormalColor = useColorModeValue("gray.800", "white")
   const textWarnColor = useColorModeValue("orange.600", "orange.300")
@@ -941,12 +928,12 @@ export default function CreateCollectionPage() {
           </VStack>
 
           <Box
-            className='mt-3 p-1 overflow-hidden'
+            className='mt-3 overflow-hidden p-1'
             border={'1px solid '}
             borderRadius={'md'}
             display={ (candyMachineAddress && candyMachineMintUri.length ? '' : 'none') }
           >
-            <Text className='pr-2 flex'>
+            <Text className='flex pr-2'>
               Mint page Url:
             </Text>
             <Link color={linkColor} isExternal href={candyMachineMintUri} className='flex'>
