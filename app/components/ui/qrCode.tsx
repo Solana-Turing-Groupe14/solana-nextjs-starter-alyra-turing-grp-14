@@ -18,7 +18,7 @@ export const QrCode = ({ text, id }:I_QrCode) => {
         <QRCode
           value={text}
           id={id}
-          size={isSmall? 192 : (isMediuml?512:1024)}
+          size={isSmall? 192 : (isMediuml?512:680)}
           bgColor={'white'}
           fgColor={'black'}
           quietZone={4}
