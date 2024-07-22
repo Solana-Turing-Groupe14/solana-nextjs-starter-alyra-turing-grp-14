@@ -20,41 +20,20 @@ const FILEPATH = 'app/pages/directMintFromQr/index.tsx'
 
 export default function ToolsPage() {
 
-  // const DEFAULT_CANDY_MACHINE_ADDRESS = ''
-  // const DEFAULT_URL = ''
-
-  const INIT_DELAY = 10_000
+  const INIT_DELAY = 5_000
 
   const router = useRouter()
   const { query } = router;
-  console.debug(`${FILEPATH}: query`, query)
+  // console.debug(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
-  console.debug(`${FILEPATH}: queryCandyMachineAddress`, queryCandyMachineAddress)
-
+  // console.debug(`${FILEPATH}: queryCandyMachineAddress`, queryCandyMachineAddress)
   const { connected, publicKey: connectedWalletPublicKey } = useWallet()
 
-  // const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
-
-  // const [url, setUrl] = useState<string>(DEFAULT_URL)
-
-
-  // const pathname = usePathname()
-  // console.dir(pathname)
-
-  // const [isSmall] = useMediaQuery("(max-width: 768px)")
-  // const [isMediuml] = useMediaQuery("(max-width: 1280px)")
-
   const toast = useToast()
-  // const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
-  // const toastTestColor = useColorModeValue("white", "black")
 
-  // const bgColor = useColorModeValue("gray.50", "gray.800")
-  // const cardBgColor = useColorModeValue("white", "gray.700")
-  // const buttonTextColor = useColorModeValue("gray.800", "white")
+  // ----------------------------
 
-   // ----------------------------
-
-   const warnIsNotConnected = useCallback(() => {
+  const warnIsNotConnected = useCallback(() => {
     console.warn(`${FILEPATH}:  Wallet not connected`)
     toast({
       title: 'Wallet not connected.',
@@ -69,7 +48,7 @@ export default function ToolsPage() {
   // --------------
 
   const isConnected = useMemo(() => {
-    console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
+    // console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
@@ -80,8 +59,8 @@ export default function ToolsPage() {
     address: string,
   ) => {
     const LOGPREFIX = `${FILEPATH}:mintToConnectedWallet: `
-    console.debug(`${LOGPREFIX}candyMachineAddress=`, candyMachineAddress)
-    console.debug(`${LOGPREFIX}address=`, address)
+    // console.debug(`${LOGPREFIX}candyMachineAddress=`, candyMachineAddress)
+    // console.debug(`${LOGPREFIX}address=`, address)
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -161,112 +140,49 @@ export default function ToolsPage() {
 
   // ----------------------------
 
-  // const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
-  //   event.preventDefault();
-  // } // handleDefaultSubmit
-
-  // ----------------------------
-
-  // const getMintUri = (_candyMachineAddress: string) => {
-  //   const LOGPREFIX = `${FILEPATH}:getMintUri: `
-  //   try {
-  //     // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
-  //     const mintPath = HOST + (PORT?`:${PORT}`:'') + DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-  //     // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
-  //     return mintPath
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  //   return ''
-  // } // getMintUri
-
-  // ----------------------------
-
-  // const handleChangeCandyMachineAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
-  //   try {
-  //     const newCandyMachineAddress = event.target.value
-  //     // console.debug(`${LOGPREFIX}newCandyMachineAddress=`, newCandyMachineAddress)
-  //     setCandyMachineAddress(newCandyMachineAddress)
-  //     const mintPath =  getMintUri(newCandyMachineAddress)
-  //     // const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + event.target.value
-  //     setUrl(mintPath)
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  // } // handleChangeCandyMachineAddress
-
-  // ----------------------------
-
-  // const handleChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const LOGPREFIX = `${FILEPATH}:handleChangeUrl: `
-  //   try {
-  //     // console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-  //     // setUrl(event.target.value)
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  // } // handleChangeUrl
-
-  // ----------------------------
-
   useEffect(() => {
     const LOGPREFIX = `${FILEPATH}:useEffect: `
-    let timeout = null
-    const init = async () => {
-      // console.debug(`${LOGPREFIX}queryCandyMachineAddress`, queryCandyMachineAddress)
-      // console.debug(`${LOGPREFIX}connectedWalletPublicKey=${connectedWalletPublicKey}`)
+    try {
+      let timeout = null
+      const init = async () => {
+        // console.debug(`${LOGPREFIX}queryCandyMachineAddress`, queryCandyMachineAddress)
+        // console.debug(`${LOGPREFIX}connectedWalletPublicKey=${connectedWalletPublicKey}`)
+        if (!connectedWalletPublicKey) {
+          warnIsNotConnected(); return
+        }
+        if (!queryCandyMachineAddress) {
+          console.warn(`${LOGPREFIX}queryCandyMachineAddress is required`)
+          toast({
+            title: 'candyMachineAddress is required.',
+            description: "Please provide a candyMachineAddress.",
+            status: 'warning',
+            duration: WARN_DELAY,
+            isClosable: true,
+            position: 'top-right',
+          })
+          return
+        }
+        mintToConnectedWallet(queryCandyMachineAddress.toString(), connectedWalletPublicKey.toString())
+        } // init
 
-      if (!connectedWalletPublicKey) {
-        warnIsNotConnected(); return
-      }
-      if (!queryCandyMachineAddress) {
-        console.warn(`${LOGPREFIX}queryCandyMachineAddress is required`)
-        toast({
-          title: 'candyMachineAddress is required.',
-          description: "Please provide a candyMachineAddress.",
-          status: 'warning',
-          duration: WARN_DELAY,
-          isClosable: true,
-          position: 'top-right',
-        })
-        return
-      }
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
-      mintToConnectedWallet(queryCandyMachineAddress.toString(), connectedWalletPublicKey.toString())
-    //   if (!candyMachineAddress && queryCandyMachineAddress) {
-    //     setCandyMachineAddress(queryCandyMachineAddress.toString())
-    //     setUrl(getMintUri(queryCandyMachineAddress.toString()))
-    // } // if
-  } // init
+      // wait some time before init to allow wallet connection and params to be set
+      timeout = setTimeout(() => {
+        init()
+      }, INIT_DELAY)
 
-    // wait 10 seconds
-    timeout = setTimeout(() => {
-      init()
-    }, INIT_DELAY)
-    // init()
-
-    return () => {
-      // cleanup
-      if (timeout) {
-        // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
-        clearTimeout(timeout)
+      return () => {
+        // cleanup
+        if (timeout) {
+          // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
+          clearTimeout(timeout)
+        }
       }
+    } catch (error) {
+      const errorMsg = (error instanceof Error) ? error.message : 'Error'
+      console.error(`${LOGPREFIX}`, errorMsg)
     }
 
   }, [connectedWalletPublicKey, mintToConnectedWallet, queryCandyMachineAddress, toast, warnIsNotConnected])
-
-  // ----------------------------
-
-  // const textColor = useColorModeValue("black", "white")
-  // const linkColor = useColorModeValue("teal.500", "teal.300")
 
   // ----------------------------
 
