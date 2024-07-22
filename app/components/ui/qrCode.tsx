@@ -10,7 +10,7 @@ export const QrCode = ({ text, id }:I_QrCode) => {
   return (
     <div>
       <Box
-        className='mt-3 flex p-1 justify-center'
+        className='mt-3 flex justify-center p-1'
         border={'none '}
         borderRadius={'md'}
         display={ (id && text.length ? 'flex' : 'none') }
@@ -23,7 +23,7 @@ export const QrCode = ({ text, id }:I_QrCode) => {
           fgColor={'black'}
           quietZone={4}
           ecLevel={'Q'} // error correction : L, M, Q, H (default is 'M', the bigger the logo, the higher the error correction level)
-          logoImage={'/favicon-96x96.png'}
+          logoImage={isSmall? '/favicon-16x16.png' : (isMediuml?'/favicon-32x32.png':'/favicon-96x96.png')}
           removeQrCodeBehindLogo={true}
         />
       </Box>
