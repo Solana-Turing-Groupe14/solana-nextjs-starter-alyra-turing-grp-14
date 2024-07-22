@@ -40,9 +40,7 @@ const MintTestPage: NextPage = (/* props */) => {
   const [candyMachineAddress, setCandyMachineAddress] = useState(defaultCandyMachineAddress)
   const [itemsRemaining, setItemsRemaining] = useState<number>(0)
 
-  // const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
-  // const textColor = useColorModeValue("gray.800", "white")
   const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
@@ -351,7 +349,7 @@ const MintTestPage: NextPage = (/* props */) => {
   // ------------------------------
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
-    console.log('handleDefaultSubmit')
+    // console.log('handleDefaultSubmit')
     event.preventDefault();
   }
 
@@ -416,10 +414,10 @@ const MintTestPage: NextPage = (/* props */) => {
   // ----------------------------
 
   useEffect(() => {
-    const LOGPREFIX = `${FILEPATH}:useEffect: `
+    // const LOGPREFIX = `${FILEPATH}:useEffect: `
     let timeout = null
     const init = async () => {
-      console.log(`${LOGPREFIX}queryCandyMachineAddress=${queryCandyMachineAddress}`)
+      // console.log(`${LOGPREFIX}queryCandyMachineAddress=${queryCandyMachineAddress}`)
       if (!candyMachineAddress && queryCandyMachineAddress) {
         setCandyMachineAddress(queryCandyMachineAddress.toString())
         // getRemainingItems(queryCandyMachineAddress.toString())
@@ -428,7 +426,7 @@ const MintTestPage: NextPage = (/* props */) => {
           setisValidCandyMachineAddress(true)
           updateRemainingItems()
         } else {
-          console.warn('useEffect: queryCandyMachineAddress: Invalid Candy Machine address')
+          // console.warn('useEffect: queryCandyMachineAddress: Invalid Candy Machine address')
           setisValidCandyMachineAddress(false)
           setItemsRemaining(0)
         }
