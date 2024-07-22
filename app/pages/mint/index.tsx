@@ -20,7 +20,7 @@ const FILEPATH = 'app/pages/mint/index.tsx'
 
 const MintTestPage: NextPage = () => {
 
-  const INIT_DELAY = 1_000
+  const INIT_DELAY = 5_000
   const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
@@ -370,6 +370,7 @@ const MintTestPage: NextPage = () => {
     // if (!isValidCandyMachineAddress) return
     const remaining = await getRemainingItems(candyMachineAddress)
     setItemsRemaining(remaining)
+    setisValidCandyMachineAddress(remaining > 0)
   }
   , [candyMachineAddress, getRemainingItems])
 
@@ -380,6 +381,7 @@ const MintTestPage: NextPage = () => {
       try {
         if (candyMachineAddress && isValidCandyMachineAddress) {
           updateRemainingItems()
+          // if
         }
         interval = setInterval(() => {
           updateRemainingItems()
