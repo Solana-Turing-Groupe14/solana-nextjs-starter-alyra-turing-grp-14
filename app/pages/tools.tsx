@@ -25,7 +25,7 @@ export default function ToolsPage() {
   const [airdropAmount, setAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
 
   const isConnected = useMemo(() => {
-    console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
+    // console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
@@ -84,7 +84,7 @@ export default function ToolsPage() {
         })
       });
       const response: AirdropResponseData = await res.json();
-      console.debug('app/pages/mintTest.tsx:aidrop: response', response);
+      // console.debug('app/pages/mintTest.tsx:aidrop: response', response);
       if (response && response.success && response.amount) {
         const addressUri = getAddressUri(address)
         const shortenedAddress = shortenAddress(address)
@@ -220,7 +220,7 @@ export default function ToolsPage() {
   const handleChangeAirdropAmount = (event: React.ChangeEvent<HTMLInputElement>) => {
     const LOGPREFIX = `${FILEPATH}:handleChangeAirdropAmount: `
     try {
-      console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
+      // console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
       let value: number
       if (typeof event.target.value === 'string') {
         value = parseInt(event.target.value)

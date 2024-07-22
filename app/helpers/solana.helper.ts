@@ -111,22 +111,22 @@ export const transferSolana = async (wallet: WalletContextState, destination: Pu
 // export const initializeAccount = async (anchorWallet: AnchorWallet, data: number, age: number): Promise<string | null> => {
 export const initializeAccount = async (anchorWallet: AnchorWallet, data: number, age: number, taille: number): Promise<string | null> => {
     try {
-      console.debug(`initializeAccount data:${data} age:${age} taille:${taille}`);
+      // console.debug(`initializeAccount data:${data} age:${age} taille:${taille}`);
 
       // const accountTransaction = await getInitializeAccountTransactionWWithoutAnchor(anchorWallet.publicKey, new BN(data), new BN(age));
       const accountTransaction = await getInitializeAccountTransaction(anchorWallet.publicKey, new BN(data), new BN(age), new BN(taille));
 
-      console.debug(`initializeAccount: accountTransaction=${JSON.stringify(accountTransaction)}`);
+      // console.debug(`initializeAccount: accountTransaction=${JSON.stringify(accountTransaction)}`);
 
       const recentBlockhash = await getRecentBlockhash();
       if (accountTransaction && recentBlockhash) {
           accountTransaction.feePayer = anchorWallet.publicKey;
           accountTransaction.recentBlockhash = recentBlockhash;
-          console.debug('initializeAccount: anchorWallet.signTransaction');
+          // console.debug('initializeAccount: anchorWallet.signTransaction');
 
           try {
             const signedTransaction = await anchorWallet.signTransaction(accountTransaction);
-            console.debug('initializeAccount: signedTransaction', signedTransaction);
+            // console.debug('initializeAccount: signedTransaction', signedTransaction);
             return await connection.sendRawTransaction(signedTransaction.serialize());
           } catch (error) {
             console.error('initializeAccount: error', error);
@@ -174,7 +174,7 @@ export const getAccount = async (publicKey: PublicKey): Promise<any> => {
 // export const getInitializeAccountTransaction = async (publicKey: PublicKey, data: BN, age: BN): Promise<Transaction | null> => {
 export const getInitializeAccountTransaction = async (publicKey: PublicKey, data: BN, age: BN, taille: BN): Promise<Transaction | null> => {
     try {
-      console.debug(`getInitializeAccountTransaction publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
+      // console.debug(`getInitializeAccountTransaction publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
       // const accountSeed = Buffer.from("account");
       const [accountPda] = PublicKey.findProgramAddressSync(
         [
@@ -183,7 +183,7 @@ export const getInitializeAccountTransaction = async (publicKey: PublicKey, data
         ],
         new PublicKey(USER_DATA_PROGRAM_ID.toString())
       );
-      console.debug(`getInitializeAccountTransaction accountPda:${accountPda}`);
+      // console.debug(`getInitializeAccountTransaction accountPda:${accountPda}`);
       // return await program.methods.initialize(data, age, taille) // additonal parameter: taille
       return await program.methods.initialize(data, age)
         .accounts({
@@ -203,7 +203,7 @@ export const getInitializeAccountTransaction = async (publicKey: PublicKey, data
 export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: PublicKey, data: BN, age: BN, taille: BN): Promise<Transaction | null> => {
     try {
 
-      console.debug(`getInitializeAccountTransactionWWithoutAnchor publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
+      // console.debug(`getInitializeAccountTransactionWWithoutAnchor publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
 
       const accountSeed = Buffer.from("account");
       const [accountPda] = PublicKey.findProgramAddressSync(

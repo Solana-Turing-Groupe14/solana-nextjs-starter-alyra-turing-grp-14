@@ -66,7 +66,7 @@ export default function Account() {
                                     }
                                     // setAccount(account);
                                     // account?.rawData && setRawData(account.rawData);
-                                    console.debug('account', account)
+                                    // console.debug('account', account)
                                     // debugger
                                     if (account?.rawData) {
                                         console.debug('rawData', account.rawData)
@@ -86,7 +86,7 @@ export default function Account() {
                                 if (anchorWallet.publicKey) {
                                     setSendingTransaction(true);
                                     // const initResult = await initializeAccount(anchorWallet, rawData | 1, age | 20);
-                                    console.debug('onClick Create Account Anchor')
+                                    // console.debug('onClick Create Account Anchor')
                                     const initResult = await initializeAccount(anchorWallet, rawData || 1, age || 20, taille || 160);
                                     setTransactionHash(initResult);
                                     setSendingTransaction(false);

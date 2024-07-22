@@ -124,20 +124,20 @@ export default async function collectionCreationHandler(req: NextApiRequest, res
       nameUriArray,
       cmNftCollectioNParams,
     }
-    console.debug(`${LOGPREFIX} input = `, input)
+    // console.debug(`${LOGPREFIX} input = `, input)
 
     const resCreateCompleteNftCollectionCm:mplhelp_T_CreateCompleteNftCollectionCmConfig_Result =
       await createCompleteNftCollectionCm_fromApp(input)
-    console.debug(`${LOGPREFIX} resCreateCompleteNftCollectionCm`, resCreateCompleteNftCollectionCm)
+    // console.debug(`${LOGPREFIX} resCreateCompleteNftCollectionCm`, resCreateCompleteNftCollectionCm)
 
     if (resCreateCompleteNftCollectionCm.success) {
-      console.debug(`${LOGPREFIX} createCollectionResult`, resCreateCompleteNftCollectionCm)
+      // console.debug(`${LOGPREFIX} createCollectionResult`, resCreateCompleteNftCollectionCm)
       const jsonResponse:CreateCompleteCollectionCmConfigResponseData = {
         success: true,
         collectionAddress: resCreateCompleteNftCollectionCm.collectionAddress,
         candyMachineAddress: resCreateCompleteNftCollectionCm.candyMachineAddress
       }
-      console.debug(`${LOGPREFIX} res = `, jsonResponse)
+      // console.debug(`${LOGPREFIX} res = `, jsonResponse)
       res.status(200).json(jsonResponse)
       return
     } else {

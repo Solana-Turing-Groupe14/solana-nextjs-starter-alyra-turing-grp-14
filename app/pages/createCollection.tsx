@@ -334,7 +334,7 @@ export default function CreateCollectionPage() {
         body: JSON.stringify(createCompleteCollectionCmConfigInputData)
       });
       const response: CreateCompleteCollectionCmConfigResponseData = await res.json();
-      console.debug(`${LOGPREFIX}`, response);
+      // console.debug(`${LOGPREFIX}`, response);
 
       if (response && response.success) {
 
@@ -566,7 +566,7 @@ export default function CreateCollectionPage() {
         }
       };
 
-      console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
+      // console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       const collectionMetadataJsonUri = await uploadJson(umiStorage, collectionMetadataJson)
       // console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
@@ -609,21 +609,18 @@ export default function CreateCollectionPage() {
         setUploadedCollectionUploadedNftsNameUriArray([])
         return
       }
-
-
       const nameUriArray: mplhelp_T_NameUriArray = []
       // Upload each NFT metadata
       for (let i = 0; i < jsonMetadataArray.length; i++) {
         // const nameUri = nameUriArray[i]
-        console.debug(`${LOGPREFIX}NFT #${i + 1} metadata`, jsonMetadataArray[i]);
+        // console.debug(`${LOGPREFIX}NFT #${i + 1} metadata`, jsonMetadataArray[i]);
         const nftJsonUri = await uploadJson(umiStorage, jsonMetadataArray[i])
         // nameUriArray[i].uri = nftJsonUri
         nameUriArray.push({ name: `${nftNamePrefix} #${i + 1}`, uri: nftJsonUri })
-        console.debug(`${LOGPREFIX}NFT #${i + 1} name : ${nameUriArray[i].name} metadata URI: ${nameUriArray[i].uri}` );
+        // console.debug(`${LOGPREFIX}NFT #${i + 1} name : ${nameUriArray[i].name} metadata URI: ${nameUriArray[i].uri}` );
       }
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
-      console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
-
+      // console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
       toast({
         title: 'NFT metadata uploaded',
         description: `${nftCount} NFT metadata files successfully generated & uploaded.`,
@@ -690,8 +687,7 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-      console.debug(`${LOGPREFIX}fileUri`, fileUri);
-
+      // console.debug(`${LOGPREFIX}fileUri`, fileUri);
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }

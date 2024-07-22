@@ -52,7 +52,7 @@ if (!mplx_umi) {
 
 export const getUmi = (): MPL_T_Umi => {
   const LOGPREFIX = `${filePath}:getUmi: `
-  console.debug(`${LOGPREFIX}()`)
+  // console.debug(`${LOGPREFIX}()`)
   return mplx_umi
 } // getUmi
 
@@ -79,7 +79,7 @@ async function checkCandyMachine(
     if (loadedCandyMachine.collectionMint.toString() !== collection.toString()) {
       throw new Error(`${LOGPREFIX} Incorrect collection in the Candy Machine.`);
     }
-    console.log(`${LOGPREFIX} ✅  Candy Machine has the correct configuration.`);
+    // console.debug(`${LOGPREFIX} ✅  Candy Machine has the correct configuration.`);
   } catch (error) {
     const errorMsg = (error instanceof Error) ? error.message : `${error}`
     console.error(`${LOGPREFIX} ❌ Candy Machine incorrect configuration: ${errorMsg}`);
@@ -95,7 +95,7 @@ export const airdrop = async (
 ): Promise<mplhelp_T_AirdropResult> => {
   const LOGPREFIX = `${filePath}:airdrop: `
   try {
-    console.debug(`${LOGPREFIX} publicKey = '${_publicKeyString}'`)
+    // console.debug(`${LOGPREFIX} publicKey = '${_publicKeyString}'`)
     if (!_publicKeyString) {
       console.error(`${LOGPREFIX}  _publicKeyString not provided`)
       return { success: false, error: 'Public key not provided' }
@@ -109,7 +109,7 @@ export const airdrop = async (
     try {
       const umi = getUmi()
       await umi.rpc.airdrop(mpl_publicKey, MPL_F_sol(_amount), MPL_TX_BUILDR_OPTIONS.confirm);
-      console.log(`${LOGPREFIX} ✅ Airdropped ${_amount} SOL to the ${mpl_publicKey}`)
+      // console.debug(`${LOGPREFIX} ✅ Airdropped ${_amount} SOL to the ${mpl_publicKey}`)
       const airdropResult: mplhelp_T_AirdropResult = { success: true, amount: _amount }
       return airdropResult
     } catch (error) {
@@ -320,7 +320,7 @@ export async function createNftCollection(
       }
       // Basic Check balance(s)
       if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _umi.payer.publicKey, _umi)) {
-        console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
+        // console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
         console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
         const collectionResultError: mplhelp_T_MintNftCMResult = {
           success: false,
@@ -338,7 +338,7 @@ export async function createNftCollection(
           name: _collectionName,
           uri: _collectionUri,
         }).sendAndConfirm(umi, MPL_TX_BUILDR_OPTIONS);
-        console.log(`${LOGPREFIX} ✅ Created collection: ${collectionSigner.publicKey.toString()}`)
+        // console.debug(`${LOGPREFIX} ✅ Created collection: ${collectionSigner.publicKey.toString()}`)
       } catch (error) {
         console.error(`${LOGPREFIX}❌ Error creating collection.`)
         const collectionResultError: mplhelp_T_CreateNftCollection_Result = {
@@ -552,7 +552,7 @@ export async function createCmNftCollection(
       }
       // Basic Check balance(s)
       if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _umi.payer.publicKey, _umi)) {
-        console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
+        // console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
         console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
         const collectionResultError: mplhelp_T_CreateCmNftCollection_Result = {
           success: false,
@@ -596,22 +596,22 @@ export async function createCmNftCollection(
       //   guards_rules.endDate = MPL_F_some({ date: _endDateTime });
       // }
 
-      console.debug(`${LOGPREFIX} guards_rules:`)
-      console.dir(guards_rules);
+      // console.debug(`${LOGPREFIX} guards_rules:`)
+      // console.dir(guards_rules);
 
-      console.table({
-        treasury: treasurySigner.publicKey.toString(),
-        candyMachine: candyMachineSigner.publicKey.toString(),
-        collection: _collectionSigner.publicKey.toString(),
-        itemsAvailable: cmNftCollectioNParams.itemsCount,
-        // prefixName: nftNamePrefix,
-        prefixName: _nftNamePrefix,
-        // nameLength: nftNameMaxLength,
-        nameLength: 0, // Everything is a prefix
-        prefixUri: _metadataPrefixUri,
-        uriLength: _metadataPrefixUri.length,
-        mintFee: cmNftCollectioNParams.mintFee,
-      });
+      // console.table({
+      //   treasury: treasurySigner.publicKey.toString(),
+      //   candyMachine: candyMachineSigner.publicKey.toString(),
+      //   collection: _collectionSigner.publicKey.toString(),
+      //   itemsAvailable: cmNftCollectioNParams.itemsCount,
+      //   // prefixName: nftNamePrefix,
+      //   prefixName: _nftNamePrefix,
+      //   // nameLength: nftNameMaxLength,
+      //   nameLength: 0, // Everything is a prefix
+      //   prefixUri: _metadataPrefixUri,
+      //   uriLength: _metadataPrefixUri.length,
+      //   mintFee: cmNftCollectioNParams.mintFee,
+      // });
 
       // https://developers.metaplex.com/core-candy-machine/settings#config-line-settings
       // Name Prefix: A name prefix shared by all inserted items.
@@ -638,8 +638,8 @@ export async function createCmNftCollection(
         isSequential: false,
       });
 
-      console.debug(`${LOGPREFIX} coreCM_configLineSettings:`)
-      console.dir(coreCM_configLineSettings);
+      // console.debug(`${LOGPREFIX} coreCM_configLineSettings:`)
+      // console.dir(coreCM_configLineSettings);
 
       const coreCM_CreateIx = await MPL_F_create(_umi, {
         candyMachine: candyMachineSigner,
@@ -664,7 +664,7 @@ export async function createCmNftCollection(
         return collectionResultError
       }
 
-      console.log(`${LOGPREFIX} ✅ Created Candy Machine: ${candyMachineSigner.publicKey.toString()}`)
+      // console.debug(`${LOGPREFIX} ✅ Created Candy Machine: ${candyMachineSigner.publicKey.toString()}`)
     } catch (error) {
       console.error(`${LOGPREFIX} ❌ Error creating Candy Machine.`, error)
       const collectionResultError: mplhelp_T_CreateCMNftCollectionResult = {
@@ -797,7 +797,7 @@ export async function finalizeCmNftCollectionConfig(
       // --------------------------------
       // Basic Check balance(s)
       if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _umi.payer.publicKey, _umi)) {
-        console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
+        // console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
         console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
         const collectionResultError: mplhelp_T_CreateCmNftCollection_Result = {
           success: false,
@@ -805,8 +805,8 @@ export async function finalizeCmNftCollectionConfig(
         }
         return collectionResultError
       }
-      console.debug(`${LOGPREFIX} _itemsCount: ${_itemsCount}`)
-      console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
+      // console.debug(`${LOGPREFIX} _itemsCount: ${_itemsCount}`)
+      // console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
       // console.dir(nameUriArray)
 
       try {
@@ -831,7 +831,7 @@ export async function finalizeCmNftCollectionConfig(
           } // for
         } // nameUriArray
 
-        console.debug(`${LOGPREFIX} configLines:`, configLines);
+        // console.debug(`${LOGPREFIX} configLines:`, configLines);
         // console.dir(configLines);
 
         await MPL_F_addConfigLines(_umi, {
@@ -840,7 +840,7 @@ export async function finalizeCmNftCollectionConfig(
           configLines: configLines,
 
         }).sendAndConfirm(_umi, MPL_TX_BUILDR_OPTIONS);
-        console.log(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${_candyMachineSigner.publicKey.toString()}`)
+        // console.debug(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${_candyMachineSigner.publicKey.toString()}`)
       } catch (error) {
         console.error(`${LOGPREFIX} ❌ Error adding items to the Candy Machine`, error)
         const collectionResult: mplhelp_T_FinalizeCmNftCollectionConfig_Result = {
@@ -878,7 +878,7 @@ export async function finalizeCmNftCollectionConfig(
         collectionAddress: _collectionSigner.publicKey,
         candyMachineAddress: _candyMachineSigner.publicKey,
       }
-      console.debug(`${LOGPREFIX} finalizeCmNftCollectionConfigResult`, finalizeCmNftCollectionConfigResult)
+      // console.debug(`${LOGPREFIX} finalizeCmNftCollectionConfigResult`, finalizeCmNftCollectionConfigResult)
       return finalizeCmNftCollectionConfigResult
     } catch (error) {
       console.error(`${LOGPREFIX}`, error)
@@ -902,11 +902,9 @@ export async function finalizeCmNftCollectionConfig(
   const LOGPREFIX = `${filePath}:mintNftFromCm_fromApp: `
   try {
     const umi = mplx_umi
-    console.debug(`${LOGPREFIX} -> candyMachineAddress=${candyMachineAddress}`)
-    // setPayer_APP(umi)
+    // console.debug(`${LOGPREFIX} -> candyMachineAddress=${candyMachineAddress}`)
     setIdentityPayer_APP(umi)
-      const ownerPublicKey: MPL_T_PublicKey = MPL_F_publicKey(minterAddress)
-
+    const ownerPublicKey: MPL_T_PublicKey = MPL_F_publicKey(minterAddress)
     return mintNftFromCm({
       candyMachineAddress,
       ownerPublicKey,
@@ -966,7 +964,7 @@ try {
   // TODO: check real Mint cost
   // Basic Check balance(s)
   if (!await checkBalance(MINIMUM_CREATOR_BALANCE_SOL, _umi.payer.publicKey, _umi)) {
-    console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
+    // console.debug(`${LOGPREFIX} PAYER.publicKey : ${_umi.payer.publicKey}`)
     console.error(`${LOGPREFIX}❌ Insufficient balance : ${MINIMUM_CREATOR_BALANCE} SOL`)
     const collectionResultError: mplhelp_T_MintNftCMResult = {
       success: false,
@@ -974,20 +972,6 @@ try {
     }
     return collectionResultError
   }
-
-  // // Set identity
-  // umi.use(MPL_P_walletAdapterIdentity(_walletAdapter));
-  // // Set payer
-  // umi.use(MPL_P_walletAdapterPayer(_walletAdapter));
-  // setIdentityPayer_WalletAdapter(_walletAdapter, umi, true)
-
-  // console.debug(`${LOGPREFIX} candyMachineAddress=${_candyMachineAddress} collectionAddress=${_collectionAddress}`)
-  // console.debug(`${LOGPREFIX}`)
-  console.table({
-      logger: LOGPREFIX,
-      candyMachineAddress: _candyMachineAddress,
-      // collectionAddress: _collectionAddress,
-    })
 
   if (!_candyMachineAddress) {
     console.error(`${LOGPREFIX} _candyMachineAddress`)
@@ -1003,26 +987,21 @@ try {
 
   // Load CM
   const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey, MPL_TX_BUILDR_OPTIONS.confirm);
-  console.debug(`${LOGPREFIX}candyMachine`, candyMachine)
-  console.debug(`${LOGPREFIX}candyMachine.collectionMint.__publicKey`, candyMachine.collectionMint.__publicKey)
-
+  // console.debug(`${LOGPREFIX}candyMachine`, candyMachine)
+  // console.debug(`${LOGPREFIX}candyMachine.collectionMint.__publicKey`, candyMachine.collectionMint.__publicKey)
   // const _collectionAddress:string = candyMachine.collectionMint.__publicKey as string
   // const collectionPublicKey: MPL_T_PublicKey = MPL_F_publicKey(_collectionAddress)
 
   const collectionPublicKey = candyMachine.collectionMint
   const assetSigner = MPL_F_generateSigner(umi)
-  
-
-  console.table({
-    candyMachinePublicKey: candyMachinePublicKey.toString(),
-    collectionPublicKey: collectionPublicKey.toString(),
-    // owner: umi.identity.publicKey.toString(),
-    owner: _ownerPublicKey.toString(),
-    payer: umi.payer.publicKey.toString(),
-    assetSigner: assetSigner.publicKey,
-  })
-
-
+  // console.table({
+  //   candyMachinePublicKey: candyMachinePublicKey.toString(),
+  //   collectionPublicKey: collectionPublicKey.toString(),
+  //   // owner: umi.identity.publicKey.toString(),
+  //   owner: _ownerPublicKey.toString(),
+  //   payer: umi.payer.publicKey.toString(),
+  //   assetSigner: assetSigner.publicKey,
+  // })
   try {
     // Mint NFT
     const mintTx = await MPL_F_transactionBuilder()
@@ -1046,7 +1025,7 @@ try {
       // console.debug(`${LOGPREFIX} mintTx`, mintTx)
       // console.dir(mintTx)
       // console.dir(mintTx.result)
-      // console.log(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
+      // console.debug(`${LOGPREFIX} mintTx.result.value.err`, mintTx.result.value.err)
 
       if (mintTx.result.value.err !== null) {
         console.error(`${LOGPREFIX}❌ Error minting NFT.`)
@@ -1056,7 +1035,7 @@ try {
         }
         return mintResultError
       }
-    console.log(`✅ NFT Minted.`);
+    // console.debug(`✅ NFT Minted.`);
   } catch (error) {
     const errorMsg = (error instanceof Error) ? error.message : `${error}`
     console.error(`${LOGPREFIX} ❌ - Error minting NFT`, error)

@@ -74,13 +74,12 @@ export default function DirectMintFromQrPage() {
           candyMachineAddress: candyMachineAddress,
         })
       });
-      console.debug(`${LOGPREFIX}response=`, res);
-      console.dir(res)
+      // console.debug(`${LOGPREFIX}response=`, res);
+      // console.dir(res)
       const mintResponse: mintFromCmFromAppResponseData = await res.json();
-      console.debug('app/pages/mintTest.tsx:aidrop: mintResponse', mintResponse);
-
+      // console.debug('app/pages/mintTest.tsx:aidrop: mintResponse', mintResponse);
       if (mintResponse && mintResponse.success && mintResponse.mintAddress) {
-        console.debug(`${LOGPREFIX}mintAddress: `, mintResponse.mintAddress)
+        // console.debug(`${LOGPREFIX}mintAddress: `, mintResponse.mintAddress)
         const mintAddressUri = getAddressUri(mintResponse.mintAddress)
         const shortenedAddress = shortenAddress(mintResponse.mintAddress)
         const nftName = undefined

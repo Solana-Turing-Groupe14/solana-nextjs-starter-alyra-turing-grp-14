@@ -174,7 +174,7 @@ const MintTestPage: NextPage = () => {
       const mintResponse: mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
         mintInput
       )
-      console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
+      // console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
       if (mintResponse.success) {
         const mintAddressUri = getAddressUri(mintResponse.mintAddress)
         const shortenedAddress = shortenAddress(mintResponse.mintAddress)
@@ -263,7 +263,7 @@ const MintTestPage: NextPage = () => {
       });
       const mintResponse: mintFromCmFromAppResponseData = await res.json();
 
-      console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
+      // console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
       if (mintResponse.success) {
         const mintAddressUri = getAddressUri(mintResponse.mintAddress)
         const shortenedAddress = shortenAddress(mintResponse.mintAddress)

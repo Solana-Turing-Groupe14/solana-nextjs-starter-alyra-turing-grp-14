@@ -29,16 +29,16 @@ mplx_umi_storage.use(irysUploader())
 // --------------------------------------------------
 
 export const getUmiStorage = (): MPL_T_Umi => {
-  const LOGPREFIX = `${filePath}:getUmiStorage: `
-  console.debug(`${LOGPREFIX}()`)
+  // const LOGPREFIX = `${filePath}:getUmiStorage: `
+  // console.debug(`${LOGPREFIX}()`)
   return mplx_umi_storage
 } // getUmiStorage
 
 // --------------------------------------------------
 
 export const uploadJson = async(_umiStorage:MPL_T_Umi, someJson: unknown): Promise<string> => {
-  const LOGPREFIX = `${filePath}:uploadJson: `
-  console.debug(`${LOGPREFIX}()`)
+  // const LOGPREFIX = `${filePath}:uploadJson: `
+  // console.debug(`${LOGPREFIX}()`)
   if (!_umiStorage) {
     throw new Error('_umiStorage not provided')
   }
@@ -53,7 +53,7 @@ export const uploadJson = async(_umiStorage:MPL_T_Umi, someJson: unknown): Promi
 
 export const uploadSingleFile = async(_umiStorage:MPL_T_Umi, _file:File): Promise<string> => {
   const LOGPREFIX = `${filePath}:uploadSingleFile: `
-  console.debug(`${LOGPREFIX}()`)
+  // console.debug(`${LOGPREFIX}()`)
   if (!_umiStorage) {
     throw new Error('_umiStorage not provided')
   }
@@ -68,6 +68,6 @@ export const uploadSingleFile = async(_umiStorage:MPL_T_Umi, _file:File): Promis
     },
   })
   const fileUri = fileUris[0]
-  console.debug(`${LOGPREFIX}fileUri:`, fileUri)
+  // console.debug(`${LOGPREFIX}fileUri:`, fileUri)
   return fileUri
 } // uploadSingleFile
