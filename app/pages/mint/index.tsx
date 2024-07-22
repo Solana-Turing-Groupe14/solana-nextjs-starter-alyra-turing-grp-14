@@ -20,13 +20,13 @@ const FILEPATH = 'app/pages/mint/index.tsx'
 
 const MintTestPage: NextPage = (/* props */) => {
 
+  const INIT_DELAY = 1_000
   const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
-
   const REMAINING_ITEMS_UPDATE_INTERVAL = 10_000
 
   const router = useRouter()
   const { query } = router;
-  console.log(`${FILEPATH}: query`, query)
+  // console.log(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
 
   const defaultCandyMachineAddress = ``
@@ -383,11 +383,11 @@ const MintTestPage: NextPage = (/* props */) => {
   // --------------
 
   const updateRemainingItems = useCallback(async () => {
-    if (!isValidCandyMachineAddress) return
+    // if (!isValidCandyMachineAddress) return
     const remaining = await getRemainingItems(candyMachineAddress)
     setItemsRemaining(remaining)
   }
-  , [candyMachineAddress, getRemainingItems, isValidCandyMachineAddress])
+  , [candyMachineAddress, getRemainingItems])
 
   // ------------------------------
 
@@ -396,10 +396,11 @@ const MintTestPage: NextPage = (/* props */) => {
       try {
         if (candyMachineAddress && isValidCandyMachineAddress) {
           updateRemainingItems()
-          interval = setInterval(() => {
-            updateRemainingItems()
-          }, REMAINING_ITEMS_UPDATE_INTERVAL)
         }
+        interval = setInterval(() => {
+          console.log('useEffect:updateRemainingItems: setInterval')
+          updateRemainingItems()
+        }, REMAINING_ITEMS_UPDATE_INTERVAL)
       } catch (error) {
         const errorMsg = (error instanceof Error ? error.message : `${error}`)
         console.error(`${FILEPATH}:useEffect:fetchRemainingItems: error: ${errorMsg}`)
@@ -415,8 +416,10 @@ const MintTestPage: NextPage = (/* props */) => {
   // ----------------------------
 
   useEffect(() => {
+    const LOGPREFIX = `${FILEPATH}:useEffect: `
+    let timeout = null
     const init = async () => {
-      console.log('useEffect: queryCandyMachineAddress', queryCandyMachineAddress)
+      console.log(`${LOGPREFIX}queryCandyMachineAddress=${queryCandyMachineAddress}`)
       if (!candyMachineAddress && queryCandyMachineAddress) {
         setCandyMachineAddress(queryCandyMachineAddress.toString())
         // getRemainingItems(queryCandyMachineAddress.toString())
@@ -428,10 +431,22 @@ const MintTestPage: NextPage = (/* props */) => {
           console.warn('useEffect: queryCandyMachineAddress: Invalid Candy Machine address')
           setisValidCandyMachineAddress(false)
           setItemsRemaining(0)
-      }
-    } // if queryCandyMachineAddress
-  } // init
-    init()
+        }
+      } // if queryCandyMachineAddress
+    } // init
+
+    // wait some time before init to allow wallet connection and params to be set
+    timeout = setTimeout(() => {
+      init()
+    }, INIT_DELAY)
+
+    return () => {
+         // cleanup
+         if (timeout) {
+          // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
+          clearTimeout(timeout)
+        }
+    }
   }, [candyMachineAddress, queryCandyMachineAddress, updateRemainingItems])
 
   // ----------------------------
