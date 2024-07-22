@@ -198,10 +198,9 @@ export default function CreateCollectionPage() {
       // Affichage des toasts de succès
       displaySuccessToasts(
         createNftCollectionResponse,
-        createCmNftCollectionResponse,
+        // createCmNftCollectionResponse,
         finalizeCmNftCollectionConfigResponse
       )
-  
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : `${error}`
       console.error(`${LOGPREFIX}Error:`, errorMsg);
@@ -221,11 +220,11 @@ export default function CreateCollectionPage() {
   // Fonction auxiliaire pour afficher les toasts de succès
   const displaySuccessToasts = (
     collectionResponse: mplhelp_T_CreateNftCollection_Result,
-    cmResponse: mplhelp_T_CreateCmNftCollection_Result,
+    // cmResponse: mplhelp_T_CreateCmNftCollection_Result,
     finalizeResponse: mplhelp_T_FinalizeCmNftCollectionConfig_Result
   ) => {
-    const uriCollection = getAddressUri(collectionResponse.collectionAddress)
-    const uriCandyMachine = getAddressUri(finalizeResponse.candyMachineAddress)
+    const uriCollection = collectionResponse.success &&  getAddressUri(collectionResponse.collectionAddress)
+    const uriCandyMachine = finalizeResponse.success && getAddressUri(finalizeResponse.candyMachineAddress)
     toast({
       duration: SUCCESS_DELAY,
       position: 'top-right',
