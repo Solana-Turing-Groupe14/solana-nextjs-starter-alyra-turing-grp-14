@@ -8,7 +8,6 @@ import {
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { MPL_F_createGenericFileFromBrowserFile } from '@imports/mtplx.storage.imports';
 
-
 const filePath = "app/helpers/mplx.storage.helpers.ts"
 
 // --------------------------------------------------
@@ -27,11 +26,15 @@ if (!mplx_umi_storage) {
 
 mplx_umi_storage.use(irysUploader())
 
+// --------------------------------------------------
+
 export const getUmiStorage = (): MPL_T_Umi => {
   const LOGPREFIX = `${filePath}:getUmiStorage: `
   console.debug(`${LOGPREFIX}()`)
   return mplx_umi_storage
 } // getUmiStorage
+
+// --------------------------------------------------
 
 export const uploadJson = async(_umiStorage:MPL_T_Umi, someJson: unknown): Promise<string> => {
   const LOGPREFIX = `${filePath}:uploadJson: `
@@ -46,6 +49,7 @@ export const uploadJson = async(_umiStorage:MPL_T_Umi, someJson: unknown): Promi
   return jsonUri
 } // uploadJson
 
+// --------------------------------------------------
 
 export const uploadSingleFile = async(_umiStorage:MPL_T_Umi, _file:File): Promise<string> => {
   const LOGPREFIX = `${filePath}:uploadSingleFile: `
