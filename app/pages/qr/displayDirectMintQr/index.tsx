@@ -1,6 +1,6 @@
 import {
   Box, Center, Container, FormControl, FormLabel, Heading,
-  Input, InputGroup, Link, Text, useColorModeValue, useToast, VStack
+  Input, InputGroup, Link, Text, useColorModeValue, VStack
 } from "@chakra-ui/react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, QrCode as QrCodeLucid,

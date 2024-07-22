@@ -6,14 +6,14 @@ import { forwardRefWithAs } from "@clement-utils/render"
 const styles = tv({
   slots: {
     input: [
-      "flex rounded-lg border border-gray-300 bg-white py-2 px-3 text-base text-gray-900 shadow-z1",
+      "flex rounded-lg border border-gray-300 bg-white px-3 py-2 text-base text-gray-900 shadow-z1",
       "placeholder:text-gray-500",
       "hover:border-gray-900",
-      "focus:outline-none focus:ring-1 focus:border-gray-900 focus:ring-gray-900",
+      "focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900",
       "disabled:cursor-not-allowed disabled:bg-gray-50",
     ],
-    startDecorator: "absolute inset-y-0 flex items-center left-3 pointer-events-none text-gray-500",
-    endDecorator: "absolute inset-y-0 flex items-center right-3 pointer-events-none text-gray-500",
+    startDecorator: "pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-500",
+    endDecorator: "pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500",
   },
   variants: {
     hasLeft: {

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Link, Box, Flex, IconButton, useColorMode, useDisclosure, VStack, HStack, Container, Text } from '@chakra-ui/react';
+import { Link, Box, Flex, IconButton, useColorMode, useDisclosure, VStack, HStack, Container } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useWallet } from '@solana/wallet-adapter-react';
 import ConnectWalletButton from "@components/connect-wallet-button";
