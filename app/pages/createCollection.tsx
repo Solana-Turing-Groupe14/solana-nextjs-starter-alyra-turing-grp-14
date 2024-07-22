@@ -6,7 +6,6 @@ import {
   ScaleFade, SimpleGrid, SlideFade, Slider, SliderFilledTrack, SliderThumb, SliderTrack,
   Text, useBreakpointValue, useColorModeValue, useToast, VStack
 } from "@chakra-ui/react"
-import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
@@ -16,16 +15,14 @@ import {
   MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
   NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH
 } from '@consts/commons'
-
 import { HOST, PORT } from '@consts/host'
 import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
   finalizeCmNftCollectionConfig_fromWallet as mplxH_finalizeCmNftCollectionConfig_fromWallet,
 } from "@helpers/mplx.helper.dynamic"
-import { getUmiStorage } from '@helpers/mplx.storage.helper'
+import { getUmiStorage, uploadJson, uploadSingleFile } from '@helpers/mplx.storage.helper'
 import { getAddressUri } from "@helpers/solana.helper"
-import { MPL_F_createGenericFileFromBrowserFile } from '@imports/mtplx.storage.imports'
 import {
   CreateCompleteCollectionCmConfigResponseData,
   mplhelp_T_CmNftCollection_Params,
@@ -483,6 +480,45 @@ export default function CreateCollectionPage() {
     setMintFee(value)
   }
 
+  // ----------------------------
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const generateJsonNftMetadata = (_collectionMetadataJson:any, _nftCount: number):mplhelp_T_NameUriArray => {
+    const LOGPREFIX = `${FILEPATH}:generateJsonNftMetadata: `
+    const nameUriArray: mplhelp_T_NameUriArray = []
+    try {
+      if (!_collectionMetadataJson) {
+        console.error(`${LOGPREFIX}No collection metadata provided`)
+        return nameUriArray;
+      }
+      for (let i = 0; i < _nftCount; i++) {
+        const nftMetadataJson = {
+          name: `${nftNamePrefix} #${i + 1}`,
+          symbol: collectionSymbol,
+          description: `${collectionDescription} - NFT #${i + 1}`,
+          image: uploadedImageUri,
+          attributes: _collectionMetadataJson.attributes,
+          properties: {
+            ..._collectionMetadataJson.properties,
+            files: [{ uri: uploadedImageUri, type: image ? image.type : "image/png" }],
+          },
+          collection: {
+            name: collectionName,
+            family: collectionSymbol,
+          },
+        };
+        nameUriArray.push({ name: nftMetadataJson.name, uri: '' })
+      } // for
+    } catch (error) {
+      console.error(`${LOGPREFIX}error`, error);
+    }
+    return nameUriArray;
+  } // generateJsonNftMetadata
+
+  // ----------------------------
+
+  // Upload Json metadata & individual NFT metadata
+
   const handleUploadJsonFiles = async () => {
     const LOGPREFIX = `${FILEPATH}:handleUploadJsonFiles: `
     try {
@@ -527,11 +563,8 @@ export default function CreateCollectionPage() {
       console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
-      umiStorage.use(irysUploader())
-
-      const collectionMetadataJsonUri = await umiStorage.uploader.uploadJson(collectionMetadataJson)
-      console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
-
+      const collectionMetadataJsonUri = await uploadJson(umiStorage, collectionMetadataJson)
+      // console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
       if (!collectionMetadataJsonUri) {
         console.error(`${LOGPREFIX}No collectionMetadataJsonUri`)
         toast({
@@ -557,38 +590,34 @@ export default function CreateCollectionPage() {
         position: 'top-right',
       })
 
-      // Générer et uploader les métadonnées pour chaque NFT
-      const nameUriArray: mplhelp_T_NameUriArray = []
-
-      for (let i = 0; i < nftCount; i++) {
-        const nftMetadataJson = {
-          name: `${nftNamePrefix} #${i + 1}`,
-          symbol: collectionSymbol,
-          description: `${collectionDescription} - NFT #${i + 1}`,
-          image: uploadedImageUri,
-          attributes: collectionMetadataJson.attributes,
-          properties: {
-            ...collectionMetadataJson.properties,
-            files: [{ uri: uploadedImageUri, type: image ? image.type : "image/png" }],
-          },
-          collection: {
-            name: collectionName,
-            family: collectionSymbol,
-          },
-        };
-
-        const nftJsonUri = await umiStorage.uploader.uploadJson(nftMetadataJson)
-        console.debug(`${LOGPREFIX}NFT #${i + 1} metadata URI:`, nftJsonUri);
-        nameUriArray.push({ name: nftMetadataJson.name, uri: nftJsonUri })
+      const nameUriArray = generateJsonNftMetadata(collectionMetadataJson, nftCount)
+      if (!nameUriArray || nameUriArray.length !== nftCount) {
+        console.error(`${LOGPREFIX}No nameUriArray`)
+        toast({
+          title: 'NFT metadata generation failed',
+          description: "Invalid content",
+          status: 'error',
+          duration: ERROR_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+        setUploadedCollectionUploadedNftsNameUriArray([])
+        return
       }
 
+      // Upload each NFT metadata
+      for (let i = 0; i < nameUriArray.length; i++) {
+        const nameUri = nameUriArray[i]
+        const nftJsonUri = await uploadJson(umiStorage, nameUri)
+        nameUriArray[i].uri = nftJsonUri
+        console.debug(`${LOGPREFIX}NFT #${i + 1} name : ${nameUriArray[i].name} metadata URI: ${nameUriArray[i].uri}` );
+      }
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
-
       console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
 
       toast({
         title: 'NFT metadata uploaded',
-        description: `${nftCount} NFT metadata files generated & uploaded successfully.`,
+        description: `${nftCount} NFT metadata files successfully generated & uploaded.`,
         status: 'success',
         duration: SUCCESS_DELAY,
         isClosable: true,
@@ -629,17 +658,8 @@ export default function CreateCollectionPage() {
       // Image Upload
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
-
-      umiStorage.use(irysUploader())
-
-      const genericF = await MPL_F_createGenericFileFromBrowserFile(image)
-      const fileUris = await umiStorage.uploader.upload([genericF], {
-        // signal: myAbortSignal,
-        onProgress: (percent: number) => {
-          console.log(`${percent * 100}% uploaded...`);
-        },
-      })
-      const fileUri = fileUris[0]
+      const fileUri = await uploadSingleFile( umiStorage, image)
+      // console.debug(`${LOGPREFIX}fileUri`, fileUri);
       if (!fileUri) {
         console.error(`${LOGPREFIX}No fileUri`)
         toast({
@@ -653,7 +673,6 @@ export default function CreateCollectionPage() {
         setUploadedImageUri('') // Clear uploaded image uri
         return
       }
-
       setUploadedImageUri(fileUri)
       toast({
         title: 'Image uploaded',
@@ -663,9 +682,6 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-
-      // console.debug(`${LOGPREFIX}fileUris`, fileUris);
-      // console.dir(fileUris)
       console.debug(`${LOGPREFIX}fileUri`, fileUri);
 
     } catch (error) {
