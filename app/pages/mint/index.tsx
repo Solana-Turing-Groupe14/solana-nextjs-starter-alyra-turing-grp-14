@@ -56,7 +56,7 @@ const MintTestPage: NextPage = () => {
 
   // ------------------------------
 
-  const checkIsValidCandyMachineAddress = async (_candyMachineAddress: string): Promise<boolean> => {
+  const checkIsValidCandyMachineAddress = useCallback(async (_candyMachineAddress: string): Promise<boolean> => {
     const LOGPREFIX = `${FILEPATH}:checkIsValidCandyMachineAddress: `
     try {
       const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
@@ -75,7 +75,7 @@ const MintTestPage: NextPage = () => {
       console.error(`${LOGPREFIX}error: ${errorMsg}`)
       return false
     }
-  } // checkIsValidCandyMachineAddress
+  }, [umi]) // checkIsValidCandyMachineAddress
 
   // ------------------------------
 
@@ -362,7 +362,7 @@ const MintTestPage: NextPage = () => {
       console.error(`${FILEPATH}:getRemainingItems: error: ${errorMsg}`)
       return 0
     }
-  }, []) // getRemainingItems
+  }, [umi]) // getRemainingItems
 
   // --------------
 
@@ -422,7 +422,7 @@ const MintTestPage: NextPage = () => {
           clearTimeout(timeout)
         }
     }
-  }, [candyMachineAddress, queryCandyMachineAddress, updateRemainingItems])
+  }, [candyMachineAddress, checkIsValidCandyMachineAddress, queryCandyMachineAddress, updateRemainingItems])
 
   // ----------------------------
 
