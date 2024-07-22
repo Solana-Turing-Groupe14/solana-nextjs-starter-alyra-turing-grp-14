@@ -7,7 +7,7 @@ import { forwardRefWithAs } from "@clement-utils/render"
 
 export const buttonVariants = tv({
   base: [
-    "inline-flex items-center justify-center rounded-lg shadow-z1 text-sm font-semibold transition-colors",
+    "inline-flex items-center justify-center rounded-lg text-sm font-semibold shadow-z1 transition-colors",
     "focus:outline-none focus:ring-4",
     "disabled:pointer-events-none",
     "active:scale-95",
@@ -16,13 +16,13 @@ export const buttonVariants = tv({
     variant: {
       solid: ["bg-primary-400 text-white", "hover:bg-primary-600", "focus:ring-primary-100", "disabled:bg-primary-200"],
       outline: [
-        "text-primary-400 border border-primary-400",
+        "border border-primary-400 text-primary-400",
         "focus:ring-primary-100",
-        "disabled:text-primary-300 disabled:border-primary-200",
+        "disabled:border-primary-200 disabled:text-primary-300",
       ],
       link: [
-        "bg-transparent text-primary-600 focus:ring-0 shadow-none",
-        "hover:text-primary-800 hover:bg-transparent",
+        "bg-transparent text-primary-600 shadow-none focus:ring-0",
+        "hover:bg-transparent hover:text-primary-800",
         "disabled:text-gray-300",
       ],
     },

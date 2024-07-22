@@ -1,1 +1,15 @@
 .env*
+app/scripts/dumps/*
+app/scripts/test-ledger/*
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+node_modules/.yarn-integrity
+poap-alyra/app/.next/cache/webpack/client-development/0.pack.gz
+poap-alyra/app/.next/cache/webpack/client-development/index.pack.gz
+poap-alyra/app/.next/cache/webpack/server-development/0.pack.gz
+poap-alyra/app/.next/cache/webpack/server-development/index.pack.gz

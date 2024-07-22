@@ -20,7 +20,7 @@ function ClementApp() {
   useEffect(() => {
     if (wallet.publicKey) {
       getSolanaBalance(wallet.publicKey.toBase58())
-        .then((balance) => setSolanaBalance(balance));
+        .then((balance) => {balance ?setSolanaBalance(balance):setSolanaBalance(null)});
     } else {
       setSolanaBalance(null);
     }

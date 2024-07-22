@@ -5,7 +5,7 @@ import { cn } from "@clement-utils/cn"
 
 // eslint-disable-next-line tailwindcss/no-custom-classname
 const labelVariants = tv({
-  base: '"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"',
+  base: '"text-sm peer-disabled:opacity-70" font-medium leading-none peer-disabled:cursor-not-allowed',
 })
 
 const Label = React.forwardRef<

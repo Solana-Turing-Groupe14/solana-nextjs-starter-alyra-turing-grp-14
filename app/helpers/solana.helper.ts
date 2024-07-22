@@ -4,6 +4,9 @@ import { Connection, LAMPORTS_PER_SOL, PublicKey, SendTransactionError, SystemPr
 import { sign } from 'tweetnacl';
 import { IDL, USER_ACCOUNT_SEED, USER_DATA_PROGRAM_ID } from "../imports/consts";
 
+
+const FILEPATH = 'app/helpers/solana.helper.ts'
+
 if (!process.env.NEXT_PUBLIC_RPC_URL) {
     throw new Error("NEXT_PUBLIC_RPC_URL is required");
 }
@@ -18,15 +21,19 @@ const program = new Program<Idl>(IDL as Idl, USER_DATA_PROGRAM_ID, {
   connection,
 });
 
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
+if (RPC_URL === undefined) {
+  throw new Error('RPC_URL not found')
+}
 
-export async function getSolanaBalance(publicKey: string): Promise<number> {
+export async function getSolanaBalance(publicKey: string): Promise<number|undefined> {
   try {
     const balanceInLamports = await connection.getBalance(new PublicKey(publicKey));
     const balanceInSol = balanceInLamports / LAMPORTS_PER_SOL;
     return balanceInSol;
   } catch (error) {
     console.error(error);
-    return 0;
+    return undefined;
   }
 }
 
@@ -51,7 +58,7 @@ export const verifyEncodedMessage = async (wallet: WalletContextState, message: 
         return false;
       }
       const messageEncoded = new TextEncoder().encode(`${message}`);
-  
+
       return sign.detached.verify(messageEncoded, encodedMessage, wallet.publicKey.toBytes());
     } catch (error) {
       console.error(error);
@@ -104,22 +111,22 @@ export const transferSolana = async (wallet: WalletContextState, destination: Pu
 // export const initializeAccount = async (anchorWallet: AnchorWallet, data: number, age: number): Promise<string | null> => {
 export const initializeAccount = async (anchorWallet: AnchorWallet, data: number, age: number, taille: number): Promise<string | null> => {
     try {
-      console.debug(`initializeAccount data:${data} age:${age} taille:${taille}`);
+      // console.debug(`initializeAccount data:${data} age:${age} taille:${taille}`);
 
       // const accountTransaction = await getInitializeAccountTransactionWWithoutAnchor(anchorWallet.publicKey, new BN(data), new BN(age));
       const accountTransaction = await getInitializeAccountTransaction(anchorWallet.publicKey, new BN(data), new BN(age), new BN(taille));
 
-      console.debug(`initializeAccount: accountTransaction=${JSON.stringify(accountTransaction)}`);
+      // console.debug(`initializeAccount: accountTransaction=${JSON.stringify(accountTransaction)}`);
 
       const recentBlockhash = await getRecentBlockhash();
       if (accountTransaction && recentBlockhash) {
           accountTransaction.feePayer = anchorWallet.publicKey;
           accountTransaction.recentBlockhash = recentBlockhash;
-          console.debug('initializeAccount: anchorWallet.signTransaction');
+          // console.debug('initializeAccount: anchorWallet.signTransaction');
 
           try {
             const signedTransaction = await anchorWallet.signTransaction(accountTransaction);
-            console.debug('initializeAccount: signedTransaction', signedTransaction);
+            // console.debug('initializeAccount: signedTransaction', signedTransaction);
             return await connection.sendRawTransaction(signedTransaction.serialize());
           } catch (error) {
             console.error('initializeAccount: error', error);
@@ -167,7 +174,7 @@ export const getAccount = async (publicKey: PublicKey): Promise<any> => {
 // export const getInitializeAccountTransaction = async (publicKey: PublicKey, data: BN, age: BN): Promise<Transaction | null> => {
 export const getInitializeAccountTransaction = async (publicKey: PublicKey, data: BN, age: BN, taille: BN): Promise<Transaction | null> => {
     try {
-      console.debug(`getInitializeAccountTransaction publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
+      // console.debug(`getInitializeAccountTransaction publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
       // const accountSeed = Buffer.from("account");
       const [accountPda] = PublicKey.findProgramAddressSync(
         [
@@ -176,7 +183,7 @@ export const getInitializeAccountTransaction = async (publicKey: PublicKey, data
         ],
         new PublicKey(USER_DATA_PROGRAM_ID.toString())
       );
-      console.debug(`getInitializeAccountTransaction accountPda:${accountPda}`);
+      // console.debug(`getInitializeAccountTransaction accountPda:${accountPda}`);
       // return await program.methods.initialize(data, age, taille) // additonal parameter: taille
       return await program.methods.initialize(data, age)
         .accounts({
@@ -196,7 +203,7 @@ export const getInitializeAccountTransaction = async (publicKey: PublicKey, data
 export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: PublicKey, data: BN, age: BN, taille: BN): Promise<Transaction | null> => {
     try {
 
-      console.debug(`getInitializeAccountTransactionWWithoutAnchor publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
+      // console.debug(`getInitializeAccountTransactionWWithoutAnchor publicKey:${publicKey} data:${data} age:${age} taille:${taille}`);
 
       const accountSeed = Buffer.from("account");
       const [accountPda] = PublicKey.findProgramAddressSync(
@@ -216,7 +223,7 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
       age.toArrayLike(Buffer, 'le', 2).copy(instructionData, 9); // Write age
       // taille.toArrayLike(Buffer, 'le', 1).copy(instructionData, 11); // Write taille
       // taille.toArrayLike(Buffer, 'le', 1).copy(instructionData, 11); // Write taille
-  
+
       const instruction = new TransactionInstruction({
         keys: [
           { pubkey: accountPda, isSigner: false, isWritable: true },
@@ -241,3 +248,56 @@ export const getInitializeAccountTransactionWWithoutAnchor = async (publicKey: P
       return null;
     }
   };
+
+  //
+
+  export const getTxUri = (_txId: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:getTxUri: `
+    try {
+      // console.debug(`${LOGPREFIX}txId:${_txId}`);
+      if (_txId) {
+        const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_txId}${process.env.NEXT_PUBLIC_EXPLORER_URL_TRANSACTIONS}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+        // console.debug(`${LOGPREFIX}url:${url}`);
+        return url;
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}error:${error}`);
+    }
+    return null;
+  }
+
+  //
+
+  export const getAddressUri = (_address: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:getAddressUri: `
+    try {
+      // console.debug(`${LOGPREFIX}txId:${_address}`);
+      if (_address) {
+        const url = `${process.env.NEXT_PUBLIC_EXPLORER_URL_BASE}${process.env.NEXT_PUBLIC_EXPLORER_URL_ADDRESS}${_address}${process.env.NEXT_PUBLIC_EXPLORER_URL_CLUSTER}`;
+        // console.debug(`${LOGPREFIX}url:${url}`);
+        return url;
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}error:${error}`);
+    }
+    // console.debug(`${LOGPREFIX}NULL`);
+    return null;
+  }
+
+  //
+
+  export const shortenAddress = (_address: string): string | null => {
+    const LOGPREFIX = `${FILEPATH}:shortenAddress: `
+    try {
+      // console.debug(`${LOGPREFIX}address:${_address}`);
+      if (_address) {
+        const shortAddress = `${_address.substring(0, 4)}...${_address.substring(_address.length - 4)}`;
+        // console.debug(`${LOGPREFIX}shortAddress:${shortAddress}`);
+        return shortAddress;
+      }
+    } catch (error) {
+      console.error(`${LOGPREFIX}error:${error}`);
+    }
+    // console.debug(`${LOGPREFIX}NULL`);
+    return null;
+  }
