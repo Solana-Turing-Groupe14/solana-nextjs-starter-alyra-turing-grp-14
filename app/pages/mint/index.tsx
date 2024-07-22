@@ -453,6 +453,7 @@ const MintTestPage: NextPage = () => {
                 bgClip="text"
                 fontSize="4xl"
                 fontWeight="extrabold"
+                className='text-center'
               >
                 {itemsRemaining}
               </Text>
