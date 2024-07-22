@@ -419,7 +419,7 @@ const MintTestPage: NextPage = (/* props */) => {
 
   useEffect(() => {
     // const LOGPREFIX = `${FILEPATH}:useEffect: `
-    let timeout = null
+    let timeout: NodeJS.Timeout|null = null
     const init = async () => {
       // console.log(`${LOGPREFIX}queryCandyMachineAddress=${queryCandyMachineAddress}`)
       if (!candyMachineAddress && queryCandyMachineAddress) {

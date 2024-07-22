@@ -143,7 +143,7 @@ export default function ToolsPage() {
   useEffect(() => {
     const LOGPREFIX = `${FILEPATH}:useEffect: `
     try {
-      let timeout = null
+      let timeout: NodeJS.Timeout|null = null
       const init = async () => {
         // console.debug(`${LOGPREFIX}queryCandyMachineAddress`, queryCandyMachineAddress)
         // console.debug(`${LOGPREFIX}connectedWalletPublicKey=${connectedWalletPublicKey}`)
