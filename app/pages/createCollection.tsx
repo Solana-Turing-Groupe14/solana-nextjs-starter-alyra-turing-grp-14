@@ -21,7 +21,6 @@ import {
   createCmNftCollection_fromWallet as mplxH_createCmNftCollection_fromWallet,
   createNftCollection_fromWallet as mplxH_createNftCollection_fromWallet,
   finalizeCmNftCollectionConfig_fromWallet as mplxH_finalizeCmNftCollectionConfig_fromWallet,
-  setIdentityPayer_WalletAdapter,
 } from "@helpers/mplx.helper.dynamic"
 import { getUmiStorage } from '@helpers/mplx.storage.helper'
 import { getAddressUri } from "@helpers/solana.helper"
@@ -37,6 +36,7 @@ import {
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
+import { setIdentityPayer_WalletAdapter } from '@helpers/mplx.helper.common.dynamic'
 
 /* eslint-disable react/no-children-prop */
 
