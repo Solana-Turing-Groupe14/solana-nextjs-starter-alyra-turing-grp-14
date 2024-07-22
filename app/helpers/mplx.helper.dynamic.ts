@@ -3,7 +3,7 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { PublicKey as soljsweb3PublicKey } from '@solana/web3.js'
 import { AIRDROP_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT, NFT_COUNT_MAX } from "@consts/commons";
-import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH } from "@consts/mtplx";
+import { MINIMUM_CREATOR_BALANCE, MINIMUM_CREATOR_BALANCE_SOL, NFT_NAME_PREFIX_MAX_LENGTH, URI_MAX_LENGTH } from "@consts/mtplx";
 import { RPC_URL } from '@helpers/solana.helper';
 import {
   MPL_F_addConfigLines,
@@ -633,7 +633,7 @@ export async function createCmNftCollection(
         nameLength: 0, // Everything is a prefix
         prefixUri: _metadataPrefixUri,
         // uriLength: _metadataPrefixUri.length,
-        uriLength: 100, // !!!!!!!!!!! TODO
+        uriLength: URI_MAX_LENGTH,
         // symbol: 'NFT',
         isSequential: false,
       });
