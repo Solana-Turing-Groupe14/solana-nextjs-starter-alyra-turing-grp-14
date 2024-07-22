@@ -810,7 +810,9 @@ export async function finalizeCmNftCollectionConfig(
 
       try {
         const configLines = [];
+        console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
         if (nameUriArray && nameUriArray.length > 0) {
+          // console.debug(`${LOGPREFIX} nameUriArray NOT empty`)
           for (const nameUri of nameUriArray) {
             configLines.push(
               {
@@ -819,6 +821,7 @@ export async function finalizeCmNftCollectionConfig(
               })
           } // for
         } else {
+          console.debug(`${LOGPREFIX} nameUriArray EMPTY`)
           for (let i = 1; i <= _itemsCount; i++) {
             configLines.push(
               {

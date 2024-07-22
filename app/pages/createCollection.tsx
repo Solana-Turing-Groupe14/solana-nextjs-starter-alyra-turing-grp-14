@@ -483,13 +483,14 @@ export default function CreateCollectionPage() {
   // ----------------------------
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const generateJsonNftMetadata = (_collectionMetadataJson:any, _nftCount: number):mplhelp_T_NameUriArray => {
+  const generateJsonNftMetadata = (_collectionMetadataJson:any, _nftCount: number):unknown[] => {
     const LOGPREFIX = `${FILEPATH}:generateJsonNftMetadata: `
-    const nameUriArray: mplhelp_T_NameUriArray = []
+    // const nameUriArray: mplhelp_T_NameUriArray = []
+    const metadataJsonArray: unknown[] = []
     try {
       if (!_collectionMetadataJson) {
         console.error(`${LOGPREFIX}No collection metadata provided`)
-        return nameUriArray;
+        return metadataJsonArray;
       }
       for (let i = 0; i < _nftCount; i++) {
         const nftMetadataJson = {
@@ -507,12 +508,13 @@ export default function CreateCollectionPage() {
             family: collectionSymbol,
           },
         };
-        nameUriArray.push({ name: nftMetadataJson.name, uri: '' })
+        // nameUriArray.push({ name: nftMetadataJson.name, uri: '' })
+        metadataJsonArray.push(nftMetadataJson)
       } // for
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }
-    return nameUriArray;
+    return metadataJsonArray;
   } // generateJsonNftMetadata
 
   // ----------------------------
@@ -590,9 +592,9 @@ export default function CreateCollectionPage() {
         position: 'top-right',
       })
 
-      const nameUriArray = generateJsonNftMetadata(collectionMetadataJson, nftCount)
-      if (!nameUriArray || nameUriArray.length !== nftCount) {
-        console.error(`${LOGPREFIX}No nameUriArray`)
+      const jsonMetadataArray = generateJsonNftMetadata(collectionMetadataJson, nftCount)
+      if (!jsonMetadataArray || jsonMetadataArray.length !== nftCount) {
+        console.error(`${LOGPREFIX}Missing Json metadata`)
         toast({
           title: 'NFT metadata generation failed',
           description: "Invalid content",
@@ -605,11 +607,15 @@ export default function CreateCollectionPage() {
         return
       }
 
+
+      const nameUriArray: mplhelp_T_NameUriArray = []
       // Upload each NFT metadata
-      for (let i = 0; i < nameUriArray.length; i++) {
-        const nameUri = nameUriArray[i]
-        const nftJsonUri = await uploadJson(umiStorage, nameUri)
-        nameUriArray[i].uri = nftJsonUri
+      for (let i = 0; i < jsonMetadataArray.length; i++) {
+        // const nameUri = nameUriArray[i]
+        console.debug(`${LOGPREFIX}NFT #${i + 1} metadata`, jsonMetadataArray[i]);
+        const nftJsonUri = await uploadJson(umiStorage, jsonMetadataArray[i])
+        // nameUriArray[i].uri = nftJsonUri
+        nameUriArray.push({ name: `${nftNamePrefix} #${i + 1}`, uri: nftJsonUri })
         console.debug(`${LOGPREFIX}NFT #${i + 1} name : ${nameUriArray[i].name} metadata URI: ${nameUriArray[i].uri}` );
       }
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
