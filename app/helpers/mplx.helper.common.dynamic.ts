@@ -21,7 +21,7 @@ export const getMplKeypair_fromEnv = (
   ): MPL_Keypair | null => {
   const LOGPREFIX = `${filePath}:getMplKeypair_fromEnv: `
   try {
-    console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
+    // console.debug(`${LOGPREFIX} signerName = '${signerName}'`)
     if (!signerName) {
       console.warn(`${LOGPREFIX} signerName not provided`)
       console.warn(`${LOGPREFIX} using "MINT_APP_DEFAULT_KEYPAIR"`)
@@ -178,7 +178,7 @@ Promise<boolean>
       return false
     }
     const balance:MPL_T_SolAmount = await _umi.rpc.getBalance(publicKey);
-    console.debug(`${LOGPREFIX} balance `, balance);
+    // console.debug(`${LOGPREFIX} balance `, balance);
     if (balance.basisPoints < minAmount.basisPoints) {
       console.warn(`${LOGPREFIX}❌ Insufficient balance : ${Number(balance.basisPoints) / (10 ** balance.decimals)} SOL`);
       return false

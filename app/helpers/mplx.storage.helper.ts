@@ -64,7 +64,7 @@ export const uploadSingleFile = async(_umiStorage:MPL_T_Umi, _file:File): Promis
   const fileUris = await _umiStorage.uploader.upload([genericF], {
     // signal: myAbortSignal,
     onProgress: (percent: number) => {
-      console.log(`${percent * 100}% uploaded...`);
+      console.debug(`${percent * 100}% uploaded...`);
     },
   })
   const fileUri = fileUris[0]
