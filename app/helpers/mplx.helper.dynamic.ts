@@ -632,7 +632,8 @@ export async function createCmNftCollection(
         // nameLength: nftNameMaxLength,
         nameLength: 0, // Everything is a prefix
         prefixUri: _metadataPrefixUri,
-        uriLength: _metadataPrefixUri.length,
+        // uriLength: _metadataPrefixUri.length,
+        uriLength: 100, // !!!!!!!!!!! TODO
         // symbol: 'NFT',
         isSequential: false,
       });
@@ -810,7 +811,6 @@ export async function finalizeCmNftCollectionConfig(
 
       try {
         const configLines = [];
-        console.debug(`${LOGPREFIX} nameUriArray:`, nameUriArray)
         if (nameUriArray && nameUriArray.length > 0) {
           // console.debug(`${LOGPREFIX} nameUriArray NOT empty`)
           for (const nameUri of nameUriArray) {
@@ -821,7 +821,7 @@ export async function finalizeCmNftCollectionConfig(
               })
           } // for
         } else {
-          console.debug(`${LOGPREFIX} nameUriArray EMPTY`)
+          // console.debug(`${LOGPREFIX} nameUriArray EMPTY`)
           for (let i = 1; i <= _itemsCount; i++) {
             configLines.push(
               {
@@ -838,6 +838,7 @@ export async function finalizeCmNftCollectionConfig(
           candyMachine: _candyMachineSigner.publicKey,
           index: 0, // always start at 0
           configLines: configLines,
+
         }).sendAndConfirm(_umi, MPL_TX_BUILDR_OPTIONS);
         console.log(`${LOGPREFIX} ✅ Items added to the Candy Machine: ${_candyMachineSigner.publicKey.toString()}`)
       } catch (error) {
@@ -928,7 +929,7 @@ export async function mintNftFromCm_fromWallet({
   walletAdapter: _walletAdapter,
   candyMachineAddress: _candyMachineAddress,
   }: mplhelp_T_MintNftCm_fromWallet_Input): Promise<mplhelp_T_MintNftCMResult> {
-  const LOGPREFIX = `${filePath}:mintNftFromCM: `
+  const LOGPREFIX = `${filePath}:mintNftFromCm_fromWallet: `
   try {
     const umi = mplx_umi
     setIdentityPayer_WalletAdapter(_walletAdapter, umi, true)
