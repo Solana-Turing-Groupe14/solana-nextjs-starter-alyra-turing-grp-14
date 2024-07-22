@@ -489,12 +489,12 @@ const MintTestPage: NextPage = (/* props */) => {
 
 
               <Box
-                className='mt-3 flex p-1 overflow-hidden'
+                className='mt-3 flex overflow-hidden p-1'
                 border={'1px solid '}
                 borderRadius={'md'}
                 display={ (candyMachineAddress && candyMachineMintQrUri.length ? 'flex' : 'none') }
               >
-                <Text className='pr-2 flex'>
+                <Text className='flex pr-2'>
                   QR Mint page Url:
                 </Text>
                 <Link color={linkColor} isExternal href={candyMachineMintQrUri} className='flex'>

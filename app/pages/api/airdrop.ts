@@ -10,7 +10,7 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
     // console.debug(`app/pages/api/airdrop.ts: req.method=${ req.method }`)
     // Accept only POST request
     if (req.method !== 'POST') {
-      // Handle any other HTTP method
+      // Reject any other HTTP method
       // console.log('req.body', req.body)
       res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
     }
@@ -21,8 +21,7 @@ export default async function airdropHandler(req: NextApiRequest, res: NextApiRe
       amount: _amount
     } = req.body
     // console.debug(`app/pages/api/airdrop.ts: publicKey = ${ _publicKey }`)
-
-    // throw new Error('airdrop failed') // test error handling
+    // console.debug(`app/pages/api/airdrop.ts: amount = ${ _amount }`)
 
     let airdropAmount = AIRDROP_DEFAULT_AMOUNT
 

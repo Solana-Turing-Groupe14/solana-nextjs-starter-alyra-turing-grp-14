@@ -226,7 +226,6 @@ export default function CreateCollectionPage() {
   ) => {
     const uriCollection = getAddressUri(collectionResponse.collectionAddress)
     const uriCandyMachine = getAddressUri(finalizeResponse.candyMachineAddress)
-  
     toast({
       duration: SUCCESS_DELAY,
       position: 'top-right',

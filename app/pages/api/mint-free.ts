@@ -9,7 +9,7 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
     // console.debug(`app/pages/api/mint-test.ts: req.method=${ req.method }`)
     // Accept only POST request
     if (req.method !== 'POST') {
-      // Handle any other HTTP method
+      // Reject any other HTTP method
       // console.log('req.body', req.body)
       res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
     }

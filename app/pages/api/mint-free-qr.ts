@@ -4,23 +4,23 @@ import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromApp_Input } from
 
 const LOGPREFIX = `app/pages/api/mint-free.ts:`
 
-export default async function mintHandler(req: NextApiRequest, res: NextApiResponse<mintFromCmFromAppResponseData>) {
+export default async function mintFreeQrHandler(req: NextApiRequest, res: NextApiResponse<mintFromCmFromAppResponseData>) {
   try {
     // console.debug(`app/pages/api/mint-test.ts: req.method=${ req.method }`)
-    // Accept only POST request
+    // Accept only GET request
     if (req.method !== 'GET') {
-      // Handle any other HTTP method
+      // Reject any other HTTP method
       // console.log('req.body', req.body)
-      res.status(500).json( { success: false, error: `POST request expected (received ${req.method})`} )
+      res.status(500).json( { success: false, error: `GET request expected (received ${req.method})`} )
     }
     // Process GET request
-    // Handle any other HTTP method
     // console.debug('req.body', req.body)
     const { 
       candyMachineAddress: _candyMachineAddress,
       minterAddress: _minterAddress,
     } = req.body
-    // console.debug(`${LOGPREFIX} _candyMachineAddress = `, _candyMachineAddress)
+    console.debug(`${LOGPREFIX} _candyMachineAddress = `, _candyMachineAddress)
+    console.debug(`${LOGPREFIX} _minterAddress = `, _minterAddress)
 
     if (!_candyMachineAddress) {
       res.status(200).json({ success: false, error: 'candyMachineAddress is required' })
@@ -54,4 +54,4 @@ export default async function mintHandler(req: NextApiRequest, res: NextApiRespo
     res.status(500).json(response)
   } // catch
 
-} // mintHandler
+} // mintFreeQrHandler
