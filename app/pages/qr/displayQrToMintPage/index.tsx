@@ -169,7 +169,7 @@ export default function ToolsPage() {
     } // if
   } // init
     init()
-  }, [candyMachineAddress, queryCandyMachineAddress])
+  }, [candyMachineAddress, getDirectMintQrPageUri, getMintPageUri, queryCandyMachineAddress])
 
   // ----------------------------
 
@@ -192,7 +192,7 @@ export default function ToolsPage() {
 
           <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
             <Center w='100%' h='100%' mb={6}>
-              <QrCodeLucid className="sm:size-12 md:size-24 xl:size-32 transition-all delay-500" />
+              <QrCodeLucid className="transition-all delay-500 sm:size-12 md:size-24 xl:size-32" />
             </Center>
 
             <form onSubmit={handleDefaultSubmit} className="mt-6">
@@ -262,18 +262,18 @@ export default function ToolsPage() {
       </motion.div>
 
       <Box
-        className='mt-3 p-1 justify-center'
+        className='mt-3 justify-center p-1'
         border={'1px solid '}
         borderRadius={'md'}
         display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
       >
       <Box
-            className='mt-1 p-1 overflow-hidden'
+            className='mt-1 overflow-hidden p-1'
             border={'none '}
             borderRadius={'md'}
             display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
           >
-            <Text className='pr-2 flex'>
+            <Text className='flex pr-2'>
               Mint page:
             </Text>
             <Link color={linkColor} isExternal href={candyMachineMintPageUri} className='flex'>
@@ -289,18 +289,18 @@ export default function ToolsPage() {
       </Box>
 
       <Box
-        className='mt-3 p-1 justify-center'
+        className='mt-3 justify-center p-1'
         border={'1px solid '}
         borderRadius={'md'}
         display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
       >
       <Box
-            className='mt-1 p-1 overflow-hidden'
+            className='mt-1 overflow-hidden p-1'
             border={'none '}
             borderRadius={'md'}
             display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
           >
-            <Text className='pr-2 flex'>
+            <Text className='flex pr-2'>
               QR Direct Mint:
             </Text>
             <Link color={linkColor} isExternal href={candyMachineDirectMintQr} className='flex'>
