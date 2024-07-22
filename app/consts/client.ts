@@ -25,7 +25,7 @@ import {
  const DIRECT_MINT_FROM_QR_URI_PATH = '/directMintFromQr'
 
 // Page which actually mints the NFT
-const API_MINT_FREE_PATH = '/api/mint-free-qr.ts'
+const API_MINT_FREE_PATH = '/api/mint-free-qr'
 
 export {
   AIRDROP_DEFAULT_AMOUNT,

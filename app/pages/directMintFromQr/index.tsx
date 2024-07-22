@@ -1,31 +1,29 @@
 import {
   Box,
+  CloseButton,
   Container,
-  // Box, Center, Container, FormControl, FormLabel, Heading,
-  // Input, InputGroup, Link, Text, useColorModeValue, VStack
+  Link,
+  Text,
   useToast,
 } from "@chakra-ui/react"
-// import { useMediaQuery } from "@chakra-ui/react"
-// import { useWallet } from "@solana/wallet-adapter-react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
-// import { ExternalLinkIcon, QrCode,
-//   // ExternalLinkIcon
-// } from "lucide-react"
 import { useRouter } from "next/router"
-import { useEffect, useMemo } from "react"
-// import { QRCode } from 'react-qrcode-logo';
-import { API_MINT_FREE_PATH, DIRECT_MINT_FROM_QR_URI_PATH, WARN_DELAY } from '@consts/client'
-// import { usePathname } from "next/navigation"
-import { HOST, PORT } from "@consts/host"
-// import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
+import { useCallback, useEffect, useMemo } from "react"
+import { API_MINT_FREE_PATH, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { mintFromCmFromAppResponseData } from "types"
+import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
+import { CheckCircleIcon } from "@chakra-ui/icons"
+import { ExternalLinkIcon } from "lucide-react"
 
-const FILEPATH = 'app/pages/directMintFromQr.tsx'
+const FILEPATH = 'app/pages/directMintFromQr/index.tsx'
 
 export default function ToolsPage() {
 
   // const DEFAULT_CANDY_MACHINE_ADDRESS = ''
   // const DEFAULT_URL = ''
+
+  const INIT_DELAY = 10_000
 
   const router = useRouter()
   const { query } = router;
@@ -56,9 +54,8 @@ export default function ToolsPage() {
 
    // ----------------------------
 
-   const warnIsNotConnected = () => {
+   const warnIsNotConnected = useCallback(() => {
     console.warn(`${FILEPATH}:  Wallet not connected`)
-    // throw new WalletNotConnectedError()
     toast({
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
@@ -67,7 +64,7 @@ export default function ToolsPage() {
       isClosable: true,
       position: 'top-right',
     })
-  }
+  }, [toast]) // warnIsNotConnected
 
   // --------------
 
@@ -78,11 +75,13 @@ export default function ToolsPage() {
 
   // ----------------------------
 
-  const mintToConnectedWallet = async (
+  const mintToConnectedWallet = useCallback( async (
     candyMachineAddress: string,
     address: string,
   ) => {
     const LOGPREFIX = `${FILEPATH}:mintToConnectedWallet: `
+    console.debug(`${LOGPREFIX}candyMachineAddress=`, candyMachineAddress)
+    console.debug(`${LOGPREFIX}address=`, address)
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -92,30 +91,73 @@ export default function ToolsPage() {
         throw new Error('Address is required')
       }
       const res = await fetch(API_MINT_FREE_PATH, {
-        method: 'get', // GET !
+        method: 'POST', // GET !
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          publicKey: address,
+          minterAddress: address,
           candyMachineAddress: candyMachineAddress,
         })
       });
-      console.debug(`${LOGPREFIX}res=`, res);
+      console.debug(`${LOGPREFIX}response=`, res);
       console.dir(res)
-      // const response: AirdropResponseData = await res.json();
-      // console.debug('app/pages/mintTest.tsx:aidrop: response', response);
+      const mintResponse: mintFromCmFromAppResponseData = await res.json();
+      console.debug('app/pages/mintTest.tsx:aidrop: mintResponse', mintResponse);
 
-      // if (response && response.success && response.amount) {
-      // } else {
-      //   const error = (response && response.success === false ? response.error : 'Unknown error')
-      // }
+      if (mintResponse && mintResponse.success && mintResponse.mintAddress) {
+        console.debug(`${LOGPREFIX}mintAddress: `, mintResponse.mintAddress)
+        const mintAddressUri = getAddressUri(mintResponse.mintAddress)
+        const shortenedAddress = shortenAddress(mintResponse.mintAddress)
+        const nftName = undefined
+        toast({
+          duration: SUCCESS_DELAY,
+          position: 'top-right',
+          render: ({ onClose }) => (
+            <Box color='black' p={3} bg='green.200' borderRadius='lg'>
+              <div className='flex justify-between'>
+                <div className='flex '>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >Mint done</Text>
+                </div>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='px-2 py-1'>
+                {mintResponse.mintAddress}
+              </div>
+
+              <div className='m-2'>
+                {mintAddressUri &&
+                  <Link href={mintAddressUri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      {nftName ? nftName : shortenedAddress}
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
+
+            </Box>
+          ),
+        })
+      } else {
+        const error = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
+        console.error(`${LOGPREFIX}error: `, error)
+        toast({
+          title: 'Error minting.',
+          description: error,
+          status: 'error',
+          duration: WARN_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+      }
 
     } catch (error) {
       console.error(error)
     } finally {
     }
-  } // mintToConnectedWallet
+  } , [isConnected, toast, warnIsNotConnected]) // mintToConnectedWallet
 
   // ----------------------------
 
@@ -125,18 +167,18 @@ export default function ToolsPage() {
 
   // ----------------------------
 
-  const getMintUri = (_candyMachineAddress: string) => {
-    const LOGPREFIX = `${FILEPATH}:getMintUri: `
-    try {
-      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
-      const mintPath = HOST + (PORT?`:${PORT}`:'') + DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
-      return mintPath
-    } catch (error) {
-      console.error(`${LOGPREFIX}error: `, error)
-    }
-    return ''
-  } // getMintUri
+  // const getMintUri = (_candyMachineAddress: string) => {
+  //   const LOGPREFIX = `${FILEPATH}:getMintUri: `
+  //   try {
+  //     // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
+  //     const mintPath = HOST + (PORT?`:${PORT}`:'') + DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
+  //     // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
+  //     return mintPath
+  //   } catch (error) {
+  //     console.error(`${LOGPREFIX}error: `, error)
+  //   }
+  //   return ''
+  // } // getMintUri
 
   // ----------------------------
 
@@ -169,18 +211,57 @@ export default function ToolsPage() {
   // ----------------------------
 
   useEffect(() => {
+    const LOGPREFIX = `${FILEPATH}:useEffect: `
+    let timeout = null
     const init = async () => {
-      console.log(`${FILEPATH} useEffect: queryCandyMachineAddress`, queryCandyMachineAddress)
-      console.warn(`${FILEPATH} useEffect: TODO: MINT`)
+      // console.debug(`${LOGPREFIX}queryCandyMachineAddress`, queryCandyMachineAddress)
+      // console.debug(`${LOGPREFIX}connectedWalletPublicKey=${connectedWalletPublicKey}`)
+
+      if (!connectedWalletPublicKey) {
+        warnIsNotConnected(); return
+      }
+      if (!queryCandyMachineAddress) {
+        console.warn(`${LOGPREFIX}queryCandyMachineAddress is required`)
+        toast({
+          title: 'candyMachineAddress is required.',
+          description: "Please provide a candyMachineAddress.",
+          status: 'warning',
+          duration: WARN_DELAY,
+          isClosable: true,
+          position: 'top-right',
+        })
+        return
+      }
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      // console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      console.debug(`${LOGPREFIX}TODO: TRIGGER MINT`)
+      mintToConnectedWallet(queryCandyMachineAddress.toString(), connectedWalletPublicKey.toString())
     //   if (!candyMachineAddress && queryCandyMachineAddress) {
     //     setCandyMachineAddress(queryCandyMachineAddress.toString())
     //     setUrl(getMintUri(queryCandyMachineAddress.toString()))
     // } // if
   } // init
-    init()
-  }, [
-    // candyMachineAddress,
-     queryCandyMachineAddress])
+
+    // wait 10 seconds
+    timeout = setTimeout(() => {
+      init()
+    }, INIT_DELAY)
+    // init()
+
+    return () => {
+      // cleanup
+      if (timeout) {
+        // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
+        clearTimeout(timeout)
+      }
+    }
+
+  }, [connectedWalletPublicKey, mintToConnectedWallet, queryCandyMachineAddress, toast, warnIsNotConnected])
 
   // ----------------------------
 
@@ -198,7 +279,7 @@ export default function ToolsPage() {
       >
 
         <Box>Direct Mint from QR</Box>
-        <Box>TODO: Implement</Box>
+        <Box>TODO: display or redirect to Mint result</Box>
 
       </motion.div>
 
