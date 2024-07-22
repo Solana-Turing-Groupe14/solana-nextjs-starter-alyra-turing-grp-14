@@ -80,6 +80,10 @@ export default function CreateCollectionPage() {
   const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
   const toastTestColor = useColorModeValue("white", "black")
 
+  const umiStorage = useMemo(() => {
+    return getUmiStorage()
+  }, [])
+
   const isConnected = useMemo(() => {
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey])
@@ -563,7 +567,6 @@ export default function CreateCollectionPage() {
       };
 
       console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
-      const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       const collectionMetadataJsonUri = await uploadJson(umiStorage, collectionMetadataJson)
       // console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
@@ -662,7 +665,6 @@ export default function CreateCollectionPage() {
         return
       }
       // Image Upload
-      const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       const fileUri = await uploadSingleFile( umiStorage, image)
       // console.debug(`${LOGPREFIX}fileUri`, fileUri);
