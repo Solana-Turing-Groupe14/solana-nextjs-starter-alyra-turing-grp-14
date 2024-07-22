@@ -1,21 +1,16 @@
 import {
   Box, Center, Container, FormControl, FormLabel,
   Heading, Input, InputGroup, Link, Text, useColorModeValue, VStack
-  // , useToast
 } from "@chakra-ui/react"
-// import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, QrCode as QrCodeLucid,
-  // ExternalLinkIcon
 } from "lucide-react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { QrCode } from "@components/ui/qrCode"
 import { DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH, MINT_URI_PATH } from '@consts/client'
 import { ADDRESS_LENGTH } from '@consts/commons'
-// import { usePathname } from "next/navigation"
 import { HOST, PORT } from "@consts/host"
-// import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 
 const FILEPATH = 'app/pages/qr/displayQrToMintPage/index.tsx'
 
@@ -26,41 +21,20 @@ export default function ToolsPage() {
 
   const router = useRouter()
   const { query } = router;
-  console.log(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
-
-  // const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
-
   const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
-
   const [urlToMintPage, setUrlToMintPage] = useState<string>(DEFAULT_URL)
   const [urlToDirectMintQrPage, setUrlToDirectMintQrPage] = useState<string>(DEFAULT_URL)
 
-
-  // const pathname = usePathname()
-  // console.dir(pathname)
-
-  // const isConnected = useMemo(() => {
-  //   // console.debug('app/pages/mintTest.tsx:isConnected: ', connected && publicKey)
-  //   return connected && connectedWalletPublicKey
-  // }, [connected, connectedWalletPublicKey]);
-
-  // const toast = useToast()
-  // const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
-  // const toastTestColor = useColorModeValue("white", "black")
-
   const bgColor = useColorModeValue("gray.50", "gray.800")
   const cardBgColor = useColorModeValue("white", "gray.700")
-  // const buttonTextColor = useColorModeValue("gray.800", "white")
 
   // ----------------------------
 
   const getMintPageUri = useCallback((_candyMachineAddress: string) => {
     const LOGPREFIX = `${FILEPATH}:getMintPageUri: `
     try {
-      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
       const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
       return mintPath
     } catch (error) {
       console.error(`${LOGPREFIX}error: `, error)
@@ -73,9 +47,7 @@ export default function ToolsPage() {
   const getDirectMintQrPageUri = useCallback((_candyMachineAddress: string) => {
     const LOGPREFIX = `${FILEPATH}:getMintPageUri: `
     try {
-      // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
       const mintPath = HOST + (PORT?`:${PORT}`:'') + DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-      // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
       return mintPath
     } catch (error) {
       console.error(`${LOGPREFIX}error: `, error)
@@ -93,39 +65,11 @@ export default function ToolsPage() {
     return getDirectMintQrPageUri(candyMachineAddress)
   }, [candyMachineAddress, getDirectMintQrPageUri])
 
-  // const warnIsNotConnected = () => {
-  //   console.warn('app/pages/mintTest.tsx: Wallet not connected')
-  //   toast({
-  //     title: 'Wallet not connected.',
-  //     description: "Please connect to an account.",
-  //     status: 'warning',
-  //     duration: WARN_DELAY,
-  //     isClosable: true,
-  //     position: 'top-right',
-  //   })
-  // }
-
   // ----------------------------
 
   const handleDefaultSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
   } // handleDefaultSubmit
-
-
-  // ----------------------------
-
-  // const getDirectMintQrUri = (_candyMachineAddress: string) => {
-  //   const LOGPREFIX = `${FILEPATH}:getDirectMintQrUri: `
-  //   try {
-  //     // console.debug(`${LOGPREFIX}candyMachineAddress: `, _candyMachineAddress)
-  //     const mintPath = HOST + (PORT?`:${PORT}`:'') + DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH + '?candyMachineAddress=' + _candyMachineAddress
-  //     // console.debug(`${LOGPREFIX}mintPath: `, mintPath)
-  //     return mintPath
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  //   return ''
-  // } // getDirectMintQrUri
 
   // ----------------------------
 
@@ -133,10 +77,8 @@ export default function ToolsPage() {
     const LOGPREFIX = `${FILEPATH}:handleChangeCandyMachineAddress: `
     try {
       const newCandyMachineAddress = event.target.value
-      // console.debug(`${LOGPREFIX}newCandyMachineAddress=`, newCandyMachineAddress)
       setCandyMachineAddress(newCandyMachineAddress)
       const mintPagePath = getMintPageUri(newCandyMachineAddress)
-      // const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + event.target.value
       setUrlToMintPage(mintPagePath)
       const directMintQrPagePath =  getDirectMintQrPageUri(newCandyMachineAddress)
       setUrlToDirectMintQrPage(directMintQrPagePath)
@@ -147,21 +89,8 @@ export default function ToolsPage() {
 
   // ----------------------------
 
-  // const handleChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const LOGPREFIX = `${FILEPATH}:handleChangeUrl: `
-  //   try {
-  //     // console.debug(`${LOGPREFIX}event.target.value: `, event.target.value)
-  //     // setUrlToMintPage(event.target.value)
-  //   } catch (error) {
-  //     console.error(`${LOGPREFIX}error: `, error)
-  //   }
-  // } // handleChangeUrl
-
-  // ----------------------------
-
   useEffect(() => {
     const init = async () => {
-      console.log('useEffect: queryCandyMachineAddress', queryCandyMachineAddress)
       if (!candyMachineAddress && queryCandyMachineAddress) {
         setCandyMachineAddress(queryCandyMachineAddress.toString())
         setUrlToMintPage(getMintPageUri(queryCandyMachineAddress.toString()))
@@ -235,24 +164,7 @@ export default function ToolsPage() {
                     bg={bgColor}
                   />
                 </InputGroup>
-{/* 
-                <Box
-                  className='mt-3 p-1 overflow-hidden'
-                  border={'1px solid '}
-                  borderRadius={'md'}
-                  display={ (candyMachineAddress && candyMachineMintUri.length ? '' : 'none') }
-                >
-                  <Text className='pr-2 flex'>
-                    Mint page Url:
-                  </Text>
-                  <Link color={linkColor} isExternal href={candyMachineMintUri} className='flex'>
-                    <Text className='pr-2' color={textColor}>
-                      <ExternalLinkIcon size='16px' />
-                    </Text>
-                      {candyMachineAddress}
-                  </Link>
-                </Box>
- */}
+
               </FormControl>
             </form>
 

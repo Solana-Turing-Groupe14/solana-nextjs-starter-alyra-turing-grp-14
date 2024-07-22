@@ -18,15 +18,13 @@ import { ExternalLinkIcon } from "lucide-react"
 
 const FILEPATH = 'app/pages/directMintFromQr/index.tsx'
 
-export default function ToolsPage() {
+export default function DirectMintFromQrPage() {
 
   const INIT_DELAY = 5_000
 
   const router = useRouter()
   const { query } = router;
-  // console.debug(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
-  // console.debug(`${FILEPATH}: queryCandyMachineAddress`, queryCandyMachineAddress)
   const { connected, publicKey: connectedWalletPublicKey } = useWallet()
 
   const toast = useToast()
@@ -48,7 +46,6 @@ export default function ToolsPage() {
   // --------------
 
   const isConnected = useMemo(() => {
-    // console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
@@ -59,8 +56,6 @@ export default function ToolsPage() {
     address: string,
   ) => {
     const LOGPREFIX = `${FILEPATH}:mintToConnectedWallet: `
-    // console.debug(`${LOGPREFIX}candyMachineAddress=`, candyMachineAddress)
-    // console.debug(`${LOGPREFIX}address=`, address)
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -145,8 +140,6 @@ export default function ToolsPage() {
     try {
       let timeout: NodeJS.Timeout|null = null
       const init = async () => {
-        // console.debug(`${LOGPREFIX}queryCandyMachineAddress`, queryCandyMachineAddress)
-        // console.debug(`${LOGPREFIX}connectedWalletPublicKey=${connectedWalletPublicKey}`)
         if (!connectedWalletPublicKey) {
           warnIsNotConnected(); return
         }
@@ -164,16 +157,13 @@ export default function ToolsPage() {
         }
         mintToConnectedWallet(queryCandyMachineAddress.toString(), connectedWalletPublicKey.toString())
         } // init
-
       // wait some time before init to allow wallet connection and params to be set
       timeout = setTimeout(() => {
         init()
       }, INIT_DELAY)
 
       return () => {
-        // cleanup
         if (timeout) {
-          // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
           clearTimeout(timeout)
         }
       }

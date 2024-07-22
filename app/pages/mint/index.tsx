@@ -18,7 +18,7 @@ import { HOST, PORT } from '@consts/host'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
-const MintTestPage: NextPage = (/* props */) => {
+const MintTestPage: NextPage = () => {
 
   const INIT_DELAY = 1_000
   const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
@@ -26,7 +26,6 @@ const MintTestPage: NextPage = (/* props */) => {
 
   const router = useRouter()
   const { query } = router;
-  // console.log(`${FILEPATH}: query`, query)
   const { candyMachineAddress: queryCandyMachineAddress } = query
 
   const defaultCandyMachineAddress = ``
@@ -43,8 +42,6 @@ const MintTestPage: NextPage = (/* props */) => {
   const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
-    // const LOGPREFIX = `${FILEPATH}:isConnected: `
-    // console.debug(`${LOGPREFIX} ${connected && connectedWalletPublicKey}`)
     return connected && connectedWalletPublicKey
   }, [connected, connectedWalletPublicKey]);
 
@@ -66,10 +63,7 @@ const MintTestPage: NextPage = (/* props */) => {
       // Load CM
       try {
         const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
-        // console.log(`${LOGPREFIX}candyMachine`, candyMachine)
-        // console.dir(candyMachine)
         const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
-        // console.debug(`${LOGPREFIX}VALID: ${valid}`)
         return valid
       } catch (error) {
         const errorMsg = (error instanceof Error ? error.message : `${error}`)
@@ -99,17 +93,8 @@ const MintTestPage: NextPage = (/* props */) => {
       const newCandyMachineAddress = event.target.value.toString()
       if (newCandyMachineAddress.length > 0) {
         try {
-          // // Check if the address is a valid Candy Machine
-          // const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
-          // // Load CM
-          // const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
-          // const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
-          // console.debug(`${LOGPREFIX}VALID: ${valid}`)
-          // setisValidCandyMachineAddress(true)
-
           const isValid = await checkIsValidCandyMachineAddress(newCandyMachineAddress)
           setisValidCandyMachineAddress(isValid)
-
           if (isValid) {
             toast({
               title: 'Valid Candy Machine address',
@@ -365,10 +350,7 @@ const MintTestPage: NextPage = (/* props */) => {
       // Load CM
       try {
         const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
-        // console.log('getRemainingItems:candyMachine', candyMachine)
-        // console.dir(candyMachine)
         const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
-        // console.log('getRemainingItems:remainingItems', remainingItems)
         return remainingItems
       } catch (error) {
           const errorMsg = (error instanceof Error ? error.message : `${error}`)
@@ -400,14 +382,12 @@ const MintTestPage: NextPage = (/* props */) => {
           updateRemainingItems()
         }
         interval = setInterval(() => {
-          // console.log('useEffect:updateRemainingItems: setInterval')
           updateRemainingItems()
         }, REMAINING_ITEMS_UPDATE_INTERVAL)
       } catch (error) {
         const errorMsg = (error instanceof Error ? error.message : `${error}`)
         console.error(`${FILEPATH}:useEffect:fetchRemainingItems: error: ${errorMsg}`)
       }
-      // cleanup
       return () => {
         if (interval) clearInterval(interval)
       }
@@ -418,19 +398,14 @@ const MintTestPage: NextPage = (/* props */) => {
   // ----------------------------
 
   useEffect(() => {
-    // const LOGPREFIX = `${FILEPATH}:useEffect: `
     let timeout: NodeJS.Timeout|null = null
     const init = async () => {
-      // console.log(`${LOGPREFIX}queryCandyMachineAddress=${queryCandyMachineAddress}`)
       if (!candyMachineAddress && queryCandyMachineAddress) {
         setCandyMachineAddress(queryCandyMachineAddress.toString())
-        // getRemainingItems(queryCandyMachineAddress.toString())
-        // updateRemainingItems()
         if (await checkIsValidCandyMachineAddress(queryCandyMachineAddress.toString())) {
           setisValidCandyMachineAddress(true)
           updateRemainingItems()
         } else {
-          // console.warn('useEffect: queryCandyMachineAddress: Invalid Candy Machine address')
           setisValidCandyMachineAddress(false)
           setItemsRemaining(0)
         }
@@ -443,9 +418,7 @@ const MintTestPage: NextPage = (/* props */) => {
     }, INIT_DELAY)
 
     return () => {
-         // cleanup
          if (timeout) {
-          // console.debug(`${LOGPREFIX}cleanup: clearTimeout`)
           clearTimeout(timeout)
         }
     }
