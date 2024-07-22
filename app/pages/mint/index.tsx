@@ -30,7 +30,6 @@ const MintTestPage: NextPage = (/* props */) => {
   const { candyMachineAddress: queryCandyMachineAddress } = query
 
   const defaultCandyMachineAddress = ``
-  // const defaultCandyMachineAddress = queryCandyMachineAddress ? queryCandyMachineAddress.toString() : ''
 
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingMintPaidByWallet, setIsProcessingMintPaidByWallet] = useState(false)
@@ -53,6 +52,11 @@ const MintTestPage: NextPage = (/* props */) => {
   const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
   const toastTestColor = useColorModeValue("white", "black")
 
+  const umi = useMemo(() => {
+    const umi = getUmi()
+    return umi
+  }, [])
+
   // ------------------------------
 
   const checkIsValidCandyMachineAddress = async (_candyMachineAddress: string): Promise<boolean> => {
@@ -61,11 +65,11 @@ const MintTestPage: NextPage = (/* props */) => {
       const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
       // Load CM
       try {
-        const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
-        console.log(`${LOGPREFIX}candyMachine`, candyMachine)
-        console.dir(candyMachine)
+        const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
+        // console.log(`${LOGPREFIX}candyMachine`, candyMachine)
+        // console.dir(candyMachine)
         const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
-        console.debug(`${LOGPREFIX}VALID: ${valid}`)
+        // console.debug(`${LOGPREFIX}VALID: ${valid}`)
         return valid
       } catch (error) {
         const errorMsg = (error instanceof Error ? error.message : `${error}`)
@@ -98,7 +102,7 @@ const MintTestPage: NextPage = (/* props */) => {
           // // Check if the address is a valid Candy Machine
           // const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(newCandyMachineAddress)
           // // Load CM
-          // const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
+          // const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
           // const valid = (candyMachine.publicKey.__publicKey === candyMachinePublicKey.__publicKey)
           // console.debug(`${LOGPREFIX}VALID: ${valid}`)
           // setisValidCandyMachineAddress(true)
@@ -360,11 +364,11 @@ const MintTestPage: NextPage = (/* props */) => {
       const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
       // Load CM
       try {
-        const candyMachine = await MPL_F_fetchCandyMachine(getUmi(), candyMachinePublicKey)
-        console.log('getRemainingItems:candyMachine', candyMachine)
-        console.dir(candyMachine)
+        const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
+        // console.log('getRemainingItems:candyMachine', candyMachine)
+        // console.dir(candyMachine)
         const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
-        console.log('getRemainingItems:remainingItems', remainingItems)
+        // console.log('getRemainingItems:remainingItems', remainingItems)
         return remainingItems
       } catch (error) {
           const errorMsg = (error instanceof Error ? error.message : `${error}`)
@@ -396,7 +400,7 @@ const MintTestPage: NextPage = (/* props */) => {
           updateRemainingItems()
         }
         interval = setInterval(() => {
-          console.log('useEffect:updateRemainingItems: setInterval')
+          // console.log('useEffect:updateRemainingItems: setInterval')
           updateRemainingItems()
         }, REMAINING_ITEMS_UPDATE_INTERVAL)
       } catch (error) {
