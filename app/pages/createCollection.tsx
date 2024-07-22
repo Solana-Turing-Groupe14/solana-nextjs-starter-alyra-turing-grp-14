@@ -12,7 +12,8 @@ import { motion } from "framer-motion"
 import { ExternalLinkIcon, ExternalLinkIcon as ExternalLinkIconLucid, Image as ImageLucid, ImagePlus, UploadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { MINT_URI_PATH } from '@consts/client'
-import { MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
+import {
+  MINT_FEE_DEFAULT_AMOUNT, MINT_FEE_MAX_AMOUNT, MINT_FEE_MIN_AMOUNT,
   NFT_COLLECTION_SYMBOL_MAXLENGTH, NFT_COUNT_MAX, NFT_NAME_PREFIX_MAXLENGTH
 } from '@consts/commons'
 
@@ -73,7 +74,7 @@ export default function CreateCollectionPage() {
   const [uploadedCollectionUploadedNftsNameUriArray, setUploadedCollectionUploadedNftsNameUriArray] = useState<mplhelp_T_NameUriArray>(defaultUploadedCollectionUploadedNftsNameUriArray)
 
   const [candyMachineAddress, setCandyMachineAddress] = useState<string>(DEFAULT_CANDY_MACHINE_ADDRESS)
-  
+
   const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
   const [isProcessingNftCollectionCreation, setIsProcessingNftCollectionCreation] = useState(false)
   const [isProcessingSponsoredNftCollectionCreation, setIsProcessingSponsoredNftCollectionCreation] = useState(false)
@@ -102,7 +103,7 @@ export default function CreateCollectionPage() {
   }, [nftCount, collectionName, collectionDescription, uploadedImageUri, uploadedCollectionUploadedMetadataUri, uploadedCollectionUploadedNftsNameUriArray])
 
   const candyMachineMintUri = useMemo(() => {
-    const mintPath = HOST + (PORT?`:${PORT}`:'') + MINT_URI_PATH + '?candyMachineAddress=' + candyMachineAddress
+    const mintPath = HOST + (PORT ? `:${PORT}` : '') + MINT_URI_PATH + '?candyMachineAddress=' + candyMachineAddress
     return mintPath
   }, [candyMachineAddress])
 
@@ -135,7 +136,7 @@ export default function CreateCollectionPage() {
         return
       }
       setIsProcessingNftCollectionCreation(true)
-  
+
       // 1. Créer la collection
       console.log(`${LOGPREFIX}Creating collection with URI:`, uploadedCollectionUploadedMetadataUri);
       const createNftCollectionInput: mplhelp_T_CreateNftCollection_fromWallet_Input = {
@@ -148,7 +149,7 @@ export default function CreateCollectionPage() {
         throw new Error(`Failed to create collection: ${createNftCollectionResponse.error}`)
       }
       console.log(`${LOGPREFIX}Collection created successfully:`, createNftCollectionResponse);
-  
+
       // 2. Créer la Candy Machine
       const cmNftCollectioNParams: mplhelp_T_CmNftCollection_Params = {
         itemsCount: nftCount,
@@ -169,7 +170,7 @@ export default function CreateCollectionPage() {
         throw new Error(`Failed to create Candy Machine: ${createCmNftCollectionResponse.error}`)
       }
       console.log(`${LOGPREFIX}Candy Machine created successfully:`, createCmNftCollectionResponse);
-  
+
       // 3. Finaliser la configuration de la Candy Machine
       console.log(`${LOGPREFIX}Finalizing Candy Machine with metadata:`, uploadedCollectionUploadedNftsNameUriArray);
       const finalizeCmNftCollectionConfigInput: mplhelp_T_FinalizeCmNftCollectionConfig_fromWallet_Input = {
@@ -184,16 +185,16 @@ export default function CreateCollectionPage() {
         throw new Error(`Failed to finalize Candy Machine configuration: ${finalizeCmNftCollectionConfigResponse.error}`)
       }
       console.log(`${LOGPREFIX}Candy Machine finalized successfully:`, finalizeCmNftCollectionConfigResponse);
-  
+
       // Mise à jour de l'adresse de la Candy Machine
       setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
-  
+
       // Vérification finale des métadonnées
       console.log(`${LOGPREFIX}Final metadata check:`, {
         collectionUri: uploadedCollectionUploadedMetadataUri,
         nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
       });
-  
+
       // Affichage des toasts de succès
       displaySuccessToasts(
         createNftCollectionResponse,
@@ -215,14 +216,14 @@ export default function CreateCollectionPage() {
       setIsProcessingNftCollectionCreation(false)
     }
   }
-  
+
   // Fonction auxiliaire pour afficher les toasts de succès
   const displaySuccessToasts = (
     collectionResponse: mplhelp_T_CreateNftCollection_Result,
     // cmResponse: mplhelp_T_CreateCmNftCollection_Result,
     finalizeResponse: mplhelp_T_FinalizeCmNftCollectionConfig_Result
   ) => {
-    const uriCollection = collectionResponse.success &&  getAddressUri(collectionResponse.collectionAddress)
+    const uriCollection = collectionResponse.success && getAddressUri(collectionResponse.collectionAddress)
     const uriCandyMachine = finalizeResponse.success && getAddressUri(finalizeResponse.candyMachineAddress)
     toast({
       duration: SUCCESS_DELAY,
@@ -500,9 +501,9 @@ export default function CreateCollectionPage() {
         })
         return
       }
-  
+
       const creatorAddress = wallet.adapter.publicKey?.toBase58() || "VOTRE_ADRESSE_SOLANA";
-  
+
       // Créer le JSON spécifique pour la collection
       const collectionMetadataJson = {
         name: collectionName,
@@ -522,15 +523,15 @@ export default function CreateCollectionPage() {
           creators: [{ address: creatorAddress, share: 100 }]
         }
       };
-  
+
       console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
       const umiStorage = getUmiStorage()
       setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
       umiStorage.use(irysUploader())
-  
+
       const collectionMetadataJsonUri = await umiStorage.uploader.uploadJson(collectionMetadataJson)
       console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
-  
+
       if (!collectionMetadataJsonUri) {
         console.error(`${LOGPREFIX}No collectionMetadataJsonUri`)
         toast({
@@ -544,9 +545,9 @@ export default function CreateCollectionPage() {
         setUploadedCollectionUploadedMetadataUri('')
         return
       }
-  
+
       setUploadedCollectionUploadedMetadataUri(collectionMetadataJsonUri)
-  
+
       toast({
         title: 'Collection metadata uploaded',
         description: "Collection metadata generated & uploaded successfully.",
@@ -555,10 +556,10 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-  
+
       // Générer et uploader les métadonnées pour chaque NFT
       const nameUriArray: mplhelp_T_NameUriArray = []
-  
+
       for (let i = 0; i < nftCount; i++) {
         const nftMetadataJson = {
           name: `${nftNamePrefix} #${i + 1}`,
@@ -575,16 +576,16 @@ export default function CreateCollectionPage() {
             family: collectionSymbol,
           },
         };
-  
+
         const nftJsonUri = await umiStorage.uploader.uploadJson(nftMetadataJson)
         console.debug(`${LOGPREFIX}NFT #${i + 1} metadata URI:`, nftJsonUri);
         nameUriArray.push({ name: nftMetadataJson.name, uri: nftJsonUri })
       }
-  
+
       setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
-  
+
       console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
-  
+
       toast({
         title: 'NFT metadata uploaded',
         description: `${nftCount} NFT metadata files generated & uploaded successfully.`,
@@ -593,7 +594,7 @@ export default function CreateCollectionPage() {
         isClosable: true,
         position: 'top-right',
       })
-  
+
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
       toast({
@@ -931,7 +932,7 @@ export default function CreateCollectionPage() {
             className='mt-3 overflow-hidden p-1'
             border={'1px solid '}
             borderRadius={'md'}
-            display={ (candyMachineAddress && candyMachineMintUri.length ? '' : 'none') }
+            display={(candyMachineAddress && candyMachineMintUri.length ? '' : 'none')}
           >
             <Text className='flex pr-2'>
               Mint page Url:
@@ -940,7 +941,7 @@ export default function CreateCollectionPage() {
               <Text className='pr-2' color={textColor}>
                 <ExternalLinkIcon size='16px' />
               </Text>
-                {candyMachineAddress}
+              {candyMachineAddress}
             </Link>
           </Box>
 
