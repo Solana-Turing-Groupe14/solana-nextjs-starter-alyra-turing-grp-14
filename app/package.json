@@ -31,8 +31,8 @@
     "clean:node": "yarn run del-cli ./node_modules/",
     "clean:npm": "npm cache clean --force && npm cache verify",
     "clean:scripts:ALL": "yarn run clean:scripts-dumps && yarn run clean:scripts-validator-data",
-    "clean:scripts-dumps": "yarn run del-cli ./scripts/dumps && yarn run del-cli ./scripts/test-ledger",
-    "clean:scripts-validator-data": "yarn run del-cli ./scripts/dumps && yarn run del-cli ./scripts/test-ledger"
+    "clean:scripts-dumps": "yarn run del-cli ./scripts/dumps",
+    "clean:scripts-validator-data": "yarn run del-cli ./scripts/test-ledger"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
