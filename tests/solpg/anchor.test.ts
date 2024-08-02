@@ -39,6 +39,7 @@ type PublicKey = any;
 
 // Run once
 // .only .skip
+// describe.only("Initialize", () => {
 describe.skip("Initialize", () => {
   let pdaUserData: PublicKey, pdaUserMints: PublicKey, pdaUserBurns: PublicKey;
 
@@ -219,11 +220,12 @@ describe.skip("Adding Nfts", () => {
 
 // .only
 describe.only("Adding Nft(s)", () => {
+  // describe.skip("Adding Nft(s)", () => {
   let pdaUserData: PublicKey, pdaUserMints: PublicKey, pdaUserBurns: PublicKey;
   let last_minted = undefined,
     list_Minted_length = undefined,
     max_current_size = undefined,
-    total_count_minted = undefined;
+    total_count_minted_at_start = undefined;
 
   before(async function () {
     console.info("before");
@@ -240,7 +242,7 @@ describe.only("Adding Nft(s)", () => {
     last_minted = newAccountUserMints.lastMinted;
     list_Minted_length = newAccountUserMints.listMinted.length;
     max_current_size = newAccountUserMints.maxCurrentSize;
-    total_count_minted = newAccountUserMints.totalCountMinted;
+    total_count_minted_at_start = newAccountUserMints.totalCountMinted;
     console.log(
       `On-chain data: newAccountUserMints.lastMinted = ${newAccountUserMints.lastMinted}`
     );
@@ -257,12 +259,25 @@ describe.only("Adding Nft(s)", () => {
 
   it(`Adds new Mint(s)`, async () => {
     // New "mint"
-    const newRandomNftMintPubkey = new web3.Keypair().publicKey;
-    console.info(`newRandomNftMintPubkey : ${newRandomNftMintPubkey}`);
+    //const newRandomNftMintPubkey = new web3.Keypair().publicKey;
+
+    const newNFtCount = getRandomPositiveInt(10); // Get between [1..10] addresses
+
+    const newRandomNftMintPubkeys = [];
+
+    for (let count = 0; count < newNFtCount; count++) {
+      newRandomNftMintPubkeys.push(new web3.Keypair().publicKey);
+    }
+
+    // console.info(`newRandomNftMintPubkey : ${newRandomNftMintPubkey}`);
+    console.info(
+      `newRandomNftMintPubkeys.length : ${newRandomNftMintPubkeys.length}`
+    );
+    console.info(`newRandomNftMintPubkeys : ${newRandomNftMintPubkeys}`);
 
     // Send transaction
     const txHash = await pg.program.methods
-      .mint(newRandomNftMintPubkey)
+      .addMints(newRandomNftMintPubkeys) // array of one mint only
       .accounts({
         userData: pdaUserData,
         userMints: pdaUserMints,
@@ -295,8 +310,14 @@ describe.only("Adding Nft(s)", () => {
     );
 
     // Check whether the data on-chain is equal to expected 'data'
-    assert(accountUserMints.totalCountMinted == total_count_minted + 1);
-    // assert(accountUserMints.totalCountMinted == 2);
+    assert(
+      accountUserMints.maxCurrentSize >=
+        total_count_minted_at_start + newRandomNftMintPubkeys.length
+    );
+    assert(
+      accountUserMints.totalCountMinted ==
+        total_count_minted_at_start + newRandomNftMintPubkeys.length
+    );
   });
 });
 
@@ -331,4 +352,11 @@ const getPdas = async () => {
     pdaUserMints: pdaUserMints,
     pdaUserBurns: pdaUserBurns,
   };
+};
+
+const getRandomPositiveInt = (max: number = 1) => {
+  const defaultVal = 1;
+  const randomNum = max < 0 ? defaultVal : Math.floor(Math.random() * max) + 1;
+  console.info(`randomNum = ${randomNum}`);
+  return randomNum;
 };
