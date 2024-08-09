@@ -1,36 +1,69 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
-use std::cmp::max;
+use instructions::*;
+
+pub mod constants;
+pub mod errors;
+pub mod instructions;
+pub mod states;
 
 // ---------- consts ----------
 
-// This is your program's public key and it will update
-// automatically when you build the project.
-declare_id!("AQ6XjNSkYoAkoZKj47zYBPWDHNJywBhu5BE8VvE9RArP");
-
-static ACCOUNT_SEED_DATA: &'static str = "SoaplanaUserData";
-static ACCOUNT_SEED_MINTS: &'static str = "SoaplanaUserMints";
-static ACCOUNT_SEED_BURNS: &'static str = "SoaplanaUserBurns";
-
-pub static ACCOUNT_SEED_DATA_BYTES: &[u8] = ACCOUNT_SEED_DATA.as_bytes();
-pub static ACCOUNT_SEED_MINTS_BYTES: &[u8] = ACCOUNT_SEED_MINTS.as_bytes();
-pub static ACCOUNT_SEED_BURNS_BYTES: &[u8] = ACCOUNT_SEED_BURNS.as_bytes();
-
-const LIST_INC_LEN: u32 = 1; // todo : 10 or 100
-const MINTED_LIST_INIT_LEN: u32 = 2 * LIST_INC_LEN; // todo: 100
-const BURNT_LIST_INIT_LEN: u32 = 1 * LIST_INC_LEN; // todo: 20
+// Program public key
+declare_id!("8tBLsKarpYMCvbNzsKzxSB7LXxx4hbdspr6sP8vC7wEb");
 
 // ---------- program ----------
 
 // module containing the program’s instruction logic
 #[program]
-mod soaplana_anchor {
+mod soaplana_anchor_program {
     use super::*;
+    /* initialize:
+        called on user first mint 🪙
+        or just to create user accounts
+     */
+    pub fn initialize(
+        mut ctx_init: Context<InitializeStruct>,
+        new_mints: Vec<Pubkey>,
+    ) -> Result<()> {
+        create::initialize_accounts(&mut ctx_init).unwrap();
+        if new_mints.len() > 0 {
+            msg!("initialize: call add_mints");
+            update_mints::add_mints_int(
+                // ctx_init.accounts.user_mints.clone(),
+                // ctx_init.accounts.signer.clone(),
+                &mut ctx_init.accounts.user_mints,
+                &mut ctx_init.accounts.signer,
+                ctx_init.accounts.system_program.clone(),
+                new_mints,
+            ).unwrap();
+        }
+        Ok(())
+    }
+
+    pub fn add_mints(
+        mut ctx_add_mints: Context<AddMintsStruct>,
+        new_mints: Vec<Pubkey>,
+    ) -> Result<()> {
+        update_mints::add_mints(&mut ctx_add_mints, new_mints).unwrap();
+        Ok(())
+    }
+
+    pub fn burn_mints(
+        mut ctx_add_mints: Context<DeleteMintsStruct>,
+        mints_to_delete: Vec<Pubkey>,
+    ) -> Result<()> {
+        // remove from mints
+        update_mints::delete_mints(&mut ctx_add_mints, mints_to_delete).unwrap();
+        // add to burnt
+
+        Ok(())
+    }
+
+    // -------
+
+    // OLD STUFF TO REMOVE
 
     /*
-        initialize:
-        called on user first mint 🪙
-     */
     pub fn initialize(ctx: Context<InitializeStruct>, first_mint: Pubkey) -> Result<()> {
         let user_data = &mut ctx.accounts.user_data;
         let user_mints = &mut ctx.accounts.user_mints;
@@ -58,7 +91,7 @@ mod soaplana_anchor {
         );
         Ok(())
     }
-
+*/
     // pub fn count
 
     /*
@@ -66,15 +99,14 @@ mod soaplana_anchor {
         called on user mints 🪙 (excepted first one)
         allocates extra space to userMints account if necessary
      */
+    /*
     pub fn add_mints(ctx: Context<AddMintsStruct>, new_mints: Vec<Pubkey>) -> Result<()> {
-        /*
         // let cpi_context = CpiContext::new(ctx.accounts.user_mints);
 
         // add_mints_int(cpi_context, new_mints);
 
-        let cpi_ctx = CpiContext::new(ctx.accounts., callee_accounts);
+        // let cpi_ctx = CpiContext::new(ctx.accounts., callee_accounts);
 
-*/
         let new_mints_len = new_mints.len();
         require!(new_mints_len > 0, SoaplanaError::AtLeastOneNft);
 
@@ -176,7 +208,7 @@ mod soaplana_anchor {
 
         Ok(())
     } // add_mints
-
+ */
     // pub fn burn
     /*
         burn 🔥
@@ -191,7 +223,7 @@ mod soaplana_anchor {
 
     }
      */
-
+    /*
     pub fn unallocate(ctx: Context<Unallocate>) -> Result<()> {
         let user_data = &mut ctx.accounts.user_data.to_account_info();
         let user_mints = &mut ctx.accounts.user_mints.to_account_info();
@@ -237,16 +269,18 @@ mod soaplana_anchor {
 
         Ok(())
     } // pub fn unallocate
+*/
 
 } // mod soaplana_anchor
 
 // ----------------------------------
-
+/*
 pub fn add_mints_int(ctx: Context<AddMintsIntStruct>, new_mints: Vec<Pubkey>) -> Result<()> {
     let new_mints_len = new_mints.len();
     require!(new_mints_len > 0, SoaplanaError::AtLeastOneNft);
 
-    let user_mints = /* &mut */ &ctx.accounts.user_mints;
+    // let user_mints = &mut &ctx.accounts.user_mints;
+    let user_mints = &ctx.accounts.user_mints;
 
     //new_mints.clone().into_iter().nth(0);
 
@@ -343,7 +377,7 @@ pub fn add_mints_int(ctx: Context<AddMintsIntStruct>, new_mints: Vec<Pubkey>) ->
 
     Ok(())
 } // add_mints_int
-
+*/
 /*
 #[error_code]
 pub enum Err {
@@ -352,6 +386,7 @@ pub enum Err {
 }
 */
 
+/*
 #[error_code]
 pub enum SoaplanaError {
     #[msg("Only owner can call")]
@@ -359,9 +394,10 @@ pub enum SoaplanaError {
     #[msg("At least one Nft address must be provided")]
     AtLeastOneNft,
 }
+*/
 
 // structs to indicate a list of accounts required for an instruction
-
+/*
 #[derive(Accounts)]
 pub struct InitializeStruct<'info> {
     // We must specify the space in order to initialize each account.
@@ -455,12 +491,13 @@ pub struct Unallocate<'info> {
     pub owner: Signer<'info>,
     pub system_program: Program<'info, System>, // System Program required for sending lamports & unallocating space
 }
-
+ */
 // ---------- custom account types ----------
 
 // https://www.sec3.dev/blog/all-about-anchor-account-size
 // https://book.anchor-lang.com/anchor_references/space.html
 
+/*
 #[account]
 #[derive(InitSpace)]
 pub struct UserData {
@@ -491,3 +528,4 @@ pub struct UserBurns {
     #[max_len(BURNT_LIST_INIT_LEN)]
     list_burned: Vec<Pubkey>, // 4(vec)+32(Pubkey) bytes * BURNT_LIST_INIT_LEN
 }
+*/

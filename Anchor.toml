@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-poap_alyra = "8Sga1hBE4oexR4E4pYQCXpvrSqCVbmyXwahnhTSjJJoh"
+poap_alyra = "8tBLsKarpYMCvbNzsKzxSB7LXxx4hbdspr6sP8vC7wEb"
 
 [registry]
 url = "https://api.apr.dev"
