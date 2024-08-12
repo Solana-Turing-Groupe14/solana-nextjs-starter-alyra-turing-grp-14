@@ -9,13 +9,13 @@ pub mod states;
 // ---------- consts ----------
 
 // Program public key
-declare_id!("8tBLsKarpYMCvbNzsKzxSB7LXxx4hbdspr6sP8vC7wEb");
+declare_id!("D9cwyogXbCP7CfafmRGrkDe2acpSbzcgVng3Gzw6UP8L");
 
 // ---------- program ----------
 
 // module containing the program’s instruction logic
 #[program]
-mod soaplana_anchor_program {
+mod poap_alyra {
     use super::*;
     /* initialize:
         called on user first mint 🪙
