@@ -49,11 +49,11 @@ mod poap_alyra {
     }
 
     pub fn burn_mints(
-        mut ctx_add_mints: Context<DeleteMintsStruct>,
+        mut ctx_delete_mints: Context<DeleteMintsStruct>,
         mints_to_delete: Vec<Pubkey>,
     ) -> Result<()> {
         // remove from mints
-        update_mints::delete_mints(&mut ctx_add_mints, mints_to_delete).unwrap();
+        update_mints::delete_mints(&mut ctx_delete_mints, mints_to_delete).unwrap();
         // add to burnt
 
         Ok(())

@@ -9,6 +9,7 @@ use crate::errors::SoaplanaError;
 
 use crate::states::UserData;
 use crate::states::UserMints;
+use crate::states::UserBurns;
 
 //pub mod accounts;
 
@@ -139,6 +140,7 @@ pub fn delete_mints(
 ) -> Result<()> {
     delete_mints_int(
         &mut ctx_add_mints.accounts.user_mints,
+        &mut ctx_add_mints.accounts.user_burns,
         &mut ctx_add_mints.accounts.owner,
         ctx_add_mints.accounts.system_program.clone(),
         mints_to_delete,
@@ -149,7 +151,8 @@ pub fn delete_mints(
 
 pub fn delete_mints_int<'info>(
     user_mints: &mut Account<'info, UserMints>,
-    owner: &mut Signer<'info>,
+    user_burns: &mut Account<'info, UserBurns>,
+    _owner: &mut Signer<'info>,
     system_program: Program<'info, System>,
     mints_to_delete: Vec<Pubkey>,
 ) -> Result<()> {
@@ -286,6 +289,8 @@ pub struct DeleteMintsStruct<'info> {
     pub user_data: Account<'info, UserData>,
     #[account(mut)]
     pub user_mints: Account<'info, UserMints>,
+    #[account(mut)]
+    pub user_burns: Account<'info, UserBurns>,
     #[account(mut)]
     pub owner: Signer<'info>, // Verifies the account signed the transaction
     // #[account(address = system_program::ID)]
