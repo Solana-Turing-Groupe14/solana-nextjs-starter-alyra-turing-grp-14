@@ -1,0 +1,28 @@
+import { web3 } from "@coral-xyz/anchor";
+
+const UNINITIALIZED_PUBLIC_KEY_STRING = '11111111111111111111111111111111';
+const UNINITIALIZED_PUBLIC_KEY = new web3.PublicKey(UNINITIALIZED_PUBLIC_KEY_STRING);
+
+// Seeds
+const SEED_USER_DATA_ACCOUNT = "SoaplanaUserData";
+const SEED_USER_MINTS_ACCOUNT = "SoaplanaUserMints";
+const SEED_USER_BURNS_ACCOUNT = "SoaplanaUserBurns";
+
+// Consts should matche the program's consts
+const LIST_INC_LEN = 1; // todo : 10 or 100
+const MINTED_LIST_INIT_LEN = 2 * LIST_INC_LEN; // todo: 100
+const BURNT_LIST_INIT_LEN = 1 * LIST_INC_LEN; // todo: 20
+
+
+export {
+    UNINITIALIZED_PUBLIC_KEY_STRING,
+    UNINITIALIZED_PUBLIC_KEY,
+
+    SEED_USER_BURNS_ACCOUNT,
+    SEED_USER_DATA_ACCOUNT,
+    SEED_USER_MINTS_ACCOUNT,
+
+    LIST_INC_LEN,
+    MINTED_LIST_INIT_LEN,
+    BURNT_LIST_INIT_LEN
+}
