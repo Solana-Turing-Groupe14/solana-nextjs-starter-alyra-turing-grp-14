@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use solana_program::system_instruction;
 
 use std::cmp::max;
 use std::{collections::BTreeSet, iter::FromIterator};
@@ -152,61 +153,53 @@ pub fn delete_mints(
 pub fn delete_mints_int<'info>(
     user_mints: &mut Account<'info, UserMints>,
     user_burns: &mut Account<'info, UserBurns>,
-    _owner: &mut Signer<'info>,
+    owner: &mut Signer<'info>,
     system_program: Program<'info, System>,
     mints_to_delete: Vec<Pubkey>,
 ) -> Result<()> {
     let mints_to_delete_len = mints_to_delete.len();
     require!(mints_to_delete_len > 0, SoaplanaError::AtLeastOneNftDel);
 
-    // user_mints.total_count_minted
+    let delete_elements_count = user_mints.max_current_size - <usize as TryInto<u32>>::try_into(user_mints.list_minted.len()).unwrap() // currently free slots
+        +  <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap() // slots to delete
+        - LIST_INC_LEN; // slots to keep
+
+    msg!("Removing {} elements, deleting {} slots", mints_to_delete_len, delete_elements_count);
+
+
+    msg!(
+        "Before removal user_mints.list_minted.len() = {}",
+        user_mints.list_minted.len()
+    );
+
+    // remove each from vec
+    let to_remove = BTreeSet::from_iter(mints_to_delete);
+    user_mints.list_minted.retain(|e| !to_remove.contains(e));
+
+    msg!(
+        "After removal user_mints.list_minted.len() = {}",
+        user_mints.list_minted.len()
+    );
 
     // check length & reallocate space if necessary
     if user_mints.max_current_size - <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap()
         > LIST_INC_LEN
     {
-        /*
-        current 25
-        delete 8
-
-        25 - 8 = 17 +2
-        8 - 2
-        */
-
-        // let free_current = user_mints.max_current_size - user_mints.list_minted.len()
-        // let free_after = free_current + mints_to_delete_len - LIST_INC_LEN
-
-        // 5 libres + 7 a effacer - taille slot
-
-        // let mut delete_elements_count = // mints_to_delete_len + () - LIST_INC_LEN;
-
-        let delete_elements_count = user_mints.max_current_size - <usize as TryInto<u32>>::try_into(user_mints.list_minted.len()).unwrap() // currently free slots
-            +  <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap() // slots to delete
-            - LIST_INC_LEN; // slots to keep
-
-        msg!("Removing {} elements", delete_elements_count);
-        // user_mints.total_count_minted -= <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap();
-        // user_mints.max_current_size -= delete_elements_count;
-
-        // remove each from vec
-        let to_remove = BTreeSet::from_iter(mints_to_delete);
-        user_mints.list_minted.retain(|e| !to_remove.contains(e));
-
         let user_mints_account_info = &mut user_mints.to_account_info();
         // increase size
         let user_mints_new_len = 8 // account discriminator
-             + UserMints::INIT_SPACE // initial length
-             + usize::try_from( user_mints.max_current_size - delete_elements_count ).unwrap() // decrease by LIST_INC_LEN
+                + UserMints::INIT_SPACE // initial length
+                + usize::try_from( user_mints.max_current_size - delete_elements_count ).unwrap() // decrease by LIST_INC_LEN
                 * (usize::try_from( 32+4 ).unwrap()) // vec of addresses: 4(vec)+32(Pubkey) bytes
-             + 0 // safety
-             ;
-
+                + 0 // safety
+                ;
+    
         msg!(
-            "Decrease account mints size from {} to  {}",
+            "Decrease account mints size from {} to {}",
             user_mints_account_info.data_len(),
             user_mints_new_len
         );
-
+    
         // Resize
         let user_mints_account_info = &mut user_mints.to_account_info();
         user_mints_account_info.realloc(user_mints_new_len, false)?;
@@ -215,6 +208,65 @@ pub fn delete_mints_int<'info>(
             "user_mints.max_current_size = {}",
             user_mints.max_current_size
         );
+/*
+        // Refund account with rent difference
+        let rent = Rent::get()?;
+        let new_minimum_balance = rent.minimum_balance(user_mints_new_len);
+        let lamports_diff = user_mints_account_info.lamports().saturating_sub(new_minimum_balance);
+
+        msg!(
+            "Decreasing account mints size costs {} less lamports for rent",
+            lamports_diff
+        );
+
+        // let cpi_context = CpiContext::new(
+        //     system_program.to_account_info(),
+        //     anchor_lang::system_program::Transfer {
+        //         from: user_mints_account_info.clone(),
+        //         to: owner.to_account_info().clone(),
+        //     },
+        // );
+        // anchor_lang::system_program::transfer(cpi_context, lamports_diff)?;
+
+        // let ix = anchor_lang::solana_program::system_instruction::transfer(
+        //     &sol_bank.key(),
+        //     &payer.key(),
+        //     lamports_diff,
+        // );
+
+        // anchor_lang::solana_program::program::invoke_signed(
+        //     &ix,
+        //     &[sol_bank.to_account_info(), payer.to_account_info()],
+        //     &[&ACCOUNT_SEED_DATA_BYTES[..]],
+        // )?;
+
+        let transfer_instruction = system_instruction::transfer(
+            user_mints_account_info.clone().key,
+            owner.to_account_info().clone().key,
+            lamports_diff
+        );
+
+        // // Invoke transfer
+        // anchor_lang::solana_program::program::invoke_signed(
+        //     &transfer_instruction,
+        //     &[
+        //         user_mints_account_info.to_account_info(),
+        //         owner.to_account_info().clone(),
+        //         system_program.to_account_info(),
+        //     ],
+        //     &[],
+        // )?;
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                user_mints_account_info.to_account_info(),
+                owner.to_account_info().clone(),
+                system_program.to_account_info(),
+            ],
+            &[&[&ACCOUNT_SEED_MINTS_BYTES[..]]],
+        )?;
+*/
+    }
 
         // Refund account with rent difference
         // TODO
@@ -248,7 +300,6 @@ pub fn delete_mints_int<'info>(
             user_mints.max_current_size
         );
  */
-    }
     /*
 
     if user_mints.max_current_size
