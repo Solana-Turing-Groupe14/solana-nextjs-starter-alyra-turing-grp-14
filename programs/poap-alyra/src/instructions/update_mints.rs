@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use solana_program::system_instruction;
+// use solana_program::system_instruction;
+// use anchor_lang::system_program::{Transfer, transfer};
 
 use std::cmp::max;
 use std::{collections::BTreeSet, iter::FromIterator};
@@ -19,9 +20,6 @@ pub fn add_mints(
     new_mints: Vec<Pubkey>,
 ) -> Result<()> {
     add_mints_int(
-        // ctx_add_mints.accounts.user_mints.clone(),
-        // ctx_add_mints.accounts.owner.clone(),
-        // ctx_add_mints.accounts.system_program.clone(),
         &mut ctx_add_mints.accounts.user_mints,
         &mut ctx_add_mints.accounts.owner,
         ctx_add_mints.accounts.system_program.clone(),
@@ -136,14 +134,14 @@ pub fn add_mints_int<'info>(
 } // add_mints_int
 
 pub fn delete_mints(
-    ctx_add_mints: &mut Context<DeleteMintsStruct>,
+    ctx_delete_mints: &mut Context<DeleteMintsStruct>,
     mints_to_delete: Vec<Pubkey>,
 ) -> Result<()> {
     delete_mints_int(
-        &mut ctx_add_mints.accounts.user_mints,
-        &mut ctx_add_mints.accounts.user_burns,
-        &mut ctx_add_mints.accounts.owner,
-        ctx_add_mints.accounts.system_program.clone(),
+        &mut ctx_delete_mints.accounts.user_mints,
+        &mut ctx_delete_mints.accounts.user_burns,
+        &mut ctx_delete_mints.accounts.owner,
+        ctx_delete_mints.accounts.system_program.clone(),
         mints_to_delete,
     ).unwrap();
 
@@ -208,7 +206,7 @@ pub fn delete_mints_int<'info>(
             "user_mints.max_current_size = {}",
             user_mints.max_current_size
         );
-/*
+
         // Refund account with rent difference
         let rent = Rent::get()?;
         let new_minimum_balance = rent.minimum_balance(user_mints_new_len);
@@ -240,11 +238,11 @@ pub fn delete_mints_int<'info>(
         //     &[&ACCOUNT_SEED_DATA_BYTES[..]],
         // )?;
 
-        let transfer_instruction = system_instruction::transfer(
-            user_mints_account_info.clone().key,
-            owner.to_account_info().clone().key,
-            lamports_diff
-        );
+        // let transfer_instruction = system_instruction::transfer(
+        //     user_mints_account_info.clone().key,
+        //     owner.to_account_info().clone().key,
+        //     lamports_diff
+        // );
 
         // // Invoke transfer
         // anchor_lang::solana_program::program::invoke_signed(
@@ -256,16 +254,80 @@ pub fn delete_mints_int<'info>(
         //     ],
         //     &[],
         // )?;
-        anchor_lang::solana_program::program::invoke_signed(
-            &transfer_instruction,
-            &[
-                user_mints_account_info.to_account_info(),
-                owner.to_account_info().clone(),
-                system_program.to_account_info(),
-            ],
-            &[&[&ACCOUNT_SEED_MINTS_BYTES[..]]],
-        )?;
-*/
+
+        // anchor_lang::solana_program::program::invoke_signed(
+        //     &transfer_instruction,
+        //     &[
+        //         user_mints_account_info.to_account_info(),
+        //         owner.to_account_info().clone(),
+        //         system_program.to_account_info(),
+        //     ],
+        //             &[
+        //                 &[
+        //                     ACCOUNT_SEED_MINTS_BYTES.as_ref(),
+        //                     owner.key.as_ref(),
+        //                 ],
+        //             ]
+        // )?;
+
+            // let cpi_context = CpiContext::new_with_signer(
+            //     system_program.to_account_info(), 
+            //     Transfer {
+            //         from: user_mints_account_info.clone(),
+            //         to: owner.to_account_info().clone(),
+            //     },
+            //     &[&ACCOUNT_SEED_MINTS_BYTES[..]]],
+            // );
+            
+            // /*anchor_lang::system_program::*/transfer(cpi_context, lamports_diff)?;
+
+            // transfer(
+            //     CpiContext::new_with_signer(
+            //         system_program.to_account_info(), 
+            //         Transfer {
+            //             from: user_mints_account_info.clone(),
+            //             to: owner.to_account_info().clone(),
+            //         },
+            //         &[
+            //             &[
+            //                 ACCOUNT_SEED_MINTS_BYTES.as_ref(),
+            //                 owner.key.as_ref(),
+            //             ],
+            //         ]
+            //     ), lamports_diff
+            // )?;
+
+            // user_mints_account_info.sub_lamports(lamports_diff)?;
+            // owner.add_lamports(lamports_diff)?;
+
+            // let accounts = Transfer {
+            //     from: user_mints_account_info.clone(),
+            //     to: owner.to_account_info().clone()
+            // };
+        
+            // let ctx = CpiContext::new(
+            //     system_program.to_account_info(),
+            //     accounts
+            // );
+        
+            // transfer(ctx, lamports_diff)?;
+            
+            // let signer_seeds: &[&[&[u8]]] =  &[
+            //                     &[
+            //                         ACCOUNT_SEED_MINTS_BYTES.as_ref(),
+            //                         owner.key.as_ref(),
+            //                     ],
+            //                 ];
+
+            // let cpi_context = CpiContext::new(
+            //     system_program.to_account_info(), 
+            //     Transfer {
+            //     from: user_mints_account_info.clone(),
+            //     to: owner.to_account_info().clone()
+            //     }) .with_signer(signer_seeds);
+            // transfer(cpi_context, lamports_diff)?;
+            
+
     }
 
         // Refund account with rent difference

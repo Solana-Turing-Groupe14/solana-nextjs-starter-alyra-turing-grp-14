@@ -4,15 +4,15 @@ import * as poap_alyra_consts from "./poap-alyra-consts";
 
 const getPoapAlyraPdas = async (program: Program) => {
     // Accounts pubkeys
-    const [pdaUserData, ] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [pdaUserData, pdaUserDataBump] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from(poap_alyra_consts.SEED_USER_DATA_ACCOUNT), program.provider.publicKey.toBuffer()],
       program.programId,
     )
-    const [pdaUserMints, ] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [pdaUserMints, pdaUserMintsBump] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from(poap_alyra_consts.SEED_USER_MINTS_ACCOUNT), program.provider.publicKey.toBuffer()],
       program.programId,
     )
-    const [pdaUserBurns, ] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [pdaUserBurns, pdaUserBurnsBump] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from(poap_alyra_consts.SEED_USER_BURNS_ACCOUNT), program.provider.publicKey.toBuffer()],
       program.programId,
     )
@@ -20,6 +20,9 @@ const getPoapAlyraPdas = async (program: Program) => {
       pdaUserData: pdaUserData,
       pdaUserMints: pdaUserMints,
       pdaUserBurns: pdaUserBurns,
+      pdaUserDataBump: pdaUserDataBump,
+      pdaUserMintsBump: pdaUserMintsBump,
+      pdaUserBurnsBump: pdaUserBurnsBump,
     };
   };
 

@@ -23,9 +23,11 @@ mod poap_alyra {
      */
     pub fn initialize(
         mut ctx_init: Context<InitializeStruct>,
+        user_mints_bump: u8, user_burns_bump: u8,
         new_mints: Vec<Pubkey>,
     ) -> Result<()> {
-        create::initialize_accounts(&mut ctx_init).unwrap();
+        // create::initialize_accounts(&mut ctx_init).unwrap();
+        create::initialize_accounts(&mut ctx_init, user_mints_bump, user_burns_bump).unwrap();
         if new_mints.len() > 0 {
             msg!("initialize: call add_mints");
             update_mints::add_mints_int(

@@ -10,6 +10,7 @@ use crate::constants::*;
 #[account]
 #[derive(InitSpace)]
 pub struct UserData {
+    // pub bump: u8,
     pub owner: Pubkey,
     // owners: [Pubkey;5]
 }
@@ -17,6 +18,7 @@ pub struct UserData {
 #[account]
 #[derive(InitSpace)]
 pub struct UserMints {
+    pub bump: u8,
     // owner: Pubkey,
     // owners: [Pubkey;5]
     pub last_minted: Pubkey,     // 32 bytes
@@ -29,6 +31,7 @@ pub struct UserMints {
 #[account]
 #[derive(InitSpace)]
 pub struct UserBurns {
+    pub bump: u8,
     // owner: Pubkey,
     // owners: [Pubkey;5]
     pub last_burned: Pubkey,     // 32 bytes

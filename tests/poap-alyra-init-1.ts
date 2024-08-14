@@ -10,10 +10,12 @@ describe("poap-alyra-initialize with 1 mint", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.PoapAlyra as Program<PoapAlyra>;
   let pdaUserData: anchor.web3.PublicKey, pdaUserMints: anchor.web3.PublicKey, pdaUserBurns: anchor.web3.PublicKey;
+  let pdaUserMintsBump: number, pdaUserBurnsBump: number;
 
   before(async function () {
-    console.info("before");
-    ({ pdaUserData, pdaUserMints, pdaUserBurns } = await poap_alyra_utils.getPoapAlyraPdas(program as Program));
+    // console.info("before");
+    ({ pdaUserData, pdaUserMints, pdaUserBurns, pdaUserMintsBump, pdaUserBurnsBump } =
+      await poap_alyra_utils.getPoapAlyraPdas(program as Program));
   });
 
   it("Is initialized with one mint", async () => {
@@ -21,7 +23,7 @@ describe("poap-alyra-initialize with 1 mint", () => {
     const firstRandomNftMintPubkey = anchor.web3.PublicKey.unique()
     const firstRandomNftMints = [firstRandomNftMintPubkey]
 
-    const tx = await program.methods.initialize( firstRandomNftMints ).accounts({
+    const tx = await program.methods.initialize( pdaUserMintsBump, pdaUserBurnsBump, firstRandomNftMints ).accounts({
       userData: pdaUserData,
       userMints: pdaUserMints,
       userBurns: pdaUserBurns,

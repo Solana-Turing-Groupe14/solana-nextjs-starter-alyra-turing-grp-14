@@ -12,14 +12,16 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.PoapAlyra as Program<PoapAlyra>;
   let pdaUserData: anchor.web3.PublicKey, pdaUserMints: anchor.web3.PublicKey, pdaUserBurns: anchor.web3.PublicKey;
-  // let list_minted_length;
+  let pdaUserMintsBump: number, pdaUserBurnsBump: number;
+
   let initial_list_minted = []
   let totalMints = 0
   let totalBurns = 0
 
   before(async function () {
-    console.info("before");
-    ({ pdaUserData, pdaUserMints, pdaUserBurns } = await poap_alyra_utils.getPoapAlyraPdas(program as Program));
+    // console.info("before");
+    ({ pdaUserData, pdaUserMints, pdaUserBurns, pdaUserMintsBump, pdaUserBurnsBump } =
+      await poap_alyra_utils.getPoapAlyraPdas(program as Program));
   });
 
   it("1 - Is initialized with 0 mint", async () => {
@@ -29,7 +31,7 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
     // No "mint"
     const firstRandomNftMints = []
 
-    const tx = await program.methods.initialize( firstRandomNftMints ).accounts({
+    const tx = await program.methods.initialize( pdaUserMintsBump, pdaUserBurnsBump, firstRandomNftMints ).accounts({
       userData: pdaUserData,
       userMints: pdaUserMints,
       userBurns: pdaUserBurns,

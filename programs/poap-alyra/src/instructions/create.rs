@@ -7,11 +7,13 @@ use crate::states::UserBurns;
 use crate::states::UserData;
 use crate::states::UserMints;
 
-// pub fn initialize_accounts(ctx: Context<InitializeStruct>, first_mint: Pubkey) -> Result<()> {
-pub fn initialize_accounts(ctx_init: &mut Context<InitializeStruct>) -> Result<()> {
+pub fn initialize_accounts(ctx_init: &mut Context<InitializeStruct>, user_mints_bump: u8, user_burns_bump: u8) -> Result<()> {
+    ctx_init.accounts.user_data.owner = ctx_init.accounts.signer.key();
     ctx_init.accounts.user_mints.max_current_size = MINTED_LIST_INIT_LEN;
     ctx_init.accounts.user_burns.max_current_size = BURNT_LIST_INIT_LEN;
-    ctx_init.accounts.user_data.owner = ctx_init.accounts.signer.key();
+
+    ctx_init.accounts.user_mints.bump = user_mints_bump;
+    ctx_init.accounts.user_burns.bump = user_burns_bump;
 
     msg!(
         "ctx_init.accounts.user_mints.max_current_size={} ",
@@ -57,7 +59,7 @@ pub fn initialize_accounts(ctx_init: &mut Context<InitializeStruct>) -> Result<(
 
 #[derive(Accounts)]
 //#[instruction(first_mint: Pubkey)]
-#[instruction()]
+#[instruction(user_mints_bump: u8, user_burns_bump: u8)]
 
 //#[derive(Accounts)]
 pub struct InitializeStruct<'info> {
