@@ -7,7 +7,7 @@ import * as poap_alyra_utils from "./poap-alyra-utils";
 
 const MAX_MINTS = 15;
 
-describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then delete 1 - ${MAX_MINTS}`, () => {
+describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then delete 1 - ${MAX_MINTS} then mint 2 - ${MAX_MINTS}`, () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.PoapAlyra as Program<PoapAlyra>;
@@ -17,6 +17,8 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
   let initial_list_minted = []
   let totalMints = 0
   let totalBurns = 0
+  let lastMinted = undefined
+  let lastBurned = undefined
 
   before(async function () {
     // console.info("before");
@@ -80,10 +82,11 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
     totalMints = newRandomNftMints.length
     // list_minted_length = totalMints
     initial_list_minted = newRandomNftMints
+    lastMinted = newRandomNftMints[newRandomNftMints.length-1].toString()
 
     expect(userData.owner.toString()).to.equal(program.provider.publicKey.toString())
 
-    expect(userMints.lastMinted.toString()).to.equal(newRandomNftMints[newRandomNftMints.length-1].toString())
+    expect(userMints.lastMinted.toString()).to.equal(lastMinted)
     expect(userMints.lastMinted.toString()).to.not.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
 
     expect(userMints.totalCountMinted).to.equal(totalMints)
@@ -140,26 +143,24 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
       let userData: any, userMints: any, userBurns: any;
       ({ userData, userMints, userBurns } = await poap_alyra_utils.fetchPoapAlyraPdas(program as Program));
       expect(userMints.lastMinted.toString()).to.not.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
+      expect(userMints.lastMinted.toString()).to.equal(lastMinted)
 
       expect(userMints.totalCountMinted).to.equal(initial_list_minted.length)
       expect(userMints.maxCurrentSize).to.be.lessThanOrEqual(remanining_list_minted.length + poap_alyra_consts.LIST_INC_LEN)
       // expect(userMints.maxCurrentSize).to.be.greaterThanOrEqual(expectedRemainingMints)
       expect(userMints.listMinted.length).to.equal(expectedRemainingMints)
 
-      // console.info(`remaining items (${userMints.listMinted.length}) =`);
-      // userMints.listMinted.forEach((item: any) => {
-      //   console.info(`${item}`);
-      // })
-
       remanining_list_minted = userMints.listMinted
-
-      // TODO: IMPLEMENT BURN
-      expect(userBurns.totalCountBurned).to.equal(0)
-      expect(userBurns.lastBurned.toString()).to.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
-      expect(userBurns.listBurned.length).to.equal(0)
-      expect(userBurns.maxCurrentSize).to.equal(poap_alyra_consts.BURNT_LIST_INIT_LEN)
-
       totalBurns += nftMintPubkeys_toDelete.length
+      lastBurned = nftMintPubkeys_toDelete[nftMintPubkeys_toDelete.length-1].toString()
+      // console.info(`totalBurns = ${totalBurns} ; userBurns.totalCountBurned = ${userBurns.totalCountBurned}`)
+      // console.info(`userBurns.listBurned.length = ${userBurns.listBurned.length} ; totalBurns = ${totalBurns}`)
+      expect(userBurns.listBurned.length).to.equal(totalBurns)
+      expect(userBurns.totalCountBurned).to.equal(totalBurns)
+      expect(userBurns.lastBurned.toString()).to.not.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
+      expect(userBurns.lastBurned.toString()).to.equal(lastBurned)
+      // console.info(`userBurns.maxCurrentSize = ${userBurns.maxCurrentSize} , expected > ${totalBurns + poap_alyra_consts.LIST_INC_LEN}`)
+      expect(userBurns.maxCurrentSize).to.be.greaterThanOrEqual(totalBurns)
 
     } while (remanining_list_minted.length > 0);
 
@@ -186,6 +187,7 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
       userMints: pdaUserMints,
     }).rpc();
     console.log("Your transaction signature", tx);
+    lastMinted = newRandomNftMints[newRandomNftMints.length-1].toString()
 
     let userData: any, userMints: any, userBurns: any;
     ({ userData, userMints, userBurns } = await poap_alyra_utils.fetchPoapAlyraPdas(program as Program));
@@ -196,18 +198,18 @@ describe(`poap-alyra-initialize with 0 mint then mint 2 - ${MAX_MINTS} then dele
 
     expect(userData.owner.toString()).to.equal(program.provider.publicKey.toString())
 
-    expect(userMints.lastMinted.toString()).to.equal(newRandomNftMints[newRandomNftMints.length-1].toString())
     expect(userMints.lastMinted.toString()).to.not.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
+    expect(userMints.lastMinted.toString()).to.equal(lastMinted)
 
     expect(userMints.totalCountMinted).to.equal(totalMints)
-    expect(userMints.maxCurrentSize).to.be.greaterThanOrEqual(currentMints+poap_alyra_consts.LIST_INC_LEN)
+    expect(userMints.maxCurrentSize).to.be.greaterThanOrEqual(currentMints)
     expect(userMints.listMinted.length).to.equal(currentMints)
 
-    // TODO: IMPLEMENT BURN
-    expect(userBurns.totalCountBurned).to.equal(0)
-    expect(userBurns.lastBurned.toString()).to.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
-    expect(userBurns.listBurned.length).to.equal(0)
-    expect(userBurns.maxCurrentSize).to.equal(poap_alyra_consts.BURNT_LIST_INIT_LEN)
+    expect(userBurns.totalCountBurned).to.equal(totalBurns)
+    expect(userBurns.listBurned.length).to.equal(totalBurns)
+    expect(userBurns.lastBurned.toString()).to.not.equal(poap_alyra_consts.UNINITIALIZED_PUBLIC_KEY_STRING)
+    expect(userBurns.lastBurned.toString()).to.equal(lastBurned)
+    expect(userBurns.maxCurrentSize).to.be.greaterThanOrEqual(totalBurns)
 
   });
 

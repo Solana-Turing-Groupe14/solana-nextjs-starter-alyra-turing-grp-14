@@ -171,7 +171,7 @@ pub fn delete_mints_int<'info>(
     );
 
     // remove each from vec
-    let to_remove = BTreeSet::from_iter(mints_to_delete);
+    let to_remove = BTreeSet::from_iter(mints_to_delete.clone());
     user_mints.list_minted.retain(|e| !to_remove.contains(e));
 
     msg!(
@@ -179,6 +179,8 @@ pub fn delete_mints_int<'info>(
         user_mints.list_minted.len()
     );
 
+    // Rent difference
+    let rent = Rent::get()?;
     // check length & reallocate space if necessary
     if user_mints.max_current_size - <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap()
         > LIST_INC_LEN
@@ -191,13 +193,11 @@ pub fn delete_mints_int<'info>(
                 * (usize::try_from( 32+4 ).unwrap()) // vec of addresses: 4(vec)+32(Pubkey) bytes
                 + 0 // safety
                 ;
-    
         msg!(
             "Decrease account mints size from {} to {}",
             user_mints_account_info.data_len(),
             user_mints_new_len
         );
-    
         // Resize
         let user_mints_account_info = &mut user_mints.to_account_info();
         user_mints_account_info.realloc(user_mints_new_len, false)?;
@@ -207,177 +207,73 @@ pub fn delete_mints_int<'info>(
             user_mints.max_current_size
         );
 
-        // Refund account with rent difference
-        let rent = Rent::get()?;
-        let new_minimum_balance = rent.minimum_balance(user_mints_new_len);
-        let lamports_diff = user_mints_account_info.lamports().saturating_sub(new_minimum_balance);
+        // // Rent difference
+        // let rent = Rent::get()?;
+        let user_mints_new_minimum_balance = rent.minimum_balance(user_mints_new_len);
+        let lamports_diff = user_mints_account_info.lamports().saturating_sub(user_mints_new_minimum_balance);
 
         msg!(
-            "Decreasing account mints size costs {} less lamports for rent",
+            "Moving {} lamports from account mints to account burns for rent",
             lamports_diff
         );
 
-        // let cpi_context = CpiContext::new(
-        //     system_program.to_account_info(),
-        //     anchor_lang::system_program::Transfer {
-        //         from: user_mints_account_info.clone(),
-        //         to: owner.to_account_info().clone(),
-        //     },
-        // );
-        // anchor_lang::system_program::transfer(cpi_context, lamports_diff)?;
-
-        // let ix = anchor_lang::solana_program::system_instruction::transfer(
-        //     &sol_bank.key(),
-        //     &payer.key(),
-        //     lamports_diff,
-        // );
-
-        // anchor_lang::solana_program::program::invoke_signed(
-        //     &ix,
-        //     &[sol_bank.to_account_info(), payer.to_account_info()],
-        //     &[&ACCOUNT_SEED_DATA_BYTES[..]],
-        // )?;
-
-        // let transfer_instruction = system_instruction::transfer(
-        //     user_mints_account_info.clone().key,
-        //     owner.to_account_info().clone().key,
-        //     lamports_diff
-        // );
-
-        // // Invoke transfer
-        // anchor_lang::solana_program::program::invoke_signed(
-        //     &transfer_instruction,
-        //     &[
-        //         user_mints_account_info.to_account_info(),
-        //         owner.to_account_info().clone(),
-        //         system_program.to_account_info(),
-        //     ],
-        //     &[],
-        // )?;
-
-        // anchor_lang::solana_program::program::invoke_signed(
-        //     &transfer_instruction,
-        //     &[
-        //         user_mints_account_info.to_account_info(),
-        //         owner.to_account_info().clone(),
-        //         system_program.to_account_info(),
-        //     ],
-        //             &[
-        //                 &[
-        //                     ACCOUNT_SEED_MINTS_BYTES.as_ref(),
-        //                     owner.key.as_ref(),
-        //                 ],
-        //             ]
-        // )?;
-
-            // let cpi_context = CpiContext::new_with_signer(
-            //     system_program.to_account_info(), 
-            //     Transfer {
-            //         from: user_mints_account_info.clone(),
-            //         to: owner.to_account_info().clone(),
-            //     },
-            //     &[&ACCOUNT_SEED_MINTS_BYTES[..]]],
-            // );
-            
-            // /*anchor_lang::system_program::*/transfer(cpi_context, lamports_diff)?;
-
-            // transfer(
-            //     CpiContext::new_with_signer(
-            //         system_program.to_account_info(), 
-            //         Transfer {
-            //             from: user_mints_account_info.clone(),
-            //             to: owner.to_account_info().clone(),
-            //         },
-            //         &[
-            //             &[
-            //                 ACCOUNT_SEED_MINTS_BYTES.as_ref(),
-            //                 owner.key.as_ref(),
-            //             ],
-            //         ]
-            //     ), lamports_diff
-            // )?;
-
-            // user_mints_account_info.sub_lamports(lamports_diff)?;
-            // owner.add_lamports(lamports_diff)?;
-
-            // let accounts = Transfer {
-            //     from: user_mints_account_info.clone(),
-            //     to: owner.to_account_info().clone()
-            // };
-        
-            // let ctx = CpiContext::new(
-            //     system_program.to_account_info(),
-            //     accounts
-            // );
-        
-            // transfer(ctx, lamports_diff)?;
-            
-            // let signer_seeds: &[&[&[u8]]] =  &[
-            //                     &[
-            //                         ACCOUNT_SEED_MINTS_BYTES.as_ref(),
-            //                         owner.key.as_ref(),
-            //                     ],
-            //                 ];
-
-            // let cpi_context = CpiContext::new(
-            //     system_program.to_account_info(), 
-            //     Transfer {
-            //     from: user_mints_account_info.clone(),
-            //     to: owner.to_account_info().clone()
-            //     }) .with_signer(signer_seeds);
-            // transfer(cpi_context, lamports_diff)?;
-            
+        // Move amount from Mints to Burns
+        // user_mints_account_info.sub_lamports(lamports_diff)?;
+        // // owner.add_lamports(lamports_diff)?; // refund owner
+        // user_burns.add_lamports(lamports_diff)?;
 
     }
-
-        // Refund account with rent difference
-        // TODO
-
-        /*
-        let user_mints_account_info = &mut user_mints.to_account_info();
-
-        // Fund account with rent difference
-        let rent = Rent::get()?;
-        let new_minimum_balance = rent.minimum_balance(user_mints_new_len);
-        let lamports_diff = new_minimum_balance.saturating_sub(user_mints_account_info.lamports());
-
-        msg!(
-            "Increasing account mints size costs {} more lamports for rent",
-            lamports_diff
-        );
-        let cpi_context = CpiContext::new(
-            system_program.to_account_info(),
-            anchor_lang::system_program::Transfer {
-                from: owner.to_account_info().clone(),
-                to: user_mints_account_info.clone(),
-            },
-        );
-        anchor_lang::system_program::transfer(cpi_context, lamports_diff)?;
-
-        // Realloc
-        user_mints_account_info.realloc(user_mints_new_len, false)?;
-        user_mints.max_current_size += increase_elements_count; // Update max size
-        msg!(
-            "user_mints.max_current_size = {}",
-            user_mints.max_current_size
-        );
- */
-    /*
-
-    if user_mints.max_current_size
-        < (user_mints.list_minted.len() + new_mints_len)
-            .try_into()
-            .unwrap()
-    {
-        let mut increase_elements_count = max(LIST_INC_LEN, new_mints_len.try_into().unwrap());
-        if user_mints.max_current_size + increase_elements_count
-            - <usize as TryInto<u32>>::try_into(new_mints_len).unwrap()
-            <= LIST_INC_LEN
+    let user_burns_account_info = &mut user_burns.to_account_info();
+    // increase size
+    if  <u32 as TryInto<usize>>::try_into(user_burns.max_current_size).unwrap()
+        < (user_burns.list_burned.len() + mints_to_delete_len)
         {
-            // Add some more space and avoid to resize too often
-            increase_elements_count += LIST_INC_LEN;
+            let mut increase_burns_elements_count = max(LIST_INC_LEN, mints_to_delete_len.try_into().unwrap());
+            if user_burns.max_current_size + increase_burns_elements_count
+                - <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap()
+                <= LIST_INC_LEN
+            {
+                // Add some more space and avoid to resize too often
+                increase_burns_elements_count += LIST_INC_LEN;
+            }
+            msg!(
+                "Increase user_burns.list_burned vec length (currently {}) by {}",
+                user_burns.list_burned.len(),
+                increase_burns_elements_count
+            );
+            //let user_burns_increase_elements_count = user_burns.total_count_burned + <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap() - user_burns.max_current_size + ;
+            let user_burns_new_len = 8 // account discriminator
+                    + UserBurns::INIT_SPACE // initial length
+                    + usize::try_from( user_burns.max_current_size + increase_burns_elements_count ).unwrap() // increase by increase_burns_elements_count
+                    * (usize::try_from( 32+4 ).unwrap()) // vec of addresses: 4(vec)+32(Pubkey) bytes
+                    + 0 // safety
+                    ;
+            let user_burns_new_minimum_balance = rent.minimum_balance(user_burns_new_len);
+            let lamports_diff = user_burns_new_minimum_balance.saturating_sub(user_burns_account_info.lamports());
+        
+            msg!(
+                "Increasing account burns size costs {} more lamports for rent",
+                lamports_diff
+            );
+        
+            let cpi_context = CpiContext::new(
+                system_program.to_account_info(),
+                anchor_lang::system_program::Transfer {
+                    from: owner.to_account_info().clone(),
+                    to: user_burns_account_info.clone(),
+                },
+            );
+            anchor_lang::system_program::transfer(cpi_context, lamports_diff)?;
+            user_burns_account_info.realloc(user_burns_new_len, false)?;
+            // user_burns.max_current_size += increase_burns_elements_count; // Update max size
+            // user_burns.max_current_size = user_burns.list_burned.len() + increase_burns_elements_count; // Update max size
+            user_burns.max_current_size = <usize as TryInto<u32>>::try_into(user_burns.list_burned.len()).unwrap() + increase_burns_elements_count; // Update max size
+            
+            
         }
- */
+    user_burns.last_burned = *mints_to_delete.last().unwrap(); // set last burned
+    user_burns.total_count_burned += <usize as TryInto<u32>>::try_into(mints_to_delete_len).unwrap(); // update total count
+    user_burns.list_burned.extend(mints_to_delete); // add all deleted to burned list
 
     Ok(())
 }
