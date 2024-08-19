@@ -15,6 +15,7 @@ import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@impo
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
 import { ERROR_DELAY, MINT_QR_URI_PATH, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
 import { HOST, PORT } from '@consts/host'
+import { saveMints } from '@helpers/poap_alyra.helper'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
@@ -30,7 +31,8 @@ const MintTestPage: NextPage = () => {
 
   const defaultCandyMachineAddress = ``
 
-  const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
+  // const { connected, publicKey: connectedWalletPublicKey, wallet } = useWallet()
+  const wallet = useWallet()
   const [isProcessingMintPaidByWallet, setIsProcessingMintPaidByWallet] = useState(false)
   const [isProcessingMintPaidByApp, setisProcessingMintPaidByApp] = useState(false)
   const [isValidCandyMachineAddress, setisValidCandyMachineAddress] = useState<boolean>(false)
@@ -42,8 +44,8 @@ const MintTestPage: NextPage = () => {
   const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
-    return connected && connectedWalletPublicKey
-  }, [connected, connectedWalletPublicKey]);
+    return wallet.connected && wallet.publicKey
+  }, [wallet.connected, wallet.publicKey]);
 
   const toast = useToast()
   const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
@@ -163,12 +165,14 @@ const MintTestPage: NextPage = () => {
     }
     try {
       setIsProcessingMintPaidByWallet(true)
-      if (!wallet?.adapter) {
-        console.error(`${LOGPREFIX} Wallet adapter not found`)
+      // if (!wallet?.adapter) {
+      if (!wallet?.wallet?.adapter) {
+          console.error(`${LOGPREFIX} Wallet adapter not found`)
         return
       }
       const mintInput: mplhelp_T_MintNftCm_fromWallet_Input = {
-        walletAdapter: wallet.adapter,
+        // walletAdapter: wallet.adapter,
+        walletAdapter: wallet.wallet.adapter,
         candyMachineAddress,
       }
       const mintResponse: mplhelp_T_MintNftCMResult = await mplxH_mintNftFromCM(
@@ -246,7 +250,7 @@ const MintTestPage: NextPage = () => {
   const submitMintPaidByApp = async () => {
     const LOGPREFIX = `${FILEPATH}:submitMintPaidByApp: `
     // Guard
-    if (!isConnected) {
+    if (!isConnected||!wallet) {
       warnIsNotConnected(); return
     }
     try {
@@ -258,7 +262,7 @@ const MintTestPage: NextPage = () => {
         },
         body: JSON.stringify({
           candyMachineAddress: candyMachineAddress,
-          minterAddress: connectedWalletPublicKey?.toBase58()
+          minterAddress: wallet.publicKey?.toBase58()
         })
       });
       const mintResponse: mintFromCmFromAppResponseData = await res.json();
@@ -307,6 +311,8 @@ const MintTestPage: NextPage = () => {
         setTimeout(() => {
           updateRemainingItems()
         }, AFTER_MINT_REFRESH_COUNT_DELAY)
+        // Call our program : save mint
+        await saveMints( wallet, [mintResponse.mintAddress])
       } else {
         const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
@@ -500,7 +506,7 @@ const MintTestPage: NextPage = () => {
 
               <Fade in={true}>
                 <Button
-                  isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                  isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
                   isLoading={isProcessingMintPaidByWallet}
                   onClick={submitMintPaidByWallet}
                   colorScheme='purple'
@@ -515,7 +521,7 @@ const MintTestPage: NextPage = () => {
 
               <Fade in={true}>
                 <Button
-                  isDisabled={!connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                  isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
                   isLoading={isProcessingMintPaidByApp}
                   onClick={submitMintPaidByApp}
                   colorScheme='green'

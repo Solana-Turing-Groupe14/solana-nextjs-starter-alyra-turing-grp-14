@@ -1,8 +1,8 @@
 // use anchor_lang::constant;
 
-static ACCOUNT_SEED_DATA: &'static str = "SoaplanaUserData";
-static ACCOUNT_SEED_MINTS: &'static str = "SoaplanaUserMints";
-static ACCOUNT_SEED_BURNS: &'static str = "SoaplanaUserBurns";
+static ACCOUNT_SEED_DATA: &'static str = "AlyraPoapUserData";
+static ACCOUNT_SEED_MINTS: &'static str = "AlyraPoapUserMints";
+static ACCOUNT_SEED_BURNS: &'static str = "AlyraPoapUserBurns";
 
 pub static ACCOUNT_SEED_DATA_BYTES: &[u8] = ACCOUNT_SEED_DATA.as_bytes();
 pub static ACCOUNT_SEED_MINTS_BYTES: &[u8] = ACCOUNT_SEED_MINTS.as_bytes();
