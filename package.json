@@ -7,7 +7,7 @@
     "clean:npm": "npm cache clean --force && npm cache verify",
     "clean:scripts-validator-data": "yarn run del-cli ./scripts/test-ledger",
     "clean:all": "yarn run clean:build && yarn run clean:node",
-    "clean:ALL": "yarn run clean:all && yarn run clean:npm && yarn run clean:scripts-validator-data",
+    "clean:ALL": "yarn run clean:npm && yarn run clean:scripts-validator-data && yarn run clean:all",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
