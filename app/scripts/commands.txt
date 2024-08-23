@@ -2,3 +2,7 @@ solana airdrop 10
 
 solana address
 
+anchor deploy --provider.cluster localnet
+anchor deploy --provider.cluster devnet
+
+anchor idl init --provider.cluster localnet --filepath target/idl/poap_alyra.json 2zk7q3iwcty9gZBfzQhTa7Z8ktyvjiz4gTPjRRBAT5Vp
