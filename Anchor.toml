@@ -1,14 +1,15 @@
 [toolchain]
+anchor_version = "0.29.0"
 
 [features]
 resolution = true
 skip-lint = false
 
 [programs.localnet]
-poap_alyra = "D9cwyogXbCP7CfafmRGrkDe2acpSbzcgVng3Gzw6UP8L"
+poap_alyra = "Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd"
 
 [programs.devnet]
-poap_alyra = "D9cwyogXbCP7CfafmRGrkDe2acpSbzcgVng3Gzw6UP8L"
+poap_alyra = "Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd"
 
 [registry]
 url = "https://api.apr.dev"
@@ -16,6 +17,7 @@ url = "https://api.apr.dev"
 [provider]
 #cluster = "localnet"
 cluster = "devnet"
+#wallet = "~/.config/solana/id.json"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
