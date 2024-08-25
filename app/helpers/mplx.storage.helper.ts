@@ -52,7 +52,7 @@ export const uploadJson = async(_umiStorage:MPL_T_Umi, someJson: unknown): Promi
 // --------------------------------------------------
 
 export const uploadSingleFile = async(_umiStorage:MPL_T_Umi, _file:File): Promise<string> => {
-  const LOGPREFIX = `${filePath}:uploadSingleFile: `
+  // const LOGPREFIX = `${filePath}:uploadSingleFile: `
   // console.debug(`${LOGPREFIX}()`)
   if (!_umiStorage) {
     throw new Error('_umiStorage not provided')
