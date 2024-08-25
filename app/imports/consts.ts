@@ -21,9 +21,10 @@ if (!poapAlyraProgramId) {
     throw new Error('IDL_POAP_ALYRA_JSON.metadata.address || NEXT_PUBLIC_USER_DATA_PROGRAM_ID is not set')
 }
 // console.debug('NEXT_PUBLIC_USER_DATA_PROGRAM_ID', programID)
+// console.debug('poapAlyraProgramId', poapAlyraProgramId)
 
 export const USER_DATA_PROGRAM_ID = new PublicKey(programID);
-export const POAP_ALYRA_PROGRAM_ID = new PublicKey(programID);
+export const POAP_ALYRA_PROGRAM_ID = new PublicKey(poapAlyraProgramId);
 
 // const USER_ACCOUNT_SEED_STRING = "account";
 const USER_ACCOUNT_SEED_STRING = "useraccount";
