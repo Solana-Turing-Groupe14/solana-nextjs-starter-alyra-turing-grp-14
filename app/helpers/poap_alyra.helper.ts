@@ -122,8 +122,8 @@ const mintAlyraPoap = async (wallet: WalletContextState, mints: string[]): Promi
       console.warn("Wallet not connected")
       return null;
     }
+    
     const mintPoapTransaction = await getMintPoapAlyraTransactionWithAnchor(wallet.publicKey, mints);
-
     console.debug(`${LOGPREFIX}mintPoapTransaction=${JSON.stringify(mintPoapTransaction)}`);
     const recentBlockhash = await getRecentBlockhash();
 
@@ -149,7 +149,6 @@ const mintAlyraPoap = async (wallet: WalletContextState, mints: string[]): Promi
         } else {
           console.error(`${LOGPREFIX}Error: ${error}`);
         }
-
       }
     }
   } catch (error) {
@@ -357,7 +356,7 @@ export const getMintPoapAlyraTransactionWithAnchor = async (publicKey: PublicKey
       ], 
       POAP_ALYRA_PROGRAM_ID
     );
-    const [userMintsAccountPda, userMintsAccountBump] = PublicKey.findProgramAddressSync(
+    const [userMintsAccountPda] = PublicKey.findProgramAddressSync(
       [
         POAP_ALYRA_USER_MINTS_ACCOUNT_SEED, 
         publicKey.toBuffer()
@@ -368,11 +367,11 @@ export const getMintPoapAlyraTransactionWithAnchor = async (publicKey: PublicKey
     console.debug(`${LOGPREFIX}userAccountPda:${userAccountPda} userMintsAccountPda:${userMintsAccountPda}`);
     const pubKeyArray = stringArrayToPublicKeyArray(mints);
 
-    return await programPoapAlyra.methods.addMints(userMintsAccountBump, pubKeyArray )
+    return await programPoapAlyra.methods.addMints( pubKeyArray )
       .accounts({
         userData: userAccountPda,
         userMints: userMintsAccountPda,
-        signer: publicKey,
+        owner: publicKey,
         systemProgram: SystemProgram.programId
       })
       .transaction()

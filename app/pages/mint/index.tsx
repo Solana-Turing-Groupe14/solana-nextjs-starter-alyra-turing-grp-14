@@ -167,7 +167,8 @@ const MintTestPage: NextPage = () => {
     }
     try {
       // Call our program : save mint
-      await saveMints( wallet, ['Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3'])
+      // await saveMints( wallet, ['Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3'])
+      await saveMints( wallet, ['6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr'])
     } catch (error) {
       const errorMsg = (error instanceof Error ? error.message : `${error}`)
       console.error(`${LOGPREFIX}`, errorMsg);
