@@ -10,7 +10,8 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useMemo } from "react"
-import { API_MINT_FREE_PATH, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { API_MINT_FREE_PATH,
+  TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { mintFromCmFromAppResponseData } from "types"
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { CheckCircleIcon } from "@chakra-ui/icons"
@@ -37,9 +38,9 @@ export default function DirectMintFromQrPage() {
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: WARN_DELAY,
+      duration: TOAST_WARN_DELAY,
       isClosable: true,
-      position: 'top-right',
+      position: TOAST_POSITION,
     })
   }, [toast]) // warnIsNotConnected
 
@@ -84,8 +85,8 @@ export default function DirectMintFromQrPage() {
         const shortenedAddress = shortenAddress(mintResponse.mintAddress)
         const nftName = undefined
         toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
               <div className='flex justify-between'>
@@ -120,9 +121,9 @@ export default function DirectMintFromQrPage() {
           title: 'Error minting.',
           description: error,
           status: 'error',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
       }
 
@@ -148,9 +149,9 @@ export default function DirectMintFromQrPage() {
             title: 'candyMachineAddress is required.',
             description: "Please provide a candyMachineAddress.",
             status: 'warning',
-            duration: WARN_DELAY,
+            duration: TOAST_WARN_DELAY,
             isClosable: true,
-            position: 'top-right',
+            position: TOAST_POSITION,
           })
           return
         }

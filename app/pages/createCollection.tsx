@@ -34,6 +34,7 @@ import {
   mplhelp_T_NameUriArray,
   T_CreateCompleteCollectionCmConfigInputData,
 } from "types"
+import { TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { setIdentityPayer_WalletAdapter } from '@helpers/mplx.helper.common.dynamic'
 
 /* eslint-disable react/no-children-prop */
@@ -41,9 +42,6 @@ import { setIdentityPayer_WalletAdapter } from '@helpers/mplx.helper.common.dyna
 const FILEPATH = 'app/pages/createCollection.tsx'
 
 export default function CreateCollectionPage() {
-  const SUCCESS_DELAY = 60_000
-  const WARN_DELAY = 15_000
-  const ERROR_DELAY = 60_000
 
   const randomStringNumber = Math.random().toString(10).substring(2, 5)
   const MAX_FILE_SIZE = 1000 // 1MB
@@ -114,9 +112,9 @@ export default function CreateCollectionPage() {
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: WARN_DELAY,
+      duration: TOAST_WARN_DELAY,
       isClosable: true,
-      position: 'top-right',
+      position: TOAST_POSITION,
     })
   }
 
@@ -130,9 +128,9 @@ export default function CreateCollectionPage() {
           title: 'Missing data',
           description: "Please ensure all required data is provided.",
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         return
       }
@@ -209,9 +207,9 @@ export default function CreateCollectionPage() {
         title: 'Collection creation failed',
         description: errorMsg,
         status: 'error',
-        duration: ERROR_DELAY,
+        duration: TOAST_ERROR_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
     } finally {
       setIsProcessingNftCollectionCreation(false)
@@ -227,8 +225,8 @@ export default function CreateCollectionPage() {
     const uriCollection = collectionResponse.success && getAddressUri(collectionResponse.collectionAddress)
     const uriCandyMachine = finalizeResponse.success && getAddressUri(finalizeResponse.candyMachineAddress)
     toast({
-      duration: SUCCESS_DELAY,
-      position: 'top-right',
+      duration: TOAST_SUCCESS_DELAY,
+      position: TOAST_POSITION,
       render: ({ onClose }) => (
         <Box bg={toastSuccessBgColor} color={toastTestColor} p={3} borderRadius='lg'>
           <div className='flex justify-between'>
@@ -279,9 +277,9 @@ export default function CreateCollectionPage() {
           title: 'Metadata not found',
           description: "Please upload metadata.",
           status: 'warning',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         return
       }
@@ -291,9 +289,9 @@ export default function CreateCollectionPage() {
           title: 'NFTs not found',
           description: "Please upload NFTs.",
           status: 'warning',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         return
       }
@@ -342,8 +340,8 @@ export default function CreateCollectionPage() {
         const uriCandyMachine = getAddressUri(response.candyMachineAddress)
         setCandyMachineAddress(response.candyMachineAddress)
         toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
           render: ({ onClose }) => (
             <Box
               bg={toastSuccessBgColor}
@@ -388,9 +386,9 @@ export default function CreateCollectionPage() {
           title: 'Collection creation failed',
           description: errorMsg,
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
       }
     } catch (error) {
@@ -401,9 +399,9 @@ export default function CreateCollectionPage() {
         title: 'Collection creation failed',
         description: errorMsg,
         status: 'error',
-        duration: ERROR_DELAY,
+        duration: TOAST_ERROR_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
 
     } finally {
@@ -464,9 +462,9 @@ export default function CreateCollectionPage() {
         title: 'Mint fee amount too high',
         description: `Mint fee amount must be at most ${MINT_FEE_MAX_AMOUNT}`,
         status: 'warning',
-        duration: WARN_DELAY,
+        duration: TOAST_WARN_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
       value = MINT_FEE_MAX_AMOUNT
     }
@@ -475,9 +473,9 @@ export default function CreateCollectionPage() {
         title: 'Mint fee amount too low',
         description: `Mint fee amount must be at least ${MINT_FEE_MIN_AMOUNT}`,
         status: 'warning',
-        duration: WARN_DELAY,
+        duration: TOAST_WARN_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
       value = MINT_FEE_MIN_AMOUNT
     }
@@ -537,9 +535,9 @@ export default function CreateCollectionPage() {
           title: 'NFT count must be greater than 0',
           description: "Please increase NFT count to at least 1.",
           status: 'warning',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         return
       }
@@ -576,9 +574,9 @@ export default function CreateCollectionPage() {
           title: 'Collection metadata upload failed',
           description: "Invalid uri after upload",
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         setUploadedCollectionUploadedMetadataUri('')
         return
@@ -590,9 +588,9 @@ export default function CreateCollectionPage() {
         title: 'Collection metadata uploaded',
         description: "Collection metadata generated & uploaded successfully.",
         status: 'success',
-        duration: SUCCESS_DELAY,
+        duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
 
       const jsonMetadataArray = generateJsonNftMetadata(collectionMetadataJson, nftCount)
@@ -602,9 +600,9 @@ export default function CreateCollectionPage() {
           title: 'NFT metadata generation failed',
           description: "Invalid content",
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         setUploadedCollectionUploadedNftsNameUriArray([])
         return
@@ -625,9 +623,9 @@ export default function CreateCollectionPage() {
         title: 'NFT metadata uploaded',
         description: `${nftCount} NFT metadata files successfully generated & uploaded.`,
         status: 'success',
-        duration: SUCCESS_DELAY,
+        duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
 
     } catch (error) {
@@ -636,9 +634,9 @@ export default function CreateCollectionPage() {
         title: 'Metadata upload failed',
         description: "An error occurred while uploading metadata.",
         status: 'error',
-        duration: ERROR_DELAY,
+        duration: TOAST_ERROR_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
     }
   } // handleUploaJsonFiles
@@ -655,9 +653,9 @@ export default function CreateCollectionPage() {
           title: 'No image to upload',
           description: "Please select an image to upload.",
           status: 'warning',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         return
       }
@@ -671,9 +669,9 @@ export default function CreateCollectionPage() {
           title: 'No fileUri',
           description: "No fileUri",
           status: 'warning',
-          duration: WARN_DELAY,
+          duration: TOAST_WARN_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
         setUploadedImageUri('') // Clear uploaded image uri
         return
@@ -683,9 +681,9 @@ export default function CreateCollectionPage() {
         title: 'Image uploaded',
         description: "Image uploaded successfully.",
         status: 'success',
-        duration: SUCCESS_DELAY,
+        duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
       })
       // console.debug(`${LOGPREFIX}fileUri`, fileUri);
     } catch (error) {

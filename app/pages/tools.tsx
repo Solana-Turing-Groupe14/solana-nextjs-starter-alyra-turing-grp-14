@@ -7,7 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
@@ -44,9 +44,9 @@ export default function ToolsPage() {
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: WARN_DELAY,
+      duration: TOAST_WARN_DELAY,
       isClosable: true,
-      position: 'top-right',
+      position: TOAST_POSITION,
     })
   }
 
@@ -89,8 +89,8 @@ export default function ToolsPage() {
         const addressUri = getAddressUri(address)
         const shortenedAddress = shortenAddress(address)
         toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
           render: ({ onClose }) => (
             <Box
               bg={toastSuccessBgColor}
@@ -147,9 +147,9 @@ export default function ToolsPage() {
           title: 'Airdrop failed',
           description: error,
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
       }
 
@@ -235,9 +235,9 @@ export default function ToolsPage() {
             title: 'Airdrop amount too high',
             description: `Airdrop amount must be at most ${AIRDROP_MAX_AMOUNT}`,
             status: 'warning',
-            duration: WARN_DELAY,
+            duration: TOAST_WARN_DELAY,
             isClosable: true,
-            position: 'top-right',
+            position: TOAST_POSITION,
           })
           value = AIRDROP_MAX_AMOUNT
         }

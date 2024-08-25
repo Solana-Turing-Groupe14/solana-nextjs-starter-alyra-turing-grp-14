@@ -13,7 +13,8 @@ import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helper
 import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
 import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
 import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
-import { ERROR_DELAY, MINT_QR_URI_PATH, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { MINT_QR_URI_PATH,
+  TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { HOST, PORT } from '@consts/host'
 import { saveMints } from '@helpers/poap_alyra.helper'
 
@@ -101,18 +102,18 @@ const MintTestPage: NextPage = () => {
             toast({
               title: 'Valid Candy Machine address',
               status: 'success',
-              duration: SUCCESS_DELAY,
+              duration: TOAST_SUCCESS_DELAY,
               isClosable: true,
-              position: 'top-right',
+              position: TOAST_POSITION,
             })
           } else {
             toast({
               title: 'Invalid Candy Machine address',
               description: 'Please enter a valid Candy Machine address',
               status: 'warning',
-              duration: WARN_DELAY,
+              duration: TOAST_WARN_DELAY,
               isClosable: true,
-              position: 'top-right',
+              position: TOAST_POSITION,
             })
           }
         } catch (error) {
@@ -122,9 +123,9 @@ const MintTestPage: NextPage = () => {
             title: 'Invalid Candy Machine address',
             description: `${errorMsg}`,
             status: 'warning',
-            duration: WARN_DELAY,
+            duration: TOAST_WARN_DELAY,
             isClosable: true,
-            position: 'top-right',
+            position: TOAST_POSITION,
           })
           setisValidCandyMachineAddress(false)
           setItemsRemaining(0)
@@ -151,11 +152,29 @@ const MintTestPage: NextPage = () => {
       status: 'warning',
       duration: 5_000,
       isClosable: true,
-      position: 'top-right',
+      position: TOAST_POSITION,
     })
   } // warnIsNotConnected
 
   // ------------------------------
+
+  
+  const testSaveMintToContract = async () => {
+    const LOGPREFIX = `${FILEPATH}:testSaveMintToContract: `
+    // Guard
+    if (!isConnected) {
+      warnIsNotConnected(); return
+    }
+    try {
+      // Call our program : save mint
+      await saveMints( wallet, ['Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3'])
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}`, errorMsg);
+    } finally {
+    }
+  } // testSaveMintToContract
+
 
   const submitMintPaidByWallet = async () => {
     const LOGPREFIX = `${FILEPATH}:submitMintPaidByWallet: `
@@ -184,104 +203,10 @@ const MintTestPage: NextPage = () => {
         const shortenedAddress = shortenAddress(mintResponse.mintAddress)
         const nftName = undefined
         toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
           render: ({ onClose }) => (
             <Box color='black' p={3} bg='green.200' borderRadius='lg'>
-              <div className='flex justify-between'>
-                <div className='flex '>
-                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
-                  <Text fontWeight="bold" >Mint done</Text>
-                </div>
-                <CloseButton size='sm' onClick={onClose} />
-              </div>
-              <div className='px-2 py-1'>
-                {mintResponse.mintAddress}
-              </div>
-
-              <div className='m-2'>
-                {mintAddressUri &&
-                  <Link href={mintAddressUri} isExternal className="flex text-end">
-                    <div className='mr-2'>
-                      {nftName ? nftName : shortenedAddress}
-                    </div>
-                    <ExternalLinkIcon size='16px' />
-                  </Link>
-                }
-              </div>
-
-            </Box>
-          ),
-        })
-        // wait few seconds before updating the remaining items
-        setTimeout(() => {
-          updateRemainingItems()
-        }, AFTER_MINT_REFRESH_COUNT_DELAY)
-      } else {
-        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
-        console.error(`${LOGPREFIX}`, errorMsg);
-        toast({
-          title: 'Mint failed',
-          description: `${errorMsg}`,
-          status: 'error',
-          duration: ERROR_DELAY,
-          isClosable: true,
-          position: 'top-right',
-        })
-      }
-    } catch (error) {
-      const errorMsg = (error instanceof Error ? error.message : `${error}`)
-      console.error(`${LOGPREFIX}`, errorMsg);
-      toast({
-        title: 'Mint failed',
-        description: `${errorMsg}`,
-        status: 'error',
-        duration: ERROR_DELAY,
-        isClosable: true,
-        position: 'top-right',
-      })
-    } finally {
-      setIsProcessingMintPaidByWallet(false)
-    }
-  } // submitMintPaidByWallet
-
-  // ------------------------------
-
-  const submitMintPaidByApp = async () => {
-    const LOGPREFIX = `${FILEPATH}:submitMintPaidByApp: `
-    // Guard
-    if (!isConnected||!wallet) {
-      warnIsNotConnected(); return
-    }
-    try {
-      setisProcessingMintPaidByApp(true)
-      const res = await fetch('/api/mint-free', {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          candyMachineAddress: candyMachineAddress,
-          minterAddress: wallet.publicKey?.toBase58()
-        })
-      });
-      const mintResponse: mintFromCmFromAppResponseData = await res.json();
-
-      // console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
-      if (mintResponse.success) {
-        const mintAddressUri = getAddressUri(mintResponse.mintAddress)
-        const shortenedAddress = shortenAddress(mintResponse.mintAddress)
-        const nftName = undefined
-        toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
-          render: ({ onClose }) => (
-            <Box
-              bg={toastSuccessBgColor}
-              color={toastTestColor}
-              p={3}
-              borderRadius='lg'
-            >
               <div className='flex justify-between'>
                 <div className='flex '>
                   <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
@@ -320,9 +245,9 @@ const MintTestPage: NextPage = () => {
           title: 'Mint failed',
           description: `${errorMsg}`,
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
       }
     } catch (error) {
@@ -332,9 +257,103 @@ const MintTestPage: NextPage = () => {
         title: 'Mint failed',
         description: `${errorMsg}`,
         status: 'error',
-        duration: ERROR_DELAY,
+        duration: TOAST_ERROR_DELAY,
         isClosable: true,
-        position: 'top-right',
+        position: TOAST_POSITION,
+      })
+    } finally {
+      setIsProcessingMintPaidByWallet(false)
+    }
+  } // submitMintPaidByWallet
+
+  // ------------------------------
+
+  const submitMintPaidByApp = async () => {
+    const LOGPREFIX = `${FILEPATH}:submitMintPaidByApp: `
+    // Guard
+    if (!isConnected||!wallet) {
+      warnIsNotConnected(); return
+    }
+    try {
+      setisProcessingMintPaidByApp(true)
+      const res = await fetch('/api/mint-free', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          candyMachineAddress: candyMachineAddress,
+          minterAddress: wallet.publicKey?.toBase58()
+        })
+      });
+      const mintResponse: mintFromCmFromAppResponseData = await res.json();
+
+      console.debug(`${LOGPREFIX} mint:mintResponse: `, mintResponse)
+      if (mintResponse.success) {
+        const mintAddressUri = getAddressUri(mintResponse.mintAddress)
+        const shortenedAddress = shortenAddress(mintResponse.mintAddress)
+        const nftName = undefined
+        toast({
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
+          render: ({ onClose }) => (
+            <Box
+              bg={toastSuccessBgColor}
+              color={toastTestColor}
+              p={3}
+              borderRadius='lg'
+            >
+              <div className='flex justify-between'>
+                <div className='flex '>
+                  <CheckCircleIcon boxSize={5} className='ml-1 mr-2' />
+                  <Text fontWeight="bold" >Mint done</Text>
+                </div>
+                <CloseButton size='sm' onClick={onClose} />
+              </div>
+              <div className='px-2 py-1'>
+                {mintResponse.mintAddress}
+              </div>
+
+              <div className='m-2'>
+                {mintAddressUri &&
+                  <Link href={mintAddressUri} isExternal className="flex text-end">
+                    <div className='mr-2'>
+                      {nftName ? nftName : shortenedAddress}
+                    </div>
+                    <ExternalLinkIcon size='16px' />
+                  </Link>
+                }
+              </div>
+
+            </Box>
+          ),
+        })
+        // wait few seconds before updating the remaining items
+        setTimeout(() => {
+          updateRemainingItems()
+        }, AFTER_MINT_REFRESH_COUNT_DELAY)
+      } else {
+        const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
+        console.error(`${LOGPREFIX}`, errorMsg);
+        toast({
+          title: 'Mint failed',
+          description: `${errorMsg}`,
+          status: 'error',
+          duration: TOAST_ERROR_DELAY,
+          isClosable: true,
+          position: TOAST_POSITION,
+        })
+      }
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}`, errorMsg);
+      toast({
+        title: 'Mint failed',
+        description: `${errorMsg}`,
+        status: 'error',
+        duration: TOAST_ERROR_DELAY,
+        isClosable: true,
+        position: TOAST_POSITION,
       })
     } finally {
       setisProcessingMintPaidByApp(false)
@@ -351,10 +370,26 @@ const MintTestPage: NextPage = () => {
   // ------------------------------
 
   const getRemainingItems = useCallback(async (_candyMachineAddress: string): Promise<number> => {
+    const getMPL_F_publicKey = (address: string):MPL_T_PublicKey|null => {
+      try {
+        const publicKey: MPL_T_PublicKey = MPL_F_publicKey(address)
+        return publicKey
+        }
+      catch (error) {
+        return null
+      }
+    }
     try {
-      const candyMachinePublicKey: MPL_T_PublicKey = MPL_F_publicKey(_candyMachineAddress)
+      if (_candyMachineAddress.length === 0 || _candyMachineAddress.length < 32) {
+        return 0
+      }
+      const candyMachinePublicKey = getMPL_F_publicKey(_candyMachineAddress)
+      if (!candyMachinePublicKey) {
+        return 0
+      }
       // Load CM
       try {
+
         const candyMachine = await MPL_F_fetchCandyMachine(umi, candyMachinePublicKey)
         const remainingItems = candyMachine.itemsLoaded - Number(candyMachine.itemsRedeemed.toString(10))
         return remainingItems
@@ -533,6 +568,22 @@ const MintTestPage: NextPage = () => {
                   Mint (free)
                 </Button>
               </Fade>
+
+
+              <Fade in={true}>
+                <Button
+                  onClick={testSaveMintToContract}
+                  colorScheme='orange'
+                  size="lg"
+                  width="full"
+                  leftIcon={<AddIcon />}
+                  borderRadius="full"
+                >
+                  Test save mint to contract
+                </Button>
+
+              </Fade>
+
             </VStack>
           </form>
         </VStack>
