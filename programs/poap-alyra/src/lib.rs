@@ -9,7 +9,7 @@ pub mod states;
 // ---------- consts ----------
 
 // Program public key
-declare_id!("D9cwyogXbCP7CfafmRGrkDe2acpSbzcgVng3Gzw6UP8L");
+declare_id!("Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd");
 
 // ---------- program ----------
 
