@@ -158,7 +158,7 @@ const MintTestPage: NextPage = () => {
 
   // ------------------------------
 
-  
+/*
   const testSaveMintToContract = async () => {
     const LOGPREFIX = `${FILEPATH}:testSaveMintToContract: `
     // Guard
@@ -168,14 +168,31 @@ const MintTestPage: NextPage = () => {
     try {
       // Call our program : save mint
       // await saveMints( wallet, ['Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3'])
-      await saveMints( wallet, ['6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr'])
+      // await saveMints( wallet, ['6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr'])
+      // await saveMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp'])
+
+      await saveMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
+        '6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr',
+        'Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3',
+        'Djeaa87hT9ijY7kHAEDD8TVu9x8GT8tLJxhNLhapVTxU',
+        'Djeaa87hT9ijY7kHAEDD8TVu9x8GT8tLJxhNLhapVTxU',
+        '7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
+        '3wTK45JVCSg3DMxtQHxxrH2mrzVWYwdHRbsy419TC837',
+        '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+        '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+        '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+        '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+        '6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr',
+        '9mbvZ7RjtfHZ53ZpeVJv8b2m2iPNK324GUcUEUePD2vJ',
+      ])
+
     } catch (error) {
       const errorMsg = (error instanceof Error ? error.message : `${error}`)
       console.error(`${LOGPREFIX}`, errorMsg);
     } finally {
     }
   } // testSaveMintToContract
-
+*/
 
   const submitMintPaidByWallet = async () => {
     const LOGPREFIX = `${FILEPATH}:submitMintPaidByWallet: `
@@ -570,7 +587,7 @@ const MintTestPage: NextPage = () => {
                 </Button>
               </Fade>
 
-
+{/* 
               <Fade in={true}>
                 <Button
                   onClick={testSaveMintToContract}
@@ -582,9 +599,8 @@ const MintTestPage: NextPage = () => {
                 >
                   Test save mint to contract
                 </Button>
-
               </Fade>
-
+ */}
             </VStack>
           </form>
         </VStack>
