@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
 import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
 import { fetchAssetsByOwner } from '@metaplex-foundation/mpl-core';
@@ -116,7 +115,6 @@ const NFTGallery: React.FC = () => {
         throw new Error("Wallet not connected");
       }
 
-      // const umi = createUmi('https://api.devnet.solana.com');
       const umi = getUmi();
       const owner = publicKey(walletPublicKey.toBase58());
 
