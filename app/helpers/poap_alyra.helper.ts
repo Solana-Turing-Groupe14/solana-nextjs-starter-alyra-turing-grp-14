@@ -45,7 +45,7 @@ if (RPC_URL === undefined) {
   userBurnsAccount: any,
 }
 
-export const saveMints = async (wallet: WalletContextState, mints: string[]): Promise<string | null> => {
+export const addMints = async (wallet: WalletContextState, mints: string[]): Promise<string | null> => {
   const LOGPREFIX = `${FILEPATH}:saveMints: `
     try {
       console.debug(`${LOGPREFIX} mints:${mints}`);
@@ -241,10 +241,76 @@ const showPoapAlyraUserAccounts = (poapAlyraUserAccounts:any) => {
 
   } catch (error) {
     console.error(`${LOGPREFIX}${error}`);
-    
   }
 }
 
+export const deleteMints = async (wallet: WalletContextState, mints: string[]): Promise<string | null> => {
+  const LOGPREFIX = `${FILEPATH}:saveMints: `
+    try {
+      console.debug(`${LOGPREFIX} mints:${mints}`);
+
+      if (!wallet || !wallet.publicKey) {
+        console.warn("Wallet not connected")
+        return null;
+      }
+
+      const poapAlyraUserAccounts = await getPoapAlyraUserAccounts(wallet.publicKey)
+      if (!poapAlyraUserAccounts || !poapAlyraUserAccounts.userAccount || !poapAlyraUserAccounts.userMintsAccount || !poapAlyraUserAccounts.userBurnsAccount) {
+        console.error(`${LOGPREFIX}no existing account not found`)
+        return null
+      }
+      deleteMintAlyraPoap( wallet, mints )
+
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  };
+
+
+  const deleteMintAlyraPoap = async (wallet: WalletContextState, mintsToDelete: string[]): Promise<string | null> => {
+    const LOGPREFIX = `${FILEPATH}:deleteMintAlyraPoap: `
+    try {
+      console.debug(`${LOGPREFIX}mintsToDelete:${ mintsToDelete}`);
+  
+      if (!wallet || !wallet.publicKey) {
+        console.warn("Wallet not connected")
+        return null;
+      }
+      
+      const deleteMintPoapTransaction = await getDeleteMintsPoapAlyraTransactionWithAnchor(wallet.publicKey, mintsToDelete);
+      console.debug(`${LOGPREFIX}deleteMintPoapTransaction=${JSON.stringify(deleteMintPoapTransaction)}`);
+      const recentBlockhash = await getRecentBlockhash();
+  
+      if (!wallet.signTransaction) {
+        console.warn("Wallet unable to sign transactions")
+        return null;
+      }
+  
+      if (deleteMintPoapTransaction && recentBlockhash) {
+          deleteMintPoapTransaction.feePayer = wallet.publicKey;
+          deleteMintPoapTransaction.recentBlockhash = recentBlockhash;
+          console.debug(`${LOGPREFIX}anchorWallet.signTransaction`);
+  
+        try {
+          const signedTransaction = await wallet.signTransaction(deleteMintPoapTransaction);
+          console.debug(`${LOGPREFIX}signedTransaction`, signedTransaction);
+          return await connection.sendRawTransaction(signedTransaction.serialize());
+        } catch (error) {
+          console.error(`${LOGPREFIX}error`, error);
+          if (error instanceof SendTransactionError) {
+            const errorLogs = await error.getLogs(connection);
+            console.error(`${LOGPREFIX}Error: ${errorLogs}`);
+          } else {
+            console.error(`${LOGPREFIX}Error: ${error}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  };
 
 const getPoapAlyraAccountSeed = (ACCOUNT_SEED_STRING: string): Buffer|null => {
   try {
@@ -381,6 +447,50 @@ export const getMintPoapAlyraTransactionWithAnchor = async (publicKey: PublicKey
     }
 };
 
+
+export const getDeleteMintsPoapAlyraTransactionWithAnchor = async (publicKey: PublicKey, mintsToDelete: string[]): Promise<Transaction | null> => {
+  const LOGPREFIX = `${FILEPATH}:getDeleteMintsToDeletePoapAlyraTransactionWithAnchor: `
+  try {
+    console.debug(`${LOGPREFIX} publicKey:${publicKey} mintsToDelete:${mintsToDelete}`);
+    const [userAccountPda] = PublicKey.findProgramAddressSync(
+      [
+        POAP_ALYRA_USER_ACCOUNT_SEED, 
+        publicKey.toBuffer()
+      ], 
+      POAP_ALYRA_PROGRAM_ID
+    );
+    const [userMintsAccountPda] = PublicKey.findProgramAddressSync(
+      [
+        POAP_ALYRA_USER_MINTS_ACCOUNT_SEED, 
+        publicKey.toBuffer()
+      ], 
+      POAP_ALYRA_PROGRAM_ID
+    );
+    const [userBurnsAccountPda] = PublicKey.findProgramAddressSync(
+      [
+        POAP_ALYRA_USER_BURNS_ACCOUNT_SEED, 
+        publicKey.toBuffer()
+      ], 
+      POAP_ALYRA_PROGRAM_ID
+    );
+
+    console.debug(`${LOGPREFIX}userAccountPda:${userAccountPda} userMintsAccountPda:${userMintsAccountPda}`);
+    const pubKeyArray = stringArrayToPublicKeyArray(mintsToDelete);
+
+    return await programPoapAlyra.methods.burnMints( pubKeyArray )
+      .accounts({
+        userData: userAccountPda,
+        userMints: userMintsAccountPda,
+        userBurns: userBurnsAccountPda,
+        owner: publicKey,
+        systemProgram: SystemProgram.programId
+      })
+      .transaction()
+    } catch (error) {
+      console.error(`${LOGPREFIX}error: ${error}`);
+      return null;
+    }
+};
 /*
 // export const getInitializePoapAlyraAccountsTransactionWithoutAnchor = async (publicKey: PublicKey, mints: string[]): Promise<Transaction | null> => {
 //   const LOGPREFIX = `${FILEPATH}:getInitializePoapAlyraAccountsTransactionWithoutAnchor: `

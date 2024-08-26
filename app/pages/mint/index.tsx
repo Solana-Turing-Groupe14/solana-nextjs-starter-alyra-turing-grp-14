@@ -16,7 +16,7 @@ import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mp
 import { MINT_QR_URI_PATH,
   TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { HOST, PORT } from '@consts/host'
-import { saveMints } from '@helpers/poap_alyra.helper'
+import { addMints /* , deleteMints */ } from '@helpers/poap_alyra.helper'
 
 const FILEPATH = 'app/pages/mint/index.tsx'
 
@@ -159,8 +159,8 @@ const MintTestPage: NextPage = () => {
   // ------------------------------
 
 /*
-  const testSaveMintToContract = async () => {
-    const LOGPREFIX = `${FILEPATH}:testSaveMintToContract: `
+  const testSaveAddMintToContract = async () => {
+    const LOGPREFIX = `${FILEPATH}:testSaveAddMintToContract: `
     // Guard
     if (!isConnected) {
       warnIsNotConnected(); return
@@ -171,7 +171,7 @@ const MintTestPage: NextPage = () => {
       // await saveMints( wallet, ['6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr'])
       // await saveMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp'])
 
-      await saveMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
+      await addMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
         '6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr',
         'Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3',
         'Djeaa87hT9ijY7kHAEDD8TVu9x8GT8tLJxhNLhapVTxU',
@@ -191,7 +191,41 @@ const MintTestPage: NextPage = () => {
       console.error(`${LOGPREFIX}`, errorMsg);
     } finally {
     }
-  } // testSaveMintToContract
+  } // testSaveAddMintToContract
+
+  const testSaveDeleteMintToContract = async () => {
+    const LOGPREFIX = `${FILEPATH}:testSaveAddMintToContract: `
+    // Guard
+    if (!isConnected) {
+      warnIsNotConnected(); return
+    }
+    try {
+      // Call our program : save mint
+      await deleteMints( wallet, ['Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3'])
+      // await saveMints( wallet, ['6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr'])
+      // await saveMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp'])
+
+      // await deleteMints( wallet, ['7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
+      //   '6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr',
+      //   'Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3',
+      //   'Djeaa87hT9ijY7kHAEDD8TVu9x8GT8tLJxhNLhapVTxU',
+      //   'Djeaa87hT9ijY7kHAEDD8TVu9x8GT8tLJxhNLhapVTxU',
+      //   '7SKmzK2nKirixwJj1FvYH5oMw6NGv4XS1CAHBH4f7sHp',
+      //   '3wTK45JVCSg3DMxtQHxxrH2mrzVWYwdHRbsy419TC837',
+      //   '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+      //   '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+      //   '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+      //   '2wwkRrW8Ju2f2t8vrnEvnKHuo41WDNw9aC8QfDQK56Zm',
+      //   '6DnSXpqiHoY4SzDhFfMinyxLrem9NAARxJYxynzQGEVr',
+      //   '9mbvZ7RjtfHZ53ZpeVJv8b2m2iPNK324GUcUEUePD2vJ',
+      // ])
+
+    } catch (error) {
+      const errorMsg = (error instanceof Error ? error.message : `${error}`)
+      console.error(`${LOGPREFIX}`, errorMsg);
+    } finally {
+    }
+  } // testSaveAddMintToContract
 */
 
   const submitMintPaidByWallet = async () => {
@@ -255,7 +289,7 @@ const MintTestPage: NextPage = () => {
           updateRemainingItems()
         }, AFTER_MINT_REFRESH_COUNT_DELAY)
         // Call our program : save mint
-        await saveMints( wallet, [mintResponse.mintAddress])
+        await addMints( wallet, [mintResponse.mintAddress])
       } else {
         const errorMsg = (mintResponse && mintResponse.success === false ? mintResponse.error : 'Unknown error')
         console.error(`${LOGPREFIX}`, errorMsg);
@@ -587,20 +621,33 @@ const MintTestPage: NextPage = () => {
                 </Button>
               </Fade>
 
-{/* 
+{/*
               <Fade in={true}>
                 <Button
-                  onClick={testSaveMintToContract}
+                  onClick={testSaveAddMintToContract}
                   colorScheme='orange'
                   size="lg"
                   width="full"
                   leftIcon={<AddIcon />}
                   borderRadius="full"
                 >
-                  Test save mint to contract
+                  Test save ADD mint to contract
                 </Button>
               </Fade>
- */}
+              <Fade in={true}>
+                <Button
+                  onClick={testSaveDeleteMintToContract}
+                  colorScheme='orange'
+                  size="lg"
+                  width="full"
+                  leftIcon={<AddIcon />}
+                  borderRadius="full"
+                >
+                  Test save DELETE mint to contract
+                </Button>
+              </Fade>
+*/}
+
             </VStack>
           </form>
         </VStack>
