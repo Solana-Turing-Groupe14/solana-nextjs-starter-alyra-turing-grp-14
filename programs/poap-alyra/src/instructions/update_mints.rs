@@ -1,10 +1,7 @@
 use anchor_lang::prelude::*;
-// use solana_program::system_instruction;
-// use anchor_lang::system_program::{Transfer, transfer};
 
 use std::cmp::max;
 use std::{collections::BTreeSet, iter::FromIterator};
-//use crate::accounts::*;
 use crate::constants::*;
 
 use crate::errors::SoaplanaError;
@@ -12,8 +9,6 @@ use crate::errors::SoaplanaError;
 use crate::states::UserData;
 use crate::states::UserMints;
 use crate::states::UserBurns;
-
-//pub mod accounts;
 
 pub fn add_mints(
     ctx_add_mints: &mut Context<AddMintsStruct>,
@@ -30,7 +25,6 @@ pub fn add_mints(
 }
 
 pub fn add_mints_int<'info>(
-    // user_data: Account<'info, UserData>,
     user_mints: &mut Account<'info, UserMints>,
     owner: &mut Signer<'info>,
     system_program: Program<'info, System>,
@@ -103,23 +97,35 @@ pub fn add_mints_int<'info>(
         );
     }; // reallocate space
 
-    // let user_mints = &mut ctx.accounts.user_mints;
-    // let user_mints = &mut user_mints;
-
-    //user_mints.last_minted = new_mint;
-    user_mints.last_minted = *new_mints.last().unwrap();
-    user_mints.total_count_minted += <usize as TryInto<u32>>::try_into(new_mints_len).unwrap();
-
     // Check
     msg!(
         "user_mints.max_current_size = {}",
         user_mints.max_current_size
     );
 
+    // remove existing elements from new_mints if any (to avoid duplicates)
+    let existing_list_minted = user_mints.list_minted.clone();
+    let existing_mints_to_remove = BTreeSet::from_iter(existing_list_minted);
+
+    let new_mints_cleaned = &mut new_mints.clone();
+    new_mints_cleaned.dedup(); // remove duplicates
+    new_mints_cleaned.retain(|e| !existing_mints_to_remove.contains(e));
+
     // push in vector
     let list_minted = &mut user_mints.list_minted;
+    list_minted.extend(new_mints_cleaned.clone()); // add only non existing new mints
 
-    list_minted.extend(new_mints); // add all
+    if new_mints_cleaned.len() > 0 {
+        msg!(
+            "Added {} new mints to user_mints.list_minted",
+            new_mints_cleaned.len()
+        );
+        user_mints.last_minted = *new_mints_cleaned.last().unwrap();
+    } else {
+        msg!("No new mints to add to user_mints.list_minted");
+    }
+    user_mints.total_count_minted = <usize as TryInto<u32>>::try_into(user_mints.list_minted.len()).unwrap();
+
     msg!(
         "Set  last mint: ctx.accounts.user_mint_data.last_minted={} ",
         user_mints.last_minted
@@ -170,7 +176,7 @@ pub fn delete_mints_int<'info>(
         user_mints.list_minted.len()
     );
 
-    // remove each from vec
+    // remove each from vec user_mints.list_minted
     let to_remove = BTreeSet::from_iter(mints_to_delete.clone());
     user_mints.list_minted.retain(|e| !to_remove.contains(e));
 
