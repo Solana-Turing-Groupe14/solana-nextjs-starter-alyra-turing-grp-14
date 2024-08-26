@@ -10,6 +10,7 @@ import {
   useDisclosure, Container, Heading, useColorModeValue
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import { getUmi } from '@helpers/mplx.helper.dynamic';
 
 interface OffChainMetadata {
   image?: string;
@@ -115,7 +116,8 @@ const NFTGallery: React.FC = () => {
         throw new Error("Wallet not connected");
       }
 
-      const umi = createUmi('https://api.devnet.solana.com');
+      // const umi = createUmi('https://api.devnet.solana.com');
+      const umi = getUmi();
       const owner = publicKey(walletPublicKey.toBase58());
 
       console.log("Fetching NFTs for wallet:", owner);
