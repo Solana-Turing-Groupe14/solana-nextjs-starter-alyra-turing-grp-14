@@ -60,7 +60,7 @@ Test coll. name 119
 E8pGvJ7QFimYjxQfqobqo5LRTRvjt7vHpmrseqNaGYoo
 
 Test coll. name 061
-1
+0
 HPShDgGPsgdZbi3BALEtCYzzWh83APNU8HCn9nk36pEm
 
 Test coll. name 871
@@ -68,5 +68,11 @@ Test coll. name 871
 AuTiXfCukBKUup9DwDjPxVdDQuA7haKaeuchoRDqE6PM
 
 
+0
+EmEeRoFC8TBaB9t3nKHfdTCRoi8nLAWUgqHiSTviqjut
 
+6
 AGXVZgDaFE9hmQp4C7sHwvaqhVrwKZmpyYDPRMDZetnA
+
+nft:
+Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3
