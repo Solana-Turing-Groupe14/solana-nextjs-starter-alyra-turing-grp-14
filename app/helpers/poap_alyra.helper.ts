@@ -2,7 +2,8 @@ import { BN, Idl, Program } from "@coral-xyz/anchor";
 
 import { Connection, PublicKey,
   SendTransactionError, SystemProgram, Transaction,
-  TransactionInstruction } from "@solana/web3.js";
+  // TransactionInstruction
+} from "@solana/web3.js";
 
 import {
   POAP_ALYRA_PROGRAM_ID,
@@ -36,13 +37,6 @@ const programPoapAlyra = new Program<Idl>(IDL_POAP_ALYRA as Idl, POAP_ALYRA_PROG
 export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
 if (RPC_URL === undefined) {
   throw new Error('RPC_URL not found')
-}
-
-/* export */ type pa_help_T_poapAlyraAccounts =
-{
-  userAccount: any,
-  userMintsAccount: any,
-  userBurnsAccount: any,
 }
 
 export const addMints = async (wallet: WalletContextState, mints: string[]): Promise<string | null> => {
