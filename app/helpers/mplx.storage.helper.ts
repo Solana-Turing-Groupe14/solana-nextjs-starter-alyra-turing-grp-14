@@ -8,7 +8,10 @@ import {
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { MPL_F_createGenericFileFromBrowserFile } from '@imports/mtplx.storage.imports';
 
-const filePath = "app/helpers/mplx.storage.helpers.ts"
+// Monkey patch the Connection prototype until UMI library is updated
+import { Connection } from "@solana/web3.js";
+
+// const filePath = "app/helpers/mplx.storage.helpers.ts"
 
 // --------------------------------------------------
 
@@ -17,9 +20,45 @@ if (!token) {
   throw new Error('NFT_STORAGE_API_KEY not found')
 }
 
+// const mplx_umi_storage: MPL_T_Umi =
+//   createUmi(PUBLIC_STORAGE_RPC_URL).use(nftStorageUploader({
+//     token: process.env.NEXT_PUBLIC_NFT_STORAGE_KEY||"", }))
+
+// Monkey patch the Connection prototype until UMI library is updated
+Connection.prototype.getRecentBlockhash = async function (commitment) {
+  try {
+    const { blockhash, lastValidBlockHeight } =
+      await this.getLatestBlockhash(commitment);
+    const recentPrioritizationFees = await this.getRecentPrioritizationFees();
+    const averageFee =
+      recentPrioritizationFees.length > 0
+        ? recentPrioritizationFees.reduce(
+            (sum, fee) => sum + fee.prioritizationFee,
+            0
+          ) / recentPrioritizationFees.length
+        : 5000;
+
+    return {
+      blockhash,
+      feeCalculator: {
+        lamportsPerSignature: averageFee
+      }
+    };
+  } catch (e) {
+    throw new Error('failed to get recent blockhash: ' + e);
+  }
+};
+
+// Monkey patch the Connection prototype until UMI library is updated
+const mplxStorageHelperConnection = new Connection(PUBLIC_STORAGE_RPC_URL || "", "confirmed");
+
 const mplx_umi_storage: MPL_T_Umi =
-  createUmi(PUBLIC_STORAGE_RPC_URL).use(nftStorageUploader({
-    token: process.env.NEXT_PUBLIC_NFT_STORAGE_KEY||"", }))
+// Monkey patch the Connection prototype until UMI library is updated
+// createUmi(PUBLIC_STORAGE_RPC_URL)
+createUmi(mplxStorageHelperConnection)
+  .use(nftStorageUploader({
+  token: process.env.NEXT_PUBLIC_NFT_STORAGE_KEY||"", }))
+
 if (!mplx_umi_storage) {
   throw new Error('mplx_umi_storage not found')
 }
