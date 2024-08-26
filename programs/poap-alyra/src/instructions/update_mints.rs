@@ -124,7 +124,7 @@ pub fn add_mints_int<'info>(
     } else {
         msg!("No new mints to add to user_mints.list_minted");
     }
-    user_mints.total_count_minted = <usize as TryInto<u32>>::try_into(user_mints.list_minted.len()).unwrap();
+    user_mints.total_count_minted += <usize as TryInto<u32>>::try_into(new_mints_cleaned.len()).unwrap(); // update total count
 
     msg!(
         "Set  last mint: ctx.accounts.user_mint_data.last_minted={} ",
