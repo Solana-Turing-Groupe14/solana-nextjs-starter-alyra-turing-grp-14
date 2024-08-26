@@ -1,4 +1,4 @@
-import { BN, Idl, Program } from "@coral-xyz/anchor";
+import { Idl, Program } from "@coral-xyz/anchor";
 
 import { Connection, PublicKey,
   SendTransactionError, SystemProgram, Transaction,
@@ -16,7 +16,9 @@ import {
  } from "../imports/consts";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 import { getRecentBlockhash } from "@helpers/solana.helper";
-
+import {
+  pa_help_T_poapAlyraAccounts
+} from 'types';
 
 const FILEPATH = 'app/helpers/poap_alyra.helper.ts'
 
