@@ -4,9 +4,9 @@ const UNINITIALIZED_PUBLIC_KEY_STRING = '11111111111111111111111111111111';
 const UNINITIALIZED_PUBLIC_KEY = new web3.PublicKey(UNINITIALIZED_PUBLIC_KEY_STRING);
 
 // Seeds
-const SEED_USER_DATA_ACCOUNT = "SoaplanaUserData";
-const SEED_USER_MINTS_ACCOUNT = "SoaplanaUserMints";
-const SEED_USER_BURNS_ACCOUNT = "SoaplanaUserBurns";
+const SEED_USER_DATA_ACCOUNT = "AlyraPoapUserData";
+const SEED_USER_MINTS_ACCOUNT = "AlyraPoapUserMints";
+const SEED_USER_BURNS_ACCOUNT = "AlyraPoapUserBurns";
 
 // Consts should matche the program's consts
 const LIST_INC_LEN = 1; // todo : 10 or 100

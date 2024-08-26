@@ -15,8 +15,8 @@ poap_alyra = "Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd"
 url = "https://api.apr.dev"
 
 [provider]
-#cluster = "localnet"
-cluster = "devnet"
+cluster = "localnet"
+#cluster = "devnet"
 #wallet = "~/.config/solana/id.json"
 wallet = "~/.config/solana/id.json"
 
@@ -25,6 +25,4 @@ wallet = "~/.config/solana/id.json"
 test-init-0 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/poap-alyra-init-0.ts"
 test-init-1 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/poap-alyra-init-1.ts"
 test-init-2-plus = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/poap-alyra-init-2-plus.ts"
-
-test-init-1-mint-1-plus = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/poap-alyra-init-1-mint-1-plus.ts"
 test-init-0-mint-2-plus-delete-all-mint-2-plus = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/poap-alyra-init-0-mint-2-plus-delete-all-mint-2-plus.ts"
