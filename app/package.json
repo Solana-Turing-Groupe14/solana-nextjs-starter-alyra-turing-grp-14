@@ -54,6 +54,7 @@
     "@metaplex-foundation/umi-uploader-irys": "^0.9.2",
     "@metaplex-foundation/umi-uploader-nft-storage": "^0.9.2",
     "@next/bundle-analyzer": "^14.2.4",
+    "@project-serum/anchor": "^0.26.0",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",

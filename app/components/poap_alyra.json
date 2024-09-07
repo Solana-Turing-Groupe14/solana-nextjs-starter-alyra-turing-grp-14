@@ -1,0 +1,375 @@
+{
+  "address": "Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd",
+  "metadata": {
+    "name": "poap_alyra",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_mints",
+      "discriminator": [
+        136,
+        167,
+        103,
+        171,
+        57,
+        145,
+        76,
+        242
+      ],
+      "accounts": [
+        {
+          "name": "user_data"
+        },
+        {
+          "name": "user_mints",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "user_data"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_mints",
+          "type": {
+            "vec": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "burn_mints",
+      "discriminator": [
+        255,
+        57,
+        84,
+        213,
+        124,
+        166,
+        29,
+        158
+      ],
+      "accounts": [
+        {
+          "name": "user_data"
+        },
+        {
+          "name": "user_mints",
+          "writable": true
+        },
+        {
+          "name": "user_burns",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "user_data"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "mints_to_delete",
+          "type": {
+            "vec": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "user_data",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  65,
+                  108,
+                  121,
+                  114,
+                  97,
+                  80,
+                  111,
+                  97,
+                  112,
+                  85,
+                  115,
+                  101,
+                  114,
+                  68,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_mints",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  65,
+                  108,
+                  121,
+                  114,
+                  97,
+                  80,
+                  111,
+                  97,
+                  112,
+                  85,
+                  115,
+                  101,
+                  114,
+                  77,
+                  105,
+                  110,
+                  116,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_burns",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  65,
+                  108,
+                  121,
+                  114,
+                  97,
+                  80,
+                  111,
+                  97,
+                  112,
+                  85,
+                  115,
+                  101,
+                  114,
+                  66,
+                  117,
+                  114,
+                  110,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_mints_bump",
+          "type": "u8"
+        },
+        {
+          "name": "user_burns_bump",
+          "type": "u8"
+        },
+        {
+          "name": "new_mints",
+          "type": {
+            "vec": "pubkey"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "UserBurns",
+      "discriminator": [
+        19,
+        184,
+        169,
+        225,
+        62,
+        168,
+        129,
+        140
+      ]
+    },
+    {
+      "name": "UserData",
+      "discriminator": [
+        139,
+        248,
+        167,
+        203,
+        253,
+        220,
+        210,
+        221
+      ]
+    },
+    {
+      "name": "UserMints",
+      "discriminator": [
+        194,
+        165,
+        41,
+        246,
+        14,
+        213,
+        156,
+        221
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "OnlyOwner",
+      "msg": "Only owner can call"
+    },
+    {
+      "code": 6001,
+      "name": "AtLeastOneNftAdd",
+      "msg": "At least one Nft address to add must be provided"
+    },
+    {
+      "code": 6002,
+      "name": "AtLeastOneNftDel",
+      "msg": "At least one Nft address to delete must be provided"
+    }
+  ],
+  "types": [
+    {
+      "name": "UserBurns",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "last_burned",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_count_burned",
+            "type": "u32"
+          },
+          {
+            "name": "max_current_size",
+            "type": "u32"
+          },
+          {
+            "name": "list_burned",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserMints",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "last_minted",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_count_minted",
+            "type": "u32"
+          },
+          {
+            "name": "max_current_size",
+            "type": "u32"
+          },
+          {
+            "name": "list_minted",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
