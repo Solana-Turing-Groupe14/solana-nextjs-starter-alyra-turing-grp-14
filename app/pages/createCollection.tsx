@@ -487,6 +487,7 @@ export default function CreateCollectionPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateJsonNftMetadata = (_collectionMetadataJson:any, _nftCount: number):unknown[] => {
     const LOGPREFIX = `${FILEPATH}:generateJsonNftMetadata: `
+    
     // const nameUriArray: mplhelp_T_NameUriArray = []
     const metadataJsonArray: unknown[] = []
     try {
@@ -512,6 +513,7 @@ export default function CreateCollectionPage() {
         };
         // nameUriArray.push({ name: nftMetadataJson.name, uri: '' })
         metadataJsonArray.push(nftMetadataJson)
+        console.debug(`${LOGPREFIX}NFT #${i + 1} metadata`, nftMetadataJson);
       } // for
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
