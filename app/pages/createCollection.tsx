@@ -43,6 +43,18 @@ const FILEPATH = 'app/pages/createCollection.tsx'
 
 export default function CreateCollectionPage() {
 
+  const bgColor = useColorModeValue("purple.50", "gray.800");
+  const cardBgColor = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const headingColor = useColorModeValue("purple.600", "purple.300");
+  const buttonColorScheme = "purple";
+  const textNormalColor = useColorModeValue("gray.800", "white")
+  const textWarnColor = useColorModeValue("orange.600", "orange.300")
+  const textNormalSliderColor = useColorModeValue("gray.800", "gray.800")
+  const linkColor = useColorModeValue("teal.500", "teal.300")
+
+  const columnCount = useBreakpointValue({ base: 1, md: 2 });
+
   const randomStringNumber = Math.random().toString(10).substring(2, 5)
   const MAX_FILE_SIZE = 1000 // 1MB
   const DEFAULT_CANDY_MACHINE_ADDRESS = ''
@@ -691,12 +703,8 @@ export default function CreateCollectionPage() {
     }
   } // handleUploadImageFile
 
-  const cardBgColor = useColorModeValue("white", "gray.700")
-  const textNormalColor = useColorModeValue("gray.800", "white")
-  const textWarnColor = useColorModeValue("orange.600", "orange.300")
-  const textNormalSliderColor = useColorModeValue("gray.800", "gray.800")
 
-  const columnCount = useBreakpointValue({ base: 1, md: 2 })
+
 
   const nftNamePrefixMaxLength = useMemo(() => {
     // const LOGPREFIX = `${FILEPATH}:nftNamePrefixMaxLength: `
@@ -711,42 +719,47 @@ export default function CreateCollectionPage() {
 
   // ----------------------------
 
-  const textColor = useColorModeValue("black", "white")
-  const linkColor = useColorModeValue("teal.500", "teal.300")
+
 
   // ----------------------------
 
   return (
-    <Container maxW="container.xl" py={10}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Heading as="h1" size="2xl" textAlign="center" mb={10}>
-          Create Your NFT Collection
-        </Heading>
+    <Box minH="100vh" bg={bgColor}>
+      <Container maxW="container.xl" py={10}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <VStack spacing={8} align="stretch">
+            <Box textAlign="center" mb={6}>
+              <Heading as="h1" size="2xl" mb={4} color={headingColor}>
+                Create Your NFT Collection
+              </Heading>
+              <Text fontSize="xl" color={textColor}>
+                Design and launch your unique NFT collection on Solana
+              </Text>
+            </Box>
 
-        <SimpleGrid columns={columnCount} spacing={10}>
-          <Box>
-            <ScaleFade initialScale={0.9} in={true}>
-              <FormControl>
+            <Box bg={cardBgColor} boxShadow="xl" borderRadius="xl" p={8}>
+              <SimpleGrid columns={columnCount} spacing={10}>
                 <VStack spacing={6} align="stretch">
-                  <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                      <AttachmentIcon color="gray.300" />
-                    </InputLeftElement>
-                    <Input
-                      value={collectionName}
-                      onChange={handleChangeCollectionName}
-                      placeholder="Collection name"
-                      // color={textWarnColor}
-                      bg={cardBgColor}
-                      borderRadius="full"
-                    />
-                  </InputGroup>
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <AttachmentIcon color="gray.300" />
+                      </InputLeftElement>
+                      <Input
+                        value={collectionName}
+                        onChange={handleChangeCollectionName}
+                        placeholder="Collection name"
+                        bg={cardBgColor}
+                        borderRadius="full"
+                      />
+                    </InputGroup>
+                  </FormControl>
 
-                  <InputGroup>
+                  <FormControl>
                     <Input
                       value={collectionDescription}
                       onChange={handleChangeCollectionDescription}
@@ -754,9 +767,9 @@ export default function CreateCollectionPage() {
                       bg={cardBgColor}
                       borderRadius="full"
                     />
-                  </InputGroup>
+                  </FormControl>
 
-                  <InputGroup>
+                  <FormControl>
                     <Input
                       value={nftNamePrefix}
                       onChange={handleChangeNftNamePrefix}
@@ -765,9 +778,9 @@ export default function CreateCollectionPage() {
                       bg={cardBgColor}
                       borderRadius="full"
                     />
-                  </InputGroup>
+                  </FormControl>
 
-                  <InputGroup>
+                  <FormControl>
                     <Input
                       value={collectionSymbol}
                       onChange={handleChangeNftCollectionSymbol}
@@ -776,8 +789,9 @@ export default function CreateCollectionPage() {
                       maxLength={NFT_COLLECTION_SYMBOL_MAXLENGTH}
                       borderRadius="full"
                     />
-                  </InputGroup>
-                  <InputGroup>
+                  </FormControl>
+
+                  <FormControl>
                     <Input
                       value={mintFee}
                       onChange={handleChangeNftMintFee}
@@ -785,9 +799,9 @@ export default function CreateCollectionPage() {
                       bg={cardBgColor}
                       borderRadius="full"
                     />
-                  </InputGroup>
+                  </FormControl>
 
-                  <Box>
+                  <FormControl>
                     <FormLabel>NFT Count</FormLabel>
                     <Flex>
                       <NumberInput
@@ -795,7 +809,6 @@ export default function CreateCollectionPage() {
                         mr="2rem"
                         value={nftCount}
                         onChange={handleChangeNftCount}
-                        color={nftCount > minNftCount ? textNormalColor : textWarnColor}
                         min={minNftCount}
                         max={NFT_COUNT_MAX}
                         bg={cardBgColor}
@@ -812,7 +825,6 @@ export default function CreateCollectionPage() {
                         focusThumbOnChange={false}
                         value={nftCount}
                         onChange={handleChangeNftCount}
-                        color={nftCount > minNftCount ? textNormalSliderColor : textWarnColor}
                         min={minNftCount}
                         max={NFT_COUNT_MAX}
                       >
@@ -822,149 +834,121 @@ export default function CreateCollectionPage() {
                         <SliderThumb fontSize="sm" boxSize="32px" children={nftCount} />
                       </Slider>
                     </Flex>
-                  </Box>
+                  </FormControl>
                 </VStack>
-              </FormControl>
-            </ScaleFade>
-          </Box>
 
-          <Box>
-            <SlideFade in={true} offsetY="20px">
-              <VStack spacing={6} align="stretch">
-                <Box>
-                  <FormLabel>Upload Image</FormLabel>
-                  <input
-                    type="file"
-                    onChange={handleChangeImage}
-                    accept="image/jpeg, image/png"
-                    style={{ display: "none" }}
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload">
-                    <Button as="span" leftIcon={image ? <ImageLucid /> : <ImagePlus />}
-                      colorScheme={isValidFileInput ? 'green' : 'yellow'}
-                      variant="outline" width="full">
-                      Choose Image
-                    </Button>
-                  </label>
-                </Box>
+                <VStack spacing={6} align="stretch">
+                  <FormControl>
+                    <FormLabel>Upload Image</FormLabel>
+                    <input
+                      type="file"
+                      onChange={handleChangeImage}
+                      accept="image/jpeg, image/png"
+                      style={{ display: "none" }}
+                      id="image-upload"
+                    />
+                    <label htmlFor="image-upload">
+                      <Button as="span" leftIcon={image ? <ImageLucid /> : <ImagePlus />}
+                        colorScheme={buttonColorScheme}
+                        variant="outline" width="full">
+                        Choose Image
+                      </Button>
+                    </label>
+                  </FormControl>
 
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <ExternalLinkIconChakra color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    value={uploadedImageUri}
-                    placeholder="Uploaded image URL"
-                    isReadOnly
-                    bg={cardBgColor}
-                    borderRadius="full"
-                  />
-                </InputGroup>
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <ExternalLinkIconChakra color="gray.300" />
+                      </InputLeftElement>
+                      <Input
+                        value={uploadedImageUri}
+                        placeholder="Uploaded image URL"
+                        isReadOnly
+                        bg={cardBgColor}
+                        borderRadius="full"
+                      />
+                    </InputGroup>
+                  </FormControl>
 
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <ExternalLinkIconChakra color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    value={uploadedCollectionUploadedMetadataUri}
-                    placeholder="Uploaded metadata URL"
-                    isReadOnly
-                    bg={cardBgColor}
-                    borderRadius="full"
-                  />
-                </InputGroup>
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <ExternalLinkIconChakra color="gray.300" />
+                      </InputLeftElement>
+                      <Input
+                        value={uploadedCollectionUploadedMetadataUri}
+                        placeholder="Uploaded metadata URL"
+                        isReadOnly
+                        bg={cardBgColor}
+                        borderRadius="full"
+                      />
+                    </InputGroup>
+                  </FormControl>
 
-                <Button
-                  leftIcon={<UploadCloudIcon />}
-                  colorScheme={
-                    isValidFileInput ?
-                      (uploadedImageUri ? 'green' : 'orange')
-                      :
-                      'red'
-                  }
-                  // colorScheme="purple"
-                  isDisabled={!connected || !isValidFileInput}
-                  onClick={handleUploadImageFile}
-                  width="full"
-                >
-                  Upload Image
-                </Button>
+                  <Button
+                    leftIcon={<UploadCloudIcon />}
+                    colorScheme={buttonColorScheme}
+                    isDisabled={!connected || !isValidFileInput}
+                    onClick={handleUploadImageFile}
+                    width="full"
+                  >
+                    Upload Image
+                  </Button>
 
-                <Button
-                  leftIcon={<UploadCloudIcon />}
-                  // colorScheme="blue"
-                  colorScheme={
-                    isValidFileInput ?
-                      (uploadedImageUri ?
-                        ((uploadedCollectionUploadedMetadataUri && uploadedCollectionUploadedNftsNameUriArray.length === nftCount)
-                          ? 'green' : (nftCount > 0 ? 'yellow' : 'orange')) : 'orange')
-                      :
-                      'red'
-                  }
-                  isDisabled={!connected || !isValidFileInput}
-                  onClick={handleUploadJsonFiles}
-                  width="full"
-                >
-                  Upload Metadata
-                </Button>
-              </VStack>
-            </SlideFade>
-          </Box>
-        </SimpleGrid>
+                  <Button
+                    leftIcon={<UploadCloudIcon />}
+                    colorScheme={buttonColorScheme}
+                    isDisabled={!connected || !isValidFileInput}
+                    onClick={handleUploadJsonFiles}
+                    width="full"
+                  >
+                    Upload Metadata
+                  </Button>
+                </VStack>
+              </SimpleGrid>
+            </Box>
 
-        <Fade in={true}>
-          <VStack spacing={4} mt={10}>
-            <Button
-              size="lg"
-              isDisabled={!connected || !isValidCollectionInput}
-              isLoading={isProcessingNftCollectionCreation}
-              onClick={createCompleteNftCollection}
-              colorScheme="purple"
-              width="full"
-              borderRadius="full"
-            >
-              Create NFT Collection (Wallet Fees)
-            </Button>
+            <VStack spacing={4} mt={6}>
+              <Button
+                size="lg"
+                isDisabled={!connected || !isValidCollectionInput}
+                isLoading={isProcessingNftCollectionCreation}
+                onClick={createCompleteNftCollection}
+                colorScheme={buttonColorScheme}
+                width="full"
+                borderRadius="full"
+              >
+                Create NFT Collection (Wallet Fees)
+              </Button>
 
-            <Button
-              size="lg"
-              isDisabled={!connected || !isValidCollectionInput}
-              isLoading={isProcessingSponsoredNftCollectionCreation}
-              onClick={createCompleteNftCollectionSponsored}
-              // colorScheme="green"
-              colorScheme={
-                isValidFileInput ?
-                  (uploadedImageUri ? (uploadedCollectionUploadedMetadataUri && nftCount > minNftCount ? 'green' : 'yellow') : 'orange')
-                  :
-                  'red'
-              }
-              width="full"
-              borderRadius="full"
-            >
-              Create NFT Collection (Sponsored Fees)
-            </Button>
+              <Button
+                size="lg"
+                isDisabled={!connected || !isValidCollectionInput}
+                isLoading={isProcessingSponsoredNftCollectionCreation}
+                onClick={createCompleteNftCollectionSponsored}
+                colorScheme={buttonColorScheme}
+                width="full"
+                borderRadius="full"
+              >
+                Create NFT Collection (Sponsored Fees)
+              </Button>
+            </VStack>
+
+            {candyMachineAddress && candyMachineMintUri.length > 0 && (
+              <Box borderWidth={1} borderRadius="md" p={4} mt={4}>
+                <Text mb={2}>Mint page Url:</Text>
+                <Link color={headingColor} href={candyMachineMintUri} isExternal>
+                  <Flex align="center">
+                    <ExternalLinkIconLucid size={16} className="mr-2" />
+                    <Text>{candyMachineAddress}</Text>
+                  </Flex>
+                </Link>
+              </Box>
+            )}
           </VStack>
-
-          <Box
-            className='mt-3 overflow-hidden p-1'
-            border={'1px solid '}
-            borderRadius={'md'}
-            display={(candyMachineAddress && candyMachineMintUri.length ? '' : 'none')}
-          >
-            <Text className='flex pr-2'>
-              Mint page Url:
-            </Text>
-            <Link color={linkColor} isExternal href={candyMachineMintUri} className='flex'>
-              <Text className='pr-2' color={textColor}>
-                <ExternalLinkIcon size='16px' />
-              </Text>
-              {candyMachineAddress}
-            </Link>
-          </Box>
-
-        </Fade>
-      </motion.div>
-    </Container>
-  )
+        </motion.div>
+      </Container>
+    </Box>
+  );
 }
