@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { publicKey, PublicKey as UmiPublicKey } from '@metaplex-foundation/umi';
-import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
-import { fetchAssetsByOwner } from '@metaplex-foundation/mpl-core';
-import { useWallet, WalletContextState } from '@solana/wallet-adapter-react';
+import { publicKey } from '@metaplex-foundation/umi';
+import { fetchAllDigitalAssetByOwner } from '@metaplex-foundation/mpl-token-metadata';
+import { fetchAssetsByOwner, fetchAssetV1, collectionAddress } from '@metaplex-foundation/mpl-core';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { 
-  Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image,
+  Box, Text, VStack, Spinner, SimpleGrid, Image,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
-  useDisclosure, Container, Heading, useColorModeValue, HStack, useToast
+  useDisclosure, Container, Heading, useColorModeValue, HStack, useToast, Button
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { getUmi } from '@helpers/mplx.helper.dynamic';
-import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
-import idl from './poap_alyra.json';
-import { getPoapAlyraUserAccounts, deleteMints } from '@helpers/poap_alyra.helper';
-import { pa_help_T_poapAlyraAccounts } from 'types';
+import { deleteMints } from '@helpers/poap_alyra.helper';
+import NFTAttributesDisplay from './NFTAttributesDisplay ';
 
 interface OffChainMetadata {
   image?: string;
@@ -21,25 +19,43 @@ interface OffChainMetadata {
   attributes?: Array<{ trait_type: string; value: string }>;
 }
 
-interface NFTData extends DigitalAsset {
-  offChainMetadata: OffChainMetadata | null;
-}
-
-interface CoreAssetData {
-  uri: string;
-  name: string;
+interface CoreAsset {
+  type: 'CoreAsset';
+  address: string;
   owner: string;
-  collectionId?: string;
+  name: string;
+  uri: string;
+  collectionAddress?: string;
   offChainMetadata: OffChainMetadata | null;
 }
 
-const isCoreAssetData = (asset: NFTData | CoreAssetData): asset is CoreAssetData => {
-  return (asset as CoreAssetData).owner !== undefined;
+interface DigitalAsset {
+  type: 'DigitalAsset';
+  address: string;
+  owner: string;
+  name: string;
+  uri: string;
+  collectionAddress?: string;
+  offChainMetadata: OffChainMetadata | null;
+}
+
+type Asset = CoreAsset | DigitalAsset;
+
+const fetchMetadata = async (uri: string): Promise<OffChainMetadata | null> => {
+  try {
+    const response = await fetch(uri);
+    if (!response.ok) {
+      console.warn(`Failed to fetch metadata from ${uri}: HTTP ${response.status}`);
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn(`Error fetching metadata from ${uri}:`, err);
+    return null;
+  }
 };
 
-const programID = new web3.PublicKey("Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd");
-
-const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number; onBurn: () => void }> = ({ nft, index, onBurn }) => {
+const NFTCard: React.FC<{ asset: Asset; index: number; onBurn: () => void }> = ({ asset, index, onBurn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const bgColor = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -58,39 +74,34 @@ const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number; onBurn: (
       onClick={onOpen}
       cursor="pointer"
     >
-      {nft.offChainMetadata && nft.offChainMetadata.image && (
-        <Image src={nft.offChainMetadata.image} alt={isCoreAssetData(nft) ? nft.name : nft.metadata?.name || 'No Name'} w="100%" h="200px" objectFit="cover" />
+      {asset.offChainMetadata && asset.offChainMetadata.image && (
+        <Image src={asset.offChainMetadata.image} alt={asset.name} w="100%" h="200px" objectFit="cover" />
       )}
       <Box p={4}>
-        <Text fontSize="lg" fontWeight="bold">{isCoreAssetData(nft) ? nft.name : nft.metadata?.name || 'No Name'}</Text>
+        <Text fontSize="lg" fontWeight="bold">{asset.name}</Text>
         <Text fontSize="sm" color="gray.500">#{index + 1}</Text>
+        <Text fontSize="sm" color="gray.500">Type: {asset.type}</Text>
       </Box>
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{isCoreAssetData(nft) ? nft.name : nft.metadata?.name || 'No Name'}</ModalHeader>
+          <ModalHeader>{asset.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              {nft.offChainMetadata && nft.offChainMetadata.image && (
-                <Image src={nft.offChainMetadata.image} alt={isCoreAssetData(nft) ? nft.name : nft.metadata?.name || 'No Name'} borderRadius="md" />
+              {asset.offChainMetadata && asset.offChainMetadata.image && (
+                <Image src={asset.offChainMetadata.image} alt={asset.name} borderRadius="md" />
               )}
-              <Text fontWeight="bold">Owner: {isCoreAssetData(nft) ? nft.owner : nft.metadata.updateAuthority || 'Unknown'}</Text>
-              {nft.offChainMetadata && nft.offChainMetadata.description && (
-                <Text>{nft.offChainMetadata.description}</Text>
+              <Text fontWeight="bold">Owner: {asset.owner}</Text>
+              {asset.collectionAddress && (
+                <Text fontWeight="bold">Collection: {asset.collectionAddress}</Text>
               )}
-              {nft.offChainMetadata && nft.offChainMetadata.attributes && (
-                <Table variant="simple" size="sm">
-                  <Tbody>
-                    {nft.offChainMetadata.attributes.map((attr, attrIndex) => (
-                      <Tr key={attrIndex}>
-                        <Td fontWeight="bold">{attr.trait_type}</Td>
-                        <Td>{attr.value}</Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
+              {asset.offChainMetadata && asset.offChainMetadata.description && (
+                <Text>{asset.offChainMetadata.description}</Text>
+              )}
+              {asset.offChainMetadata && asset.offChainMetadata.attributes && (
+                <NFTAttributesDisplay attributes={asset.offChainMetadata.attributes} />
               )}
             </VStack>
           </ModalBody>
@@ -111,204 +122,77 @@ const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number; onBurn: (
 const NFTGallery: React.FC = () => {
   const wallet = useWallet();
   const { publicKey: walletPublicKey } = wallet;
-  const [nfts, setNfts] = useState<NFTData[]>([]);
-  const [coreAssets, setCoreAssets] = useState<CoreAssetData[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mintCount, setMintCount] = useState(0);
-  const [burnCount, setBurnCount] = useState(0);
-  const [userAccounts, setUserAccounts] = useState<pa_help_T_poapAlyraAccounts|null>(null);
   const toast = useToast();
 
-  const getProgram = useCallback(() => {
-    if (!walletPublicKey) throw new Error("Wallet not connected");
-    const connection = new web3.Connection(web3.clusterApiUrl('devnet'), 'confirmed');
-    const provider = new AnchorProvider(connection, wallet as any, {});
-    return new Program(idl as any, programID, provider);
-  }, [walletPublicKey, wallet]);
-
-  const fetchUserAccounts = useCallback(async () => {
-    if (walletPublicKey) {
-      const accounts = await getPoapAlyraUserAccounts(walletPublicKey);
-      setUserAccounts(accounts);
-      if (accounts?.userMintsAccount) {
-        setMintCount(accounts.userMintsAccount.totalCountMinted);
-      }
-      if (accounts?.userBurnsAccount) {
-        setBurnCount(accounts.userBurnsAccount.totalCountBurned);
-      }
-    }
-  }, [walletPublicKey]);
-
-  const fetchCounts = useCallback(async () => {
-    try {
-      const program = getProgram();
-      
-      const [userDataPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserData"), walletPublicKey!.toBuffer()],
-        programID
-      );
-  
-      const userDataAccount = await program.account.userData.fetch(userDataPDA);
-      
-      // Fonction helper pour extraire la clé publique du propriétaire
-      const extractOwnerPublicKey = (data: any): web3.PublicKey => {
-        if (data && typeof data === 'object') {
-          if ('owner' in data && data.owner instanceof web3.PublicKey) {
-            return data.owner;
-          }
-          // Parcourir l'objet pour trouver une propriété de type PublicKey
-          for (const key in data) {
-            if (data[key] instanceof web3.PublicKey) {
-              return data[key];
-            }
-          }
-        }
-        console.log('UserData structure:', JSON.stringify(data, null, 2));
-        throw new Error('Unable to extract owner public key from user data');
-      };
-  
-      const ownerPublicKey = extractOwnerPublicKey(userDataAccount);
-  
-      const [userMintsPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserMints"), ownerPublicKey.toBuffer()],
-        programID
-      );
-  
-      const [userBurnsPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserBurns"), ownerPublicKey.toBuffer()],
-        programID
-      );
-  
-      const userMints = await program.account.userMints.fetch(userMintsPDA);
-      const userBurns = await program.account.userBurns.fetch(userBurnsPDA);
-  
-      // Fonction helper pour extraire le nombre total
-      const extractTotalCount = (data: any, field: string): number => {
-        if (data && typeof data === 'object' && field in data && typeof data[field] === 'number') {
-          return data[field];
-        }
-        console.log(`${field} data structure:`, JSON.stringify(data, null, 2));
-        throw new Error(`Unable to extract ${field} from account data`);
-      };
-  
-      setMintCount(extractTotalCount(userMints, 'totalCountMinted'));
-      setBurnCount(extractTotalCount(userBurns, 'totalCountBurned'));
-  
-    } catch (error) {
-      console.error("Error fetching counts:", error);
-      toast({
-        title: "Error fetching counts",
-        description: error instanceof Error ? error.message : String(error),
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  }, [getProgram, walletPublicKey, toast]);
-
-  const fetchNFTs = useCallback(async (retryCount = 0) => {
+  const fetchNFTs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (!walletPublicKey) {
-        throw new Error("Wallet not connected");
-      }
+      if (!walletPublicKey) throw new Error("Wallet not connected");
 
       const umi = getUmi();
       const owner = publicKey(walletPublicKey.toBase58());
 
-      console.log("Fetching NFTs for wallet:", owner);
-      const assets = await fetchAllDigitalAssetByOwner(umi, owner);
+      // Fetch Core Assets
+      const coreAssets = await fetchAssetsByOwner(umi, owner);
+      
+      // Fetch Digital Assets
+      const digitalAssets = await fetchAllDigitalAssetByOwner(umi, owner);
 
-      console.log("Fetching Core Assets for wallet:", owner);
-      const coreAssetsList = await fetchAssetsByOwner(umi, owner, {
-        skipDerivePlugins: false,
-      });
-
-      console.log("Found assets:", assets);
-      console.log("Found core assets:", coreAssetsList);
-
-      const nftData = await Promise.all(assets.map(async (asset): Promise<NFTData> => {
-        if (asset.metadata?.uri) {
-          try {
-            const response = await fetch(asset.metadata.uri);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const json: OffChainMetadata = await response.json();
-            return { ...asset, offChainMetadata: json };
-          } catch (err) {
-            console.error("Error fetching metadata for asset:", asset.metadata.name, err);
-            return { ...asset, offChainMetadata: null };
-          }
-        }
-        return { ...asset, offChainMetadata: null };
-      }));
-
-      const coreAssetData = await Promise.all(coreAssetsList.map(async (asset: any): Promise<CoreAssetData> => {
-        if (asset.uri) {
-          try {
-            const response = await fetch(asset.uri);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const json: OffChainMetadata = await response.json();
-            return {
-              uri: asset.uri,
-              name: asset.content?.metadata?.name || 'Soaplana Token',
-              owner: asset.ownership?.owner || 'Unknown',
-              collectionId: asset.grouping?.find((g: any) => g.group_key === "collection")?.group_value,
-              offChainMetadata: json
-            };
-          } catch (err) {
-            console.error("Error fetching metadata for core asset:", asset.content?.metadata?.name || asset.uri, err);
-            return {
-              uri: asset.uri,
-              name: asset.content?.metadata?.name || 'No Name',
-              owner: asset.ownership?.owner || 'Unknown',
-              collectionId: asset.grouping?.find((g: any) => g.group_key === "collection")?.group_value,
-              offChainMetadata: null
-            };
-          }
-        }
+      // Process Core Assets
+      const processedCoreAssets: Asset[] = await Promise.all(coreAssets.map(async (assetAddress): Promise<CoreAsset> => {
+        const asset = await fetchAssetV1(umi, assetAddress);
+        const offChainMetadata = await fetchMetadata(asset.uri);
         return {
+          type: 'CoreAsset',
+          address: assetAddress.toString(),
+          owner: asset.owner.toString(),
+          name: asset.name,
           uri: asset.uri,
-          name: asset.content?.metadata?.name || 'No Name',
-          owner: asset.ownership?.owner || 'Unknown',
-          collectionId: asset.grouping?.find((g: any) => g.group_key === "collection")?.group_value,
-          offChainMetadata: null
+          collectionAddress: collectionAddress(asset)?.toString(),
+          offChainMetadata,
         };
       }));
 
-      console.log("Processed NFT data:", nftData);
-      console.log("Processed Core Asset data:", coreAssetData);
+      // Process Digital Assets
+      const processedDigitalAssets: Asset[] = await Promise.all(digitalAssets.map(async (asset): Promise<DigitalAsset> => {
+        const offChainMetadata = asset.metadata?.uri ? await fetchMetadata(asset.metadata.uri) : null;
+        return {
+          type: 'DigitalAsset',
+          address: asset.address.toString(),
+          owner: asset.owner.toString(),
+          name: asset.metadata?.name || 'Unnamed',
+          uri: asset.metadata?.uri || '',
+          collectionAddress: asset.metadata?.collection?.address?.toString(),
+          offChainMetadata,
+        };
+      }));
 
-      setNfts(nftData);
-      setCoreAssets(coreAssetData);
+      // Combine all assets
+      const allAssets = [...processedCoreAssets, ...processedDigitalAssets];
+
+      console.log("All assets:", allAssets);
+
+      setAssets(allAssets);
     } catch (err) {
       console.error("Error fetching NFTs:", err);
-      if (retryCount < 3) {
-        console.log(`Retrying... Attempt ${retryCount + 1}`);
-        setTimeout(() => fetchNFTs(retryCount + 1), 1000 * (retryCount + 1));
-      } else {
-        setError(`Failed to fetch NFTs: ${err instanceof Error ? err.message : String(err)}`);
-      }
+      setError(`Failed to fetch NFTs: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
   }, [walletPublicKey]);
 
-
-  const burnNFT = useCallback(async (nftToBurn: string) => {
+  const burnNFT = useCallback(async (assetAddress: string) => {
     try {
       setLoading(true);
       if (!wallet.connected || !walletPublicKey) {
         throw new Error("Wallet not connected");
       }
-      await deleteMints(wallet as WalletContextState, [nftToBurn]);
+      await deleteMints(wallet, [assetAddress]);
       await fetchNFTs();
-      await fetchUserAccounts();
       toast({
         title: "NFT Burned",
         description: "The NFT has been successfully burned.",
@@ -328,22 +212,13 @@ const NFTGallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [wallet, walletPublicKey, fetchNFTs, fetchUserAccounts, toast]);
+  }, [wallet, walletPublicKey, fetchNFTs, toast]);
 
   useEffect(() => {
     if (walletPublicKey) {
       fetchNFTs();
-      fetchUserAccounts();
     }
-  }, [fetchNFTs, fetchUserAccounts, walletPublicKey]);
-
-
-  useEffect(() => {
-    if (walletPublicKey) {
-      fetchNFTs();
-      fetchUserAccounts();
-    }
-  }, [fetchNFTs, fetchUserAccounts, walletPublicKey]);
+  }, [fetchNFTs, walletPublicKey]);
 
   if (!walletPublicKey) {
     return <Text textAlign="center" fontSize="xl">Please connect your wallet to view your NFTs.</Text>;
@@ -362,39 +237,23 @@ const NFTGallery: React.FC = () => {
     );
   }
 
-  if (nfts.length === 0 && coreAssets.length === 0) {
-    return <Text textAlign="center" fontSize="xl">No NFTs or Core Assets found for this wallet on Devnet.</Text>;
+  if (assets.length === 0) {
+    return <Text textAlign="center" fontSize="xl">No NFTs found for this wallet.</Text>;
   }
 
   return (
     <Container maxW="container.xl" py={10}>
       <VStack spacing={8}>
         <Heading as="h1" size="2xl" textAlign="center">
-          My NFTs and Core Assets on Devnet
+          My NFTs
         </Heading>
-        <HStack spacing={4} justify="center">
-          <Box p={4} bg="blue.100" borderRadius="md">
-            <Text fontWeight="bold">Minted NFTs: {mintCount}</Text>
-          </Box>
-          <Box p={4} bg="red.100" borderRadius="md">
-            <Text fontWeight="bold">Burned NFTs: {burnCount}</Text>
-          </Box>
-        </HStack>
         <SimpleGrid columns={[2, 3, 4, 5]} spacing={6}>
-          {nfts.map((nft, index) => (
+          {assets.map((asset, index) => (
             <NFTCard 
-              key={index} 
-              nft={nft} 
+              key={asset.address} 
+              asset={asset} 
               index={index} 
-              onBurn={() => burnNFT(nft.metadata.mint.toString())}
-            />
-          ))}
-          {coreAssets.map((asset, index) => (
-            <NFTCard 
-              key={`core-${index}`}
-              nft={asset} 
-              index={nfts.length + index} 
-              onBurn={() => burnNFT(asset.uri)}
+              onBurn={() => burnNFT(asset.address)}
             />
           ))}
         </SimpleGrid>

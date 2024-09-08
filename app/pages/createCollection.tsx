@@ -37,6 +37,7 @@ import {
 import { TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { setIdentityPayer_WalletAdapter } from '@helpers/mplx.helper.common.dynamic'
 
+
 /* eslint-disable react/no-children-prop */
 
 const FILEPATH = 'app/pages/createCollection.tsx'
@@ -189,10 +190,10 @@ export default function CreateCollectionPage() {
       setCandyMachineAddress(finalizeCmNftCollectionConfigResponse.candyMachineAddress)
 
       // Vérification finale des métadonnées
-      // console.debug(`${LOGPREFIX}Final metadata check:`, {
-      //   collectionUri: uploadedCollectionUploadedMetadataUri,
-      //   nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
-      // });
+      console.debug(`${LOGPREFIX}Final metadata check:`, {
+        collectionUri: uploadedCollectionUploadedMetadataUri,
+        nftMetadataUris: uploadedCollectionUploadedNftsNameUriArray
+      });
 
       // Affichage des toasts de succès
       displaySuccessToasts(
@@ -487,7 +488,6 @@ export default function CreateCollectionPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateJsonNftMetadata = (_collectionMetadataJson:any, _nftCount: number):unknown[] => {
     const LOGPREFIX = `${FILEPATH}:generateJsonNftMetadata: `
-    // const nameUriArray: mplhelp_T_NameUriArray = []
     const metadataJsonArray: unknown[] = []
     try {
       if (!_collectionMetadataJson) {
@@ -510,27 +510,23 @@ export default function CreateCollectionPage() {
             family: collectionSymbol,
           },
         };
-        // nameUriArray.push({ name: nftMetadataJson.name, uri: '' })
         metadataJsonArray.push(nftMetadataJson)
-      } // for
+      }
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
     }
     return metadataJsonArray;
-  } // generateJsonNftMetadata
-
-  // ----------------------------
-
-  // Upload Json metadata & individual NFT metadata
+  }
 
   const handleUploadJsonFiles = async () => {
-    const LOGPREFIX = `${FILEPATH}:handleUploadJsonFiles: `
+    const LOGPREFIX = `${FILEPATH}:handleUploadJsonFiles: `;
     try {
-      if (!isConnected || !wallet) {
-        warnIsNotConnected(); return
+      if (!isConnected) {
+        warnIsNotConnected();
+        return;
       }
       if (!nftCount || nftCount <= 0) {
-        console.warn(`${LOGPREFIX}NFT count must be greater than 0`)
+        console.warn(`${LOGPREFIX}NFT count must be greater than 0`);
         toast({
           title: 'NFT count must be greater than 0',
           description: "Please increase NFT count to at least 1.",
@@ -538,13 +534,13 @@ export default function CreateCollectionPage() {
           duration: TOAST_WARN_DELAY,
           isClosable: true,
           position: TOAST_POSITION,
-        })
-        return
+        });
+        return;
       }
-
-      const creatorAddress = wallet.adapter.publicKey?.toBase58() || "VOTRE_ADRESSE_SOLANA";
-
-      // Créer le JSON spécifique pour la collection
+  
+      const creatorAddress = wallet?.adapter.publicKey?.toBase58() || "VOTRE_ADRESSE_SOLANA";
+  
+      // Create the JSON specific for the collection
       const collectionMetadataJson = {
         name: collectionName,
         symbol: collectionSymbol,
@@ -563,13 +559,11 @@ export default function CreateCollectionPage() {
           creators: [{ address: creatorAddress, share: 100 }]
         }
       };
-
-      // console.debug(`${LOGPREFIX}collectionMetadataJson`, collectionMetadataJson);
-      setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
-      const collectionMetadataJsonUri = await uploadJson(umiStorage, collectionMetadataJson)
-      // console.debug(`${LOGPREFIX}collectionMetadataJsonUri`, collectionMetadataJsonUri);
+  
+      const collectionMetadataJsonUri = await uploadJson(collectionMetadataJson);
+      
       if (!collectionMetadataJsonUri) {
-        console.error(`${LOGPREFIX}No collectionMetadataJsonUri`)
+        console.error(`${LOGPREFIX}No collectionMetadataJsonUri`);
         toast({
           title: 'Collection metadata upload failed',
           description: "Invalid uri after upload",
@@ -577,13 +571,13 @@ export default function CreateCollectionPage() {
           duration: TOAST_ERROR_DELAY,
           isClosable: true,
           position: TOAST_POSITION,
-        })
-        setUploadedCollectionUploadedMetadataUri('')
-        return
+        });
+        setUploadedCollectionUploadedMetadataUri('');
+        return;
       }
-
-      setUploadedCollectionUploadedMetadataUri(collectionMetadataJsonUri)
-
+  
+      setUploadedCollectionUploadedMetadataUri(collectionMetadataJsonUri);
+  
       toast({
         title: 'Collection metadata uploaded',
         description: "Collection metadata generated & uploaded successfully.",
@@ -591,11 +585,11 @@ export default function CreateCollectionPage() {
         duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
         position: TOAST_POSITION,
-      })
-
-      const jsonMetadataArray = generateJsonNftMetadata(collectionMetadataJson, nftCount)
+      });
+  
+      const jsonMetadataArray = generateJsonNftMetadata(collectionMetadataJson, nftCount);
       if (!jsonMetadataArray || jsonMetadataArray.length !== nftCount) {
-        console.error(`${LOGPREFIX}Missing Json metadata`)
+        console.error(`${LOGPREFIX}Missing Json metadata`);
         toast({
           title: 'NFT metadata generation failed',
           description: "Invalid content",
@@ -603,22 +597,17 @@ export default function CreateCollectionPage() {
           duration: TOAST_ERROR_DELAY,
           isClosable: true,
           position: TOAST_POSITION,
-        })
-        setUploadedCollectionUploadedNftsNameUriArray([])
-        return
+        });
+        setUploadedCollectionUploadedNftsNameUriArray([]);
+        return;
       }
-      const nameUriArray: mplhelp_T_NameUriArray = []
+      const nameUriArray: mplhelp_T_NameUriArray = [];
       // Upload each NFT metadata
       for (let i = 0; i < jsonMetadataArray.length; i++) {
-        // const nameUri = nameUriArray[i]
-        // console.debug(`${LOGPREFIX}NFT #${i + 1} metadata`, jsonMetadataArray[i]);
-        const nftJsonUri = await uploadJson(umiStorage, jsonMetadataArray[i])
-        // nameUriArray[i].uri = nftJsonUri
-        nameUriArray.push({ name: `${nftNamePrefix} #${i + 1}`, uri: nftJsonUri })
-        // console.debug(`${LOGPREFIX}NFT #${i + 1} name : ${nameUriArray[i].name} metadata URI: ${nameUriArray[i].uri}` );
+        const nftJsonUri = await uploadJson(jsonMetadataArray[i]);
+        nameUriArray.push({ name: `${nftNamePrefix} #${i + 1}`, uri: nftJsonUri });
       }
-      setUploadedCollectionUploadedNftsNameUriArray(nameUriArray)
-      // console.debug(`${LOGPREFIX}nameUriArray`, nameUriArray);
+      setUploadedCollectionUploadedNftsNameUriArray(nameUriArray);
       toast({
         title: 'NFT metadata uploaded',
         description: `${nftCount} NFT metadata files successfully generated & uploaded.`,
@@ -626,8 +615,8 @@ export default function CreateCollectionPage() {
         duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
         position: TOAST_POSITION,
-      })
-
+      });
+  
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
       toast({
@@ -637,18 +626,19 @@ export default function CreateCollectionPage() {
         duration: TOAST_ERROR_DELAY,
         isClosable: true,
         position: TOAST_POSITION,
-      })
+      });
     }
-  } // handleUploaJsonFiles
+  }; // handleUploaJsonFiles
 
   const handleUploadImageFile = async () => {
-    const LOGPREFIX = `${FILEPATH}:handleUploadImageFile: `
+    const LOGPREFIX = `${FILEPATH}:handleUploadImageFile: `;
     try {
-      if (!isConnected || !wallet /* useless but prevents warning on setIdentity */) {
-        warnIsNotConnected(); return
+      if (!isConnected) {
+        warnIsNotConnected();
+        return;
       }
       if (!image) {
-        console.error(`${LOGPREFIX}No image to upload`)
+        console.error(`${LOGPREFIX}No image to upload`);
         toast({
           title: 'No image to upload',
           description: "Please select an image to upload.",
@@ -656,15 +646,13 @@ export default function CreateCollectionPage() {
           duration: TOAST_WARN_DELAY,
           isClosable: true,
           position: TOAST_POSITION,
-        })
-        return
+        });
+        return;
       }
       // Image Upload
-      setIdentityPayer_WalletAdapter(wallet.adapter, umiStorage, true)
-      const fileUri = await uploadSingleFile( umiStorage, image)
-      // console.debug(`${LOGPREFIX}fileUri`, fileUri);
+      const fileUri = await uploadSingleFile(image);
       if (!fileUri) {
-        console.error(`${LOGPREFIX}No fileUri`)
+        console.error(`${LOGPREFIX}No fileUri`);
         toast({
           title: 'No fileUri',
           description: "No fileUri",
@@ -672,11 +660,11 @@ export default function CreateCollectionPage() {
           duration: TOAST_WARN_DELAY,
           isClosable: true,
           position: TOAST_POSITION,
-        })
-        setUploadedImageUri('') // Clear uploaded image uri
-        return
+        });
+        setUploadedImageUri(''); // Clear uploaded image uri
+        return;
       }
-      setUploadedImageUri(fileUri)
+      setUploadedImageUri(fileUri);
       toast({
         title: 'Image uploaded',
         description: "Image uploaded successfully.",
@@ -684,12 +672,19 @@ export default function CreateCollectionPage() {
         duration: TOAST_SUCCESS_DELAY,
         isClosable: true,
         position: TOAST_POSITION,
-      })
-      // console.debug(`${LOGPREFIX}fileUri`, fileUri);
+      });
     } catch (error) {
       console.error(`${LOGPREFIX}error`, error);
+      toast({
+        title: 'Image upload failed',
+        description: "An error occurred while uploading the image.",
+        status: 'error',
+        duration: TOAST_ERROR_DELAY,
+        isClosable: true,
+        position: TOAST_POSITION,
+      });
     }
-  } // handleUploadImageFile
+  };// handleUploadImageFile
 
   const cardBgColor = useColorModeValue("white", "gray.700")
   const textNormalColor = useColorModeValue("gray.800", "white")
