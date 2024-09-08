@@ -1,18 +1,28 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Box, Center, Container, FormControl, FormLabel,
-  Heading, Input, InputGroup, Link, Text, useColorModeValue, VStack
-} from "@chakra-ui/react"
-import { motion } from "framer-motion"
-import { ExternalLinkIcon, QrCode as QrCodeLucid,
-} from "lucide-react"
-import { useRouter } from "next/router"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { QrCode } from "@components/ui/qrCode"
-import { DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH, MINT_URI_PATH } from '@consts/client'
-import { ADDRESS_LENGTH } from '@consts/commons'
-import { HOST, PORT } from "@consts/host"
+  Box,
+  Center,
+  Container,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  InputGroup,
+  Link,
+  Text,
+  useColorModeValue,
+  VStack,
+  Flex,
+} from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import { ExternalLinkIcon, QrCode as QrCodeLucid } from "lucide-react";
+import { useRouter } from "next/router";
+import { QrCode } from "@components/ui/qrCode";
+import { DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH, MINT_URI_PATH } from '@consts/client';
+import { ADDRESS_LENGTH } from '@consts/commons';
+import { HOST, PORT } from "@consts/host";
 
-const FILEPATH = 'app/pages/qr/displayQrToMintPage/index.tsx'
+const FILEPATH = 'app/pages/qr/displayQrToMintPage/index.tsx';
 
 export default function ToolsPage() {
 
@@ -26,8 +36,12 @@ export default function ToolsPage() {
   const [urlToMintPage, setUrlToMintPage] = useState<string>(DEFAULT_URL)
   const [urlToDirectMintQrPage, setUrlToDirectMintQrPage] = useState<string>(DEFAULT_URL)
 
-  const bgColor = useColorModeValue("gray.50", "gray.800")
-  const cardBgColor = useColorModeValue("white", "gray.700")
+  const bgColor = useColorModeValue("purple.50", "gray.800");
+  const cardBgColor = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const headingColor = useColorModeValue("purple.600", "purple.300");
+  const linkColor = useColorModeValue("purple.500", "purple.300");
+  const inputBgColor = useColorModeValue("gray.100", "gray.600");
 
   // ----------------------------
 
@@ -100,133 +114,110 @@ export default function ToolsPage() {
     init()
   }, [candyMachineAddress, getDirectMintQrPageUri, getMintPageUri, queryCandyMachineAddress])
 
-  // ----------------------------
-
-  const textColor = useColorModeValue("black", "white")
-  const linkColor = useColorModeValue("teal.500", "teal.300")
-
-  // ----------------------------
 
   return (
-    <Container maxW="container.md" py={10}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <VStack spacing={8}>
-          <Heading as="h1" size="2xl" textAlign="center" mb={6}>
-            Display QR Code (link to) mint page
-          </Heading>
-
-          <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
-            <Center w='100%' h='100%' mb={6}>
-              <QrCodeLucid className="transition-all delay-500 sm:size-12 md:size-24 xl:size-32" />
-            </Center>
-
-            <form onSubmit={handleDefaultSubmit} className="mt-6">
-              <FormControl>
-
-                <FormLabel>Candy Machine</FormLabel>
-                <InputGroup>
-                  <Input
-                    type='string'
-                    maxLength={ADDRESS_LENGTH}
-                    value={candyMachineAddress}
-                    onChange={handleChangeCandyMachineAddress}
-                    placeholder='Candy Machine Address'
-                    bg={bgColor}
-                  />
-                </InputGroup>
-
-                <FormLabel>Url to Mint page</FormLabel>
-                <InputGroup>
-                  <Input
-                    type='string'
-
-                    value={urlToMintPage}
-                    // onChange={handleChangeUrl}
-                    isReadOnly={true}
-                    placeholder='Url'
-                    bg={bgColor}
-                  />
-                </InputGroup>
-
-                <FormLabel>Url to Direct Mint QR page</FormLabel>
-                <InputGroup>
-                  <Input
-                    type='string'
-
-                    value={urlToDirectMintQrPage}
-                    // onChange={handleChangeUrl}
-                    isReadOnly={true}
-                    placeholder='Url'
-                    bg={bgColor}
-                  />
-                </InputGroup>
-
-              </FormControl>
-            </form>
-
-          </Box>
-        </VStack>
-
-      </motion.div>
-
-      <Box
-        className='mt-3 justify-center p-1'
-        border={'1px solid '}
-        borderRadius={'md'}
-        display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
-      >
-      <Box
-            className='mt-1 overflow-hidden p-1'
-            border={'none '}
-            borderRadius={'md'}
-            display={ (candyMachineAddress && candyMachineMintPageUri.length ? '' : 'none') }
-          >
-            <Text className='flex pr-2'>
-              Mint page:
-            </Text>
-            <Link color={linkColor} isExternal href={candyMachineMintPageUri} className='flex'>
-              <Text className='pr-2' color={textColor}>
-                <ExternalLinkIcon size='16px' />
+    <Box minH="100vh" bg={bgColor}>
+      <Container maxW="container.xl" py={10}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <VStack spacing={8} align="stretch">
+            <Box textAlign="center" mb={6}>
+              <Heading as="h1" size="2xl" mb={4} color={headingColor}>
+                QR Code Generator for Mint Page
+              </Heading>
+              <Text fontSize="xl" color={textColor}>
+                Create QR codes for easy access to your NFT minting pages
               </Text>
-                {candyMachineAddress}
-            </Link>
-        </Box>
+            </Box>
 
-        <QrCode text={candyMachineMintPageUri} id={candyMachineAddress} />
+            <Box bg={cardBgColor} boxShadow="xl" borderRadius="xl" p={8}>
+              <Center w="100%" h="100%" mb={6}>
+                <QrCodeLucid className="transition-all delay-500 sm:size-12 md:size-24 xl:size-32" color={headingColor} />
+              </Center>
 
-      </Box>
+              <form onSubmit={handleDefaultSubmit}>
+                <VStack spacing={6}>
+                  <FormControl>
+                    <FormLabel color={textColor}>Candy Machine Address</FormLabel>
+                    <InputGroup>
+                      <Input
+                        type="string"
+                        maxLength={ADDRESS_LENGTH}
+                        value={candyMachineAddress}
+                        onChange={handleChangeCandyMachineAddress}
+                        placeholder="Enter Candy Machine Address"
+                        bg={inputBgColor}
+                        borderRadius="md"
+                      />
+                    </InputGroup>
+                  </FormControl>
 
-      <Box
-        className='mt-3 justify-center p-1'
-        border={'1px solid '}
-        borderRadius={'md'}
-        display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
-      >
-      <Box
-            className='mt-1 overflow-hidden p-1'
-            border={'none '}
-            borderRadius={'md'}
-            display={ (candyMachineAddress && candyMachineDirectMintQr.length ? '' : 'none') }
-          >
-            <Text className='flex pr-2'>
-              QR Direct Mint:
-            </Text>
-            <Link color={linkColor} isExternal href={candyMachineDirectMintQr} className='flex'>
-              <Text className='pr-2' color={textColor}>
-                <ExternalLinkIcon size='16px' />
-              </Text>
-                {candyMachineAddress}
-            </Link>
-        </Box>
+                  <FormControl>
+                    <FormLabel color={textColor}>URL to Mint Page</FormLabel>
+                    <InputGroup>
+                      <Input
+                        type="string"
+                        value={urlToMintPage}
+                        isReadOnly={true}
+                        placeholder="Mint Page URL"
+                        bg={inputBgColor}
+                        borderRadius="md"
+                      />
+                    </InputGroup>
+                  </FormControl>
 
-        <QrCode text={candyMachineDirectMintQr} id={candyMachineAddress} />
+                  <FormControl>
+                    <FormLabel color={textColor}>URL to Direct Mint QR Page</FormLabel>
+                    <InputGroup>
+                      <Input
+                        type="string"
+                        value={urlToDirectMintQrPage}
+                        isReadOnly={true}
+                        placeholder="Direct Mint QR Page URL"
+                        bg={inputBgColor}
+                        borderRadius="md"
+                      />
+                    </InputGroup>
+                  </FormControl>
+                </VStack>
+              </form>
+            </Box>
 
-      </Box>
+            {candyMachineAddress && candyMachineMintPageUri && (
+              <Box bg={cardBgColor} boxShadow="md" borderRadius="xl" p={6} mt={6}>
+                <Text fontSize="lg" fontWeight="bold" mb={4} color={textColor}>
+                  Mint Page QR Code
+                </Text>
+                <Link color={linkColor} href={candyMachineMintPageUri} isExternal>
+                  <Flex align="center" mb={4}>
+                    <ExternalLinkIcon size={16} className="mr-2" />
+                    <Text>{candyMachineAddress}</Text>
+                  </Flex>
+                </Link>
+                <QrCode text={candyMachineMintPageUri} id={candyMachineAddress} />
+              </Box>
+            )}
 
-    </Container>
-  )
+            {candyMachineAddress && candyMachineDirectMintQr && (
+              <Box bg={cardBgColor} boxShadow="md" borderRadius="xl" p={6} mt={6}>
+                <Text fontSize="lg" fontWeight="bold" mb={4} color={textColor}>
+                  Direct Mint QR Code
+                </Text>
+                <Link color={linkColor} href={candyMachineDirectMintQr} isExternal>
+                  <Flex align="center" mb={4}>
+                    <ExternalLinkIcon size={16} className="mr-2" />
+                    <Text>{candyMachineAddress}</Text>
+                  </Flex>
+                </Link>
+                <QrCode text={candyMachineDirectMintQr} id={candyMachineAddress} />
+              </Box>
+            )}
+          </VStack>
+        </motion.div>
+      </Container>
+    </Box>
+  );
 }

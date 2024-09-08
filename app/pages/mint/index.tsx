@@ -1,26 +1,39 @@
-import { AddIcon, AtSignIcon, CheckCircleIcon } from '@chakra-ui/icons'
+import React, { useCallback, SetStateAction, useEffect, useMemo, useState } from "react";
 import {
   Box, Button, CloseButton, Container, Fade, FormControl, Heading, Input, InputGroup,
-  InputLeftElement, Link, ScaleFade, Text, useColorModeValue, useToast, VStack
-} from "@chakra-ui/react"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { motion } from "framer-motion"
-import { ExternalLinkIcon } from 'lucide-react'
-import { NextPage } from "next"
-import { useRouter } from 'next/router'
-import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
-import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic"
-import { getAddressUri, shortenAddress } from '@helpers/solana.helper'
-import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports'
-import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types"
-import { MINT_QR_URI_PATH,
-  TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
-import { HOST, PORT } from '@consts/host'
-import { addMints /* , deleteMints */ } from '@helpers/poap_alyra.helper'
+  InputLeftElement, Link, Text, useColorModeValue, useToast, VStack, Flex
+} from "@chakra-ui/react";
+import { AddIcon, AtSignIcon, CheckCircleIcon } from '@chakra-ui/icons';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { motion } from "framer-motion";
+import { ExternalLinkIcon } from 'lucide-react';
+import { NextPage } from "next";
+import { useRouter } from 'next/router';
+import { getUmi, mintNftFromCm_fromWallet as mplxH_mintNftFromCM } from "@helpers/mplx.helper.dynamic";
+import { getAddressUri, shortenAddress } from '@helpers/solana.helper';
+import { MPL_F_fetchCandyMachine, MPL_F_publicKey, MPL_T_PublicKey } from '@imports/mtplx.imports';
+import { mintFromCmFromAppResponseData, mplhelp_T_MintNftCm_fromWallet_Input, mplhelp_T_MintNftCMResult } from "types";
+import {
+  MINT_QR_URI_PATH,
+  TOAST_ERROR_DELAY,
+  TOAST_SUCCESS_DELAY,
+  TOAST_WARN_DELAY,
+  TOAST_POSITION
+} from '@consts/client';
+import { HOST, PORT } from '@consts/host';
+import { addMints } from '@helpers/poap_alyra.helper';
 
-const FILEPATH = 'app/pages/mint/index.tsx'
+const FILEPATH = 'app/pages/mint/index.tsx';
 
 const MintTestPage: NextPage = () => {
+
+  const bgColor = useColorModeValue("purple.50", "gray.800");
+  const cardBgColor = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const headingColor = useColorModeValue("purple.600", "purple.300");
+  const buttonColorScheme = "purple";
+  const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
+  const linkColor = useColorModeValue("teal.500", "teal.300")
 
   const INIT_DELAY = 5_000
   const AFTER_MINT_REFRESH_COUNT_DELAY = 5_000
@@ -41,8 +54,6 @@ const MintTestPage: NextPage = () => {
   const [candyMachineAddress, setCandyMachineAddress] = useState(defaultCandyMachineAddress)
   const [itemsRemaining, setItemsRemaining] = useState<number>(0)
 
-  const cardBgColor = useColorModeValue("white", "gray.700")
-  const gradientColor = useColorModeValue("linear(to-l, purple.600, pink.600)", "linear(to-l, purple.300, pink.300)")
 
   const isConnected = useMemo(() => {
     return wallet.connected && wallet.publicKey
@@ -521,139 +532,109 @@ const MintTestPage: NextPage = () => {
 
   // ----------------------------
 
-  const textColor = useColorModeValue("black", "white")
-  const linkColor = useColorModeValue("teal.500", "teal.300")
+
 
   // ----------------------------
 
   return (
-    <Container maxW="container.md" py={10}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <VStack spacing={8}>
-          <Heading as="h1" size="2xl" textAlign="center" mb={6}>
-            Mint NFTs
-          </Heading>
-
-          <ScaleFade initialScale={0.9} in={true}>
-            <Box w='100%' boxShadow='lg' p='6' rounded='xl' bg={cardBgColor}>
-              <Text fontSize="xl" fontWeight="bold" mb={2}>
-                Remaining to mint:
-              </Text>
-              <Text
-                bgGradient={gradientColor}
-                bgClip="text"
-                fontSize="4xl"
-                fontWeight="extrabold"
-                className='text-center'
-              >
-                {itemsRemaining}
+    <Box minH="100vh" bg={bgColor}>
+      <Container maxW="container.xl" py={10}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <VStack spacing={8} align="stretch">
+            <Box textAlign="center" mb={6}>
+              <Heading as="h1" size="2xl" mb={4} color={headingColor}>
+                Mint NFTs
+              </Heading>
+              <Text fontSize="xl" color={textColor}>
+                Create your unique NFTs from our collections
               </Text>
             </Box>
-          </ScaleFade>
 
-          <form onSubmit={handleDefaultSubmit} style={{ width: '100%' }}>
-            <VStack spacing={6}>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents='none'>
-                    <AtSignIcon color='gray.300' />
-                  </InputLeftElement>
-                  <Input
-                    type='text'
-                    placeholder='Candy Machine address'
-                    value={candyMachineAddress}
-                    onChange={handleChangeCandyMachineAddress}
-                    bg={cardBgColor}
-                    borderRadius="full"
-                  />
-                </InputGroup>
-              </FormControl>
-
-
-              <Box
-                className='mt-3 flex overflow-hidden p-1'
-                border={'1px solid '}
-                borderRadius={'md'}
-                display={ (candyMachineAddress && candyMachineMintQrUri.length ? 'flex' : 'none') }
-              >
-                <Text className='flex pr-2'>
-                  QR Mint page Url:
-                </Text>
-                <Link color={linkColor} isExternal href={candyMachineMintQrUri} className='flex'>
-                  <Text className='pr-2' color={textColor}>
-                    <ExternalLinkIcon size='16px' />
+            <Box bg={cardBgColor} boxShadow="xl" borderRadius="xl" p={8}>
+              <VStack spacing={6} align="stretch">
+                <Box>
+                  <Text fontSize="xl" fontWeight="bold" mb={2} color={textColor}>
+                    Remaining to mint:
                   </Text>
-                    {candyMachineAddress}
-                </Link>
-              </Box>
+                  <Text
+                    bgGradient={useColorModeValue("linear(to-r, purple.600, pink.600)", "linear(to-r, purple.300, pink.300)")}
+                    bgClip="text"
+                    fontSize="4xl"
+                    fontWeight="extrabold"
+                    textAlign="center"
+                  >
+                    {itemsRemaining}
+                  </Text>
+                </Box>
 
-              <Fade in={true}>
-                <Button
-                  isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
-                  isLoading={isProcessingMintPaidByWallet}
-                  onClick={submitMintPaidByWallet}
-                  colorScheme='purple'
-                  size="lg"
-                  width="full"
-                  leftIcon={<AddIcon />}
-                  borderRadius="full"
-                >
-                  Mint (fee paid by wallet)
-                </Button>
-              </Fade>
+                <form onSubmit={handleDefaultSubmit} style={{ width: '100%' }}>
+                  <VStack spacing={6}>
+                    <FormControl>
+                      <InputGroup>
+                        <InputLeftElement pointerEvents='none'>
+                          <AtSignIcon color='gray.300' />
+                        </InputLeftElement>
+                        <Input
+                          type='text'
+                          placeholder='Candy Machine address'
+                          value={candyMachineAddress}
+                          onChange={handleChangeCandyMachineAddress}
+                          bg={cardBgColor}
+                          borderRadius="full"
+                        />
+                      </InputGroup>
+                    </FormControl>
 
-              <Fade in={true}>
-                <Button
-                  isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
-                  isLoading={isProcessingMintPaidByApp}
-                  onClick={submitMintPaidByApp}
-                  colorScheme='green'
-                  size="lg"
-                  width="full"
-                  leftIcon={<AddIcon />}
-                  borderRadius="full"
-                >
-                  Mint (free)
-                </Button>
-              </Fade>
+                    {candyMachineAddress && candyMachineMintQrUri.length > 0 && (
+                      <Box borderWidth={1} borderRadius="md" p={4}>
+                        <Text mb={2} color={textColor}>QR Mint page Url:</Text>
+                        <Link color={headingColor} href={candyMachineMintQrUri} isExternal>
+                          <Flex align="center">
+                            <ExternalLinkIcon size={16} className="mr-2" />
+                            <Text>{candyMachineAddress}</Text>
+                          </Flex>
+                        </Link>
+                      </Box>
+                    )}
 
-{/*
-              <Fade in={true}>
-                <Button
-                  onClick={testSaveAddMintToContract}
-                  colorScheme='orange'
-                  size="lg"
-                  width="full"
-                  leftIcon={<AddIcon />}
-                  borderRadius="full"
-                >
-                  Test save ADD mint to contract
-                </Button>
-              </Fade>
-              <Fade in={true}>
-                <Button
-                  onClick={testSaveDeleteMintToContract}
-                  colorScheme='orange'
-                  size="lg"
-                  width="full"
-                  leftIcon={<AddIcon />}
-                  borderRadius="full"
-                >
-                  Test save DELETE mint to contract
-                </Button>
-              </Fade>
-*/}
+                    <Button
+                      isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                      isLoading={isProcessingMintPaidByWallet}
+                      onClick={submitMintPaidByWallet}
+                      colorScheme={buttonColorScheme}
+                      size="lg"
+                      width="full"
+                      leftIcon={<AddIcon />}
+                      borderRadius="full"
+                    >
+                      Mint (fee paid by wallet)
+                    </Button>
 
-            </VStack>
-          </form>
-        </VStack>
-      </motion.div>
-    </Container>
-  )
-}
+                    <Button
+                      isDisabled={!wallet.connected || itemsRemaining <= 0 || !isValidCandyMachineAddress}
+                      isLoading={isProcessingMintPaidByApp}
+                      onClick={submitMintPaidByApp}
+                      colorScheme="green"
+                      size="lg"
+                      width="full"
+                      leftIcon={<AddIcon />}
+                      borderRadius="full"
+                    >
+                      Mint (free)
+                    </Button>
+                  </VStack>
+                </form>
+              </VStack>
+            </Box>
+          </VStack>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
 
-export default MintTestPage
+export default MintTestPage;
