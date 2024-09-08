@@ -6,10 +6,11 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { 
   Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
-  useDisclosure, Container, Heading, useColorModeValue
+  useDisclosure, Container, Heading, useColorModeValue,useToast
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { getUmi } from '@helpers/mplx.helper.dynamic';
+import { deleteMints } from '@helpers/poap_alyra.helper';
 
 interface OffChainMetadata {
   image?: string;
@@ -34,11 +35,39 @@ const isCoreAssetData = (asset: NFTData | CoreAssetData): asset is CoreAssetData
   return (asset as CoreAssetData).owner !== undefined;
 };
 
-const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number }> = ({ nft, index }) => {
+const NFTCard: React.FC<{ 
+  nft: NFTData | CoreAssetData; 
+  index: number;
+  onBurn: (nft: NFTData | CoreAssetData) => Promise<void>;
+}> = ({ nft, index, onBurn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const bgColor = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("purple.200", "purple.600");
   const textColor = useColorModeValue("gray.800", "white");
+  const [burnCount, setBurnCount] = useState(0);
+  const toast = useToast();
+
+  const handleBurn = async () => {
+    try {
+      await onBurn(nft);
+      toast({
+        title: "NFT burned successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error burning NFT:", error);
+      toast({
+        title: "Failed to burn NFT",
+        description: error instanceof Error ? error.message : "Unknown error",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <Box 
@@ -91,7 +120,10 @@ const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number }> = ({ nf
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="purple" mr={3} onClick={onClose}>
+            <Button colorScheme="red" mr={3} onClick={handleBurn}>
+              Burn NFT
+            </Button>
+            <Button colorScheme="purple" onClick={onClose}>
               Close
             </Button>
           </ModalFooter>
@@ -102,11 +134,14 @@ const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number }> = ({ nf
 };
 
 const NFTGallery: React.FC = () => {
-  const { publicKey: walletPublicKey } = useWallet();
+  const wallet = useWallet();
+  // const { publicKey: walletPublicKey } = useWallet();
   const [nfts, setNfts] = useState<NFTData[]>([]);
   const [coreAssets, setCoreAssets] = useState<CoreAssetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [burnCount, setBurnCount] = useState(0);
+  const toast = useToast();
 
   const bgColor = useColorModeValue("purple.50", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -117,12 +152,12 @@ const NFTGallery: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      if (!walletPublicKey) {
+      if (!wallet.publicKey) {
         throw new Error("Wallet not connected");
       }
 
       const umi = getUmi();
-      const owner = publicKey(walletPublicKey.toBase58());
+      const owner = publicKey(wallet.publicKey.toBase58());
 
       console.log("Fetching NFTs for wallet:", owner);
       const assets = await fetchAllDigitalAssetByOwner(umi, owner);
@@ -203,15 +238,65 @@ const NFTGallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [walletPublicKey]);
+  }, [wallet.publicKey]);
 
   useEffect(() => {
-    if (walletPublicKey) {
+    if (wallet.publicKey) {
       fetchNFTs();
     }
-  }, [fetchNFTs, walletPublicKey]);
+  }, [fetchNFTs, wallet.publicKey]);
 
-  if (!walletPublicKey) {
+  const handleBurnNFT = async (nftToBurn: NFTData | CoreAssetData) => {
+    if (!wallet.publicKey) {
+      throw new Error("Wallet not connected");
+    }
+
+    let mintAddress: string;
+    if (isCoreAssetData(nftToBurn)) {
+      // For Core Assets, we might need to extract the mint address differently
+      // This is a placeholder - adjust according to your Core Asset structure
+      mintAddress = nftToBurn.uri.split('/').pop() || '';
+    } else {
+      // For regular NFTs, we can access the mint address directly
+      mintAddress = nftToBurn.mint.toString();
+    }
+
+    if (!mintAddress) {
+      throw new Error("Unable to determine mint address");
+    }
+
+    try {
+      await deleteMints(wallet, [mintAddress]);
+
+      // Remove the burned NFT from the state
+      if (isCoreAssetData(nftToBurn)) {
+        setCoreAssets(prevAssets => prevAssets.filter(asset => asset.uri !== nftToBurn.uri));
+      } else {
+        setNfts(prevNfts => prevNfts.filter(nft => nft.mint.toString() !== mintAddress));
+      }
+
+      // Increment the burn count
+      setBurnCount(prevCount => prevCount + 1);
+
+      toast({
+        title: "NFT burned successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error burning NFT:", error);
+      toast({
+        title: "Failed to burn NFT",
+        description: error instanceof Error ? error.message : "Unknown error",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  if (!wallet.publicKey) {
     return (
       <Box minH="100vh" bg={bgColor} display="flex" alignItems="center" justifyContent="center">
         <Text textAlign="center" fontSize="xl" color={textColor}>Please connect your wallet to view your NFTs.</Text>
@@ -260,10 +345,10 @@ const NFTGallery: React.FC = () => {
             </Heading>
             <SimpleGrid columns={[2, 3, 4, 5]} spacing={6}>
               {nfts.map((nft, index) => (
-                <NFTCard key={index} nft={nft} index={index} />
+                <NFTCard key={index} nft={nft} index={index} onBurn={handleBurnNFT} />
               ))}
               {coreAssets.map((asset, index) => (
-                <NFTCard key={index} nft={asset} index={index} />
+                <NFTCard key={index} nft={asset} index={index} onBurn={handleBurnNFT} />
               ))}
             </SimpleGrid>
           </VStack>
