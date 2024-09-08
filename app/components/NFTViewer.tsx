@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { publicKey, PublicKey as UmiPublicKey } from '@metaplex-foundation/umi';
 import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
 import { fetchAssetsByOwner } from '@metaplex-foundation/mpl-core';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, WalletContextState } from '@solana/wallet-adapter-react';
 import { 
   Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
@@ -12,7 +12,8 @@ import { motion } from 'framer-motion';
 import { getUmi } from '@helpers/mplx.helper.dynamic';
 import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
 import idl from './poap_alyra.json';
-
+import { getPoapAlyraUserAccounts, deleteMints } from '@helpers/poap_alyra.helper';
+import { pa_help_T_poapAlyraAccounts } from 'types';
 
 interface OffChainMetadata {
   image?: string;
@@ -108,13 +109,15 @@ const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number; onBurn: (
 };
 
 const NFTGallery: React.FC = () => {
-  const { publicKey: walletPublicKey, wallet } = useWallet();
+  const wallet = useWallet();
+  const { publicKey: walletPublicKey } = wallet;
   const [nfts, setNfts] = useState<NFTData[]>([]);
   const [coreAssets, setCoreAssets] = useState<CoreAssetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mintCount, setMintCount] = useState(0);
   const [burnCount, setBurnCount] = useState(0);
+  const [userAccounts, setUserAccounts] = useState<pa_help_T_poapAlyraAccounts|null>(null);
   const toast = useToast();
 
   const getProgram = useCallback(() => {
@@ -123,6 +126,19 @@ const NFTGallery: React.FC = () => {
     const provider = new AnchorProvider(connection, wallet as any, {});
     return new Program(idl as any, programID, provider);
   }, [walletPublicKey, wallet]);
+
+  const fetchUserAccounts = useCallback(async () => {
+    if (walletPublicKey) {
+      const accounts = await getPoapAlyraUserAccounts(walletPublicKey);
+      setUserAccounts(accounts);
+      if (accounts?.userMintsAccount) {
+        setMintCount(accounts.userMintsAccount.totalCountMinted);
+      }
+      if (accounts?.userBurnsAccount) {
+        setBurnCount(accounts.userBurnsAccount.totalCountBurned);
+      }
+    }
+  }, [walletPublicKey]);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -287,20 +303,12 @@ const NFTGallery: React.FC = () => {
   const burnNFT = useCallback(async (nftToBurn: string) => {
     try {
       setLoading(true);
-      const program = getProgram();
-  
-      await program.methods.burnMints([new web3.PublicKey(nftToBurn)])
-        .accounts({
-          userData: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserData"), walletPublicKey!.toBuffer()], programID))[0],
-          userMints: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserMints"), walletPublicKey!.toBuffer()], programID))[0],
-          userBurns: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserBurns"), walletPublicKey!.toBuffer()], programID))[0],
-          owner: walletPublicKey!,
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .rpc();
-  
+      if (!wallet.connected || !walletPublicKey) {
+        throw new Error("Wallet not connected");
+      }
+      await deleteMints(wallet as WalletContextState, [nftToBurn]);
       await fetchNFTs();
-      await fetchCounts();
+      await fetchUserAccounts();
       toast({
         title: "NFT Burned",
         description: "The NFT has been successfully burned.",
@@ -308,21 +316,11 @@ const NFTGallery: React.FC = () => {
         duration: 5000,
         isClosable: true,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error burning NFT:", error);
-  
-      let errorMessage: string;
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else {
-        errorMessage = 'An unknown error occurred while burning the NFT';
-      }
-  
       toast({
         title: "Error burning NFT",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : String(error),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -330,16 +328,22 @@ const NFTGallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [getProgram, walletPublicKey, fetchNFTs, fetchCounts, toast]);
+  }, [wallet, walletPublicKey, fetchNFTs, fetchUserAccounts, toast]);
 
+  useEffect(() => {
+    if (walletPublicKey) {
+      fetchNFTs();
+      fetchUserAccounts();
+    }
+  }, [fetchNFTs, fetchUserAccounts, walletPublicKey]);
 
 
   useEffect(() => {
     if (walletPublicKey) {
       fetchNFTs();
-      fetchCounts();
+      fetchUserAccounts();
     }
-  }, [fetchNFTs, fetchCounts, walletPublicKey]);
+  }, [fetchNFTs, fetchUserAccounts, walletPublicKey]);
 
   if (!walletPublicKey) {
     return <Text textAlign="center" fontSize="xl">Please connect your wallet to view your NFTs.</Text>;
@@ -377,23 +381,23 @@ const NFTGallery: React.FC = () => {
           </Box>
         </HStack>
         <SimpleGrid columns={[2, 3, 4, 5]} spacing={6}>
-        {nfts.map((nft, index) => (
-          <NFTCard 
-            key={index} 
-            nft={nft} 
-            index={index} 
-            onBurn={() => burnNFT(nft.metadata.mint.toString())}
-          />
-        ))}
-        {coreAssets.map((asset, index) => (
-          <NFTCard 
-            key={`core-${index}`}
-            nft={asset} 
-            index={nfts.length + index} 
-            onBurn={() => burnNFT(asset.uri)}
-          />
-        ))}
-      </SimpleGrid>
+          {nfts.map((nft, index) => (
+            <NFTCard 
+              key={index} 
+              nft={nft} 
+              index={index} 
+              onBurn={() => burnNFT(nft.metadata.mint.toString())}
+            />
+          ))}
+          {coreAssets.map((asset, index) => (
+            <NFTCard 
+              key={`core-${index}`}
+              nft={asset} 
+              index={nfts.length + index} 
+              onBurn={() => burnNFT(asset.uri)}
+            />
+          ))}
+        </SimpleGrid>
       </VStack>
     </Container>
   );
