@@ -1,33 +1,106 @@
-import { Typography } from "@ui/typography"
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Zap, Shield, Users, LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+
+interface FeatureCardProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <Icon className="w-12 h-12 text-purple-600 mb-4" />
+    <h3 className="text-xl font-semibold mb-2">{title}</h3>
+    <p className="text-gray-600">{description}</p>
+  </div>
+);
 
 export default function HomePage() {
-
   return (
-    <div className="mx-auto my-20 flex w-full max-w-md flex-col gap-6 rounded-2xl p-6">
-      <Typography as="h2" level="h6" className="font-bold">
-        Welcome to ...
-      </Typography>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100">
+      <div className="container mx-auto px-4 py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-5xl font-bold text-gray-800 mb-4">
+            Soaplana
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Simplifiez la gestion de vos événements avec des POAPs sur la blockchain Solana
+          </p>
+          <Link href="/createCollection" passHref>
+            <button className="bg-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 transition duration-300 flex items-center mx-auto">
+              Commencer maintenant
+              <ArrowRight className="ml-2" />
+            </button>
+          </Link>
+        </motion.div>
 
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <FeatureCard
+            icon={Zap}
+            title="Haut débit et faibles frais"
+            description="Profitez des avantages de la blockchain Solana pour une expérience fluide et rapide."
+          />
+          <FeatureCard
+            icon={Shield}
+            title="Gestion intuitive"
+            description="Créez, distribuez et visualisez vos collections de NFT en quelques clics grâce à une interface simple et performante."
+          />
+          <FeatureCard
+            icon={Users}
+            title="POAPs en direct"
+            description="Facilitez le minting de vos POAPs lors d'événements en utilisant des QR codes dédiés."
+          />
+        </div>
 
-          <Typography level="body4" color="secondary">
-            Todo
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Pourquoi Soaplana ?</h2>
+          <ul className="space-y-4">
+            <li className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Génération de collections complètes de NFT via Metaplex et Candy Machine.</p>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Suivi en temps réel du nombre de NFT restants à mint.</p>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Galerie intuitive pour explorer et partager vos collections de POAPs.</p>
+            </li>
+          </ul>
+        </div>
 
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam faucibus massa mauris, tempus pellentesque sem cursus a. Sed a luctus odio. Aenean porta ex sed tellus semper, vitae cursus lorem cursus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Proin eros risus, semper et turpis vel, pulvinar accumsan quam. Ut vel felis tincidunt, sagittis quam a, porta quam. Suspendisse lacinia, sapien sed tincidunt lobortis, nisl lorem tincidunt mauris, sed aliquam magna urna id nisl. Cras a efficitur mi.
-
-            Praesent interdum leo vel purus viverra dictum. Maecenas eget sagittis massa. Mauris nec condimentum metus. Nulla mattis a sem eu dapibus. Nulla luctus vulputate varius. Vestibulum vestibulum, neque quis pellentesque molestie, mauris nulla laoreet enim, id egestas ipsum felis at lectus. Sed vulputate risus non urna venenatis, sed congue quam semper. Nulla commodo metus mauris, facilisis venenatis augue malesuada consectetur. Mauris mauris nulla, commodo posuere porta ut, viverra nec libero. Mauris in tellus vitae arcu vehicula viverra ac in tortor. Cras vel accumsan enim, blandit ullamcorper arcu. Cras eu felis ut augue dignissim viverra. Nunc tempus vitae quam dignissim egestas. Pellentesque fringilla volutpat iaculis. Nunc maximus enim eget purus pretium, et tempus quam rhoncus. Mauris tincidunt, erat nec feugiat molestie, neque ligula blandit mi, id aliquet libero est ac mi.
-
-            In a scelerisque dolor. Proin hendrerit ex vitae purus vestibulum tincidunt. Donec tincidunt lorem vel mauris gravida vestibulum. Duis pulvinar, nunc et commodo vulputate, diam eros congue orci, in lobortis purus neque sed nisi. Maecenas dui sapien, malesuada ac magna et, tincidunt suscipit tellus. Vivamus urna eros, mollis non lacus nec, posuere porta eros. Sed tristique felis neque, a molestie metus mollis quis.
-
-            Curabitur aliquam erat dui. Pellentesque feugiat, nunc sed consequat venenatis, nulla arcu cursus libero, in varius diam elit convallis augue. Duis laoreet ante non ante scelerisque, a euismod nunc sagittis. Etiam luctus sodales sagittis. Donec eget sem id nisi aliquam pharetra ut sed turpis. Pellentesque in dui sodales, elementum sem rutrum, luctus elit. Curabitur accumsan augue pharetra justo consequat vulputate. Curabitur ornare et lacus nec facilisis. Curabitur at ante quis velit commodo vehicula ultricies vel mauris.
-
-            Maecenas aliquam augue id vestibulum convallis. Sed nulla ex, sodales vel leo ac, cursus porta mauris. Duis eu interdum turpis, mattis luctus justo. Nam orci lorem, accumsan at bibendum id, suscipit eget ipsum. Aenean lobortis magna lectus, eget accumsan massa semper sit amet. In hac habitasse platea dictumst. Praesent finibus ipsum ac commodo elementum. Vivamus sit amet pellentesque nisi, vitae interdum nibh. Etiam malesuada eros vitae leo bibendum dictum. Donec eros diam, aliquet lobortis odio in, venenatis bibendum mi.
-          </Typography>
-
-          </div>
+        <div className="text-center mt-16">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-4">
+            Rejoignez la révolution NFT avec Soaplana
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Rendez vos événements mémorables sur la blockchain !
+          </p>
+          <button className="bg-indigo-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-indigo-700 transition duration-300">
+            Découvrir Soaplana
+          </button>
+        </div>
       </div>
     </div>
-  )
-
+  );
 }
