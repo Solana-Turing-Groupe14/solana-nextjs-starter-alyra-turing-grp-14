@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { publicKey, PublicKey as UmiPublicKey } from '@metaplex-foundation/umi';
 import { fetchAllDigitalAssetByOwner, DigitalAsset } from '@metaplex-foundation/mpl-token-metadata';
 import { fetchAssetsByOwner } from '@metaplex-foundation/mpl-core';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, WalletContextState } from '@solana/wallet-adapter-react';
 import { 
   Box, Text, VStack, Spinner, Table, Tbody, Tr, Td, Button, SimpleGrid, Image,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
@@ -10,9 +10,9 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { getUmi } from '@helpers/mplx.helper.dynamic';
-import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
-import idl from './poap_alyra.json';
-
+import { getPoapAlyraUserAccounts, deleteMints } from '@helpers/poap_alyra.helper';
+import { Program, AnchorProvider, web3, Idl } from '@project-serum/anchor';
+import { POAP_ALYRA_PROGRAM_ID, IDL_POAP_ALYRA } from '@imports/consts';
 
 interface OffChainMetadata {
   image?: string;
@@ -32,11 +32,27 @@ interface CoreAssetData {
   offChainMetadata: OffChainMetadata | null;
 }
 
+interface UserMints {
+  bump: number;
+  lastMinted: web3.PublicKey;
+  totalCountMinted: number;
+  maxCurrentSize: number;
+  listMinted: web3.PublicKey[];
+}
+
+interface UserBurns {
+  bump: number;
+  lastBurned: web3.PublicKey;
+  totalCountBurned: number;
+  maxCurrentSize: number;
+  listBurned: web3.PublicKey[];
+}
+
 const isCoreAssetData = (asset: NFTData | CoreAssetData): asset is CoreAssetData => {
   return (asset as CoreAssetData).owner !== undefined;
 };
+const programID = POAP_ALYRA_PROGRAM_ID;
 
-const programID = new web3.PublicKey("Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd");
 
 const NFTCard: React.FC<{ nft: NFTData | CoreAssetData; index: number; onBurn: () => void }> = ({ nft, index, onBurn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -119,66 +135,20 @@ const NFTGallery: React.FC = () => {
 
   const getProgram = useCallback(() => {
     if (!walletPublicKey) throw new Error("Wallet not connected");
-    const connection = new web3.Connection(web3.clusterApiUrl('devnet'), 'confirmed');
+    const connection = new web3.Connection(process.env.NEXT_PUBLIC_RPC_URL || "", "confirmed");
     const provider = new AnchorProvider(connection, wallet as any, {});
-    return new Program(idl as any, programID, provider);
+    return new Program(IDL_POAP_ALYRA as Idl, programID, provider);
   }, [walletPublicKey, wallet]);
 
   const fetchCounts = useCallback(async () => {
+    if (!walletPublicKey) return;
+
     try {
-      const program = getProgram();
-      
-      const [userDataPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserData"), walletPublicKey!.toBuffer()],
-        programID
-      );
-  
-      const userDataAccount = await program.account.userData.fetch(userDataPDA);
-      
-      // Fonction helper pour extraire la clé publique du propriétaire
-      const extractOwnerPublicKey = (data: any): web3.PublicKey => {
-        if (data && typeof data === 'object') {
-          if ('owner' in data && data.owner instanceof web3.PublicKey) {
-            return data.owner;
-          }
-          // Parcourir l'objet pour trouver une propriété de type PublicKey
-          for (const key in data) {
-            if (data[key] instanceof web3.PublicKey) {
-              return data[key];
-            }
-          }
-        }
-        console.log('UserData structure:', JSON.stringify(data, null, 2));
-        throw new Error('Unable to extract owner public key from user data');
-      };
-  
-      const ownerPublicKey = extractOwnerPublicKey(userDataAccount);
-  
-      const [userMintsPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserMints"), ownerPublicKey.toBuffer()],
-        programID
-      );
-  
-      const [userBurnsPDA] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("AlyraPoapUserBurns"), ownerPublicKey.toBuffer()],
-        programID
-      );
-  
-      const userMints = await program.account.userMints.fetch(userMintsPDA);
-      const userBurns = await program.account.userBurns.fetch(userBurnsPDA);
-  
-      // Fonction helper pour extraire le nombre total
-      const extractTotalCount = (data: any, field: string): number => {
-        if (data && typeof data === 'object' && field in data && typeof data[field] === 'number') {
-          return data[field];
-        }
-        console.log(`${field} data structure:`, JSON.stringify(data, null, 2));
-        throw new Error(`Unable to extract ${field} from account data`);
-      };
-  
-      setMintCount(extractTotalCount(userMints, 'totalCountMinted'));
-      setBurnCount(extractTotalCount(userBurns, 'totalCountBurned'));
-  
+      const accounts = await getPoapAlyraUserAccounts(walletPublicKey);
+      if (accounts && accounts.userMintsAccount && accounts.userBurnsAccount) {
+        setMintCount(accounts.userMintsAccount.totalCountMinted);
+        setBurnCount(accounts.userBurnsAccount.totalCountBurned);
+      }
     } catch (error) {
       console.error("Error fetching counts:", error);
       toast({
@@ -189,7 +159,7 @@ const NFTGallery: React.FC = () => {
         isClosable: true,
       });
     }
-  }, [getProgram, walletPublicKey, toast]);
+  }, [walletPublicKey, toast]);
 
   const fetchNFTs = useCallback(async (retryCount = 0) => {
     setLoading(true);
@@ -283,46 +253,35 @@ const NFTGallery: React.FC = () => {
     }
   }, [walletPublicKey]);
 
+  const burnNFT = useCallback(async (nftToBurn: string | web3.PublicKey) => {
+    if (!wallet || !walletPublicKey) {
+      console.warn("Wallet not connected");
+      return;
+    }
 
-  const burnNFT = useCallback(async (nftToBurn: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const program = getProgram();
-  
-      await program.methods.burnMints([new web3.PublicKey(nftToBurn)])
-        .accounts({
-          userData: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserData"), walletPublicKey!.toBuffer()], programID))[0],
-          userMints: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserMints"), walletPublicKey!.toBuffer()], programID))[0],
-          userBurns: (await web3.PublicKey.findProgramAddress([Buffer.from("AlyraPoapUserBurns"), walletPublicKey!.toBuffer()], programID))[0],
-          owner: walletPublicKey!,
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .rpc();
-  
-      await fetchNFTs();
-      await fetchCounts();
-      toast({
-        title: "NFT Burned",
-        description: "The NFT has been successfully burned.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error: unknown) {
-      console.error("Error burning NFT:", error);
-  
-      let errorMessage: string;
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
+      const mintToDelete = typeof nftToBurn === 'string' ? nftToBurn : nftToBurn.toBase58();
+      const result = await deleteMints(wallet, [mintToDelete]);
+      
+      if (result) {
+        await fetchNFTs();
+        await fetchCounts();
+        toast({
+          title: "NFT Burned",
+          description: "The NFT has been successfully burned.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       } else {
-        errorMessage = 'An unknown error occurred while burning the NFT';
+        throw new Error("Failed to burn NFT");
       }
-  
+    } catch (error) {
+      console.error("Error burning NFT:", error);
       toast({
         title: "Error burning NFT",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : String(error),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -330,9 +289,7 @@ const NFTGallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [getProgram, walletPublicKey, fetchNFTs, fetchCounts, toast]);
-
-
+  }, [wallet, walletPublicKey, fetchNFTs, fetchCounts, toast]);
 
   useEffect(() => {
     if (walletPublicKey) {
@@ -382,7 +339,7 @@ const NFTGallery: React.FC = () => {
             key={index} 
             nft={nft} 
             index={index} 
-            onBurn={() => burnNFT(nft.metadata.mint.toString())}
+            onBurn={() => burnNFT(nft.metadata.mint)}
           />
         ))}
         {coreAssets.map((asset, index) => (
