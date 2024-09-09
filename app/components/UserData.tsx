@@ -140,7 +140,10 @@ const UserData: React.FC = () => {
   const handleBurnNFT = async () => {
     if (selectedNFT && wallet.publicKey) {
       try {
-        await deleteMints(wallet, [selectedNFT.toBase58()]);
+        const burnRes = await deleteMints(wallet, [selectedNFT.toBase58()]);
+        if (!burnRes) {
+          throw new Error("Burn: no response/empty response");
+        }
         toast({
           title: "NFT burned successfully",
           status: "success",
