@@ -41,11 +41,43 @@ import { I_ExpectedCandyMachineState, mplhelp_T_AirdropResult, mplhelp_T_CreateC
 } from "types";
 import { checkBalance, setIdentityPayer_APP, setIdentityPayer_WalletAdapter } from "./mplx.helper.common.dynamic";
 
+// Monkey patch the Connection prototype until UMI library is updated
+import { Connection } from "@solana/web3.js";
+
 const filePath = "app/helpers/mplx.helpers.ts"
 
 // ------------------------------------------------------------
 
-const mplx_umi: MPL_T_Umi = MPL_F_createUmi(RPC_URL).use(mplCoreCandyMachine());
+// Monkey patch the Connection prototype until UMI library is updated
+Connection.prototype.getRecentBlockhash = async function (commitment) {
+  try {
+    const { blockhash, lastValidBlockHeight } =
+      await this.getLatestBlockhash(commitment);
+    const recentPrioritizationFees = await this.getRecentPrioritizationFees();
+    const averageFee =
+      recentPrioritizationFees.length > 0
+        ? recentPrioritizationFees.reduce(
+            (sum, fee) => sum + fee.prioritizationFee,
+            0
+          ) / recentPrioritizationFees.length
+        : 5000;
+
+    return {
+      blockhash,
+      feeCalculator: {
+        lamportsPerSignature: averageFee
+      }
+    };
+  } catch (e) {
+    throw new Error('failed to get recent blockhash: ' + e);
+  }
+};
+// Monkey patch the Connection prototype until UMI library is updated
+const mplxHelperDynamicConnection = new Connection(RPC_URL || "", "confirmed");
+
+// const mplx_umi: MPL_T_Umi = MPL_F_createUmi(RPC_URL).use(mplCoreCandyMachine());
+const mplx_umi: MPL_T_Umi = MPL_F_createUmi(mplxHelperDynamicConnection).use(mplCoreCandyMachine());
+
 if (!mplx_umi) {
   throw new Error('mplx_umi not found')
 }

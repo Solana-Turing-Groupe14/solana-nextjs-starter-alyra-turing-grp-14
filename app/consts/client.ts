@@ -9,9 +9,9 @@ import {
   NFT_NAME_PREFIX_MAXLENGTH,
  } from "@consts/commons"
 
- const SUCCESS_DELAY = 10_000
- const WARN_DELAY = 15_000
- const ERROR_DELAY = 30_000
+ const TOAST_SUCCESS_DELAY = 10_000
+ const TOAST_WARN_DELAY = 15_000
+ const TOAST_ERROR_DELAY = 30_000
  
  const MINT_URI_PATH = '/mint'
 
@@ -27,6 +27,8 @@ import {
 // Page which actually mints the NFT
 const API_MINT_FREE_PATH = '/api/mint-free-qr'
 
+const TOAST_POSITION = 'top-right'
+
 export {
   AIRDROP_DEFAULT_AMOUNT,
   AIRDROP_MAX_AMOUNT,
@@ -40,10 +42,11 @@ export {
   NFT_NAME_PREFIX_MAXLENGTH,
   ADDRESS_LENGTH,
 
-  SUCCESS_DELAY,
-  WARN_DELAY,
-  ERROR_DELAY,
- 
+  TOAST_SUCCESS_DELAY,
+  TOAST_WARN_DELAY,
+  TOAST_ERROR_DELAY,
+  TOAST_POSITION,
+
   MINT_URI_PATH,
   MINT_QR_URI_PATH,
   DISPLAY_DIRECT_MINT_FROM_QR_URI_PATH,

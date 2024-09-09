@@ -1,0 +1,81 @@
+
+
+Candy machines
+
+https://solana.fm/address/3ZquxD66Xnk3rwx9YcSsoSJAG9jj5gsTd6SBnLLTSVx9/nfts?cluster=devnet-alpha
+
+
+Test coll. name 314
+3
+7CG42V7kX3y4qswiGCF9xvce9FfizybC75MdUn7uCKwL
+
+
+Test coll. name 009
+2
+6X1sZ7NpANop782xvNhBPKoCQY4PkcVQ5VGABKDZjAkR
+
+Test coll. name 061
+EbNm3v814wgiGvoEN3tKHFkYyZB1E5Dfh5pwx4UvdyYD
+1
+
+Test coll. name 484
+1
+BA2UrNrj25zaiiLC5YfZsrdzMdDMNsDGS7hv4qS7hG2u
+
+Test coll. name 802
+3
+CCpUBHpijrxEaVeEZ7qW6azMNX1YL822QsWqedTrRXDZ
+
+Test coll. name 589
+1
+7aLCtQ56XoNcYoHGMPxz4DCAQxPojQhEvBqKK6iQAZ6r
+
+
+Test coll. name 813
+2
+EfmAJSucLuZEs7CanbwqSV7JxD53beuf4arYvHb41WNA
+
+Test coll. name 130
+6
+Er85t1aW9ag3M58tHvnwkoczFTKR9ZVhxaSfLxHMiJWh
+
+Test coll. name 719
+3
+HJfkoLCFhRC3LMAPiSbFKX7959Ug79robhQ4rGjXy51R
+
+Test coll. name 314
+3
+7CG42V7kX3y4qswiGCF9xvce9FfizybC75MdUn7uCKwL
+
+Georges Abitbol 713
+3
+HzqiCpDwiv5iYcHV9X9pB7qXdVXNnjZnhKPskcxUMwqt
+
+Test coll. name 719
+3
+6tzfncn7C5qxHxT74B7cYqKZ1cyyg6QHeeBwmsMHMQA5
+
+Test coll. name 119
+3
+E8pGvJ7QFimYjxQfqobqo5LRTRvjt7vHpmrseqNaGYoo
+
+Test coll. name 061
+0
+HPShDgGPsgdZbi3BALEtCYzzWh83APNU8HCn9nk36pEm
+
+Test coll. name 871
+6
+AuTiXfCukBKUup9DwDjPxVdDQuA7haKaeuchoRDqE6PM
+
+
+0
+EmEeRoFC8TBaB9t3nKHfdTCRoi8nLAWUgqHiSTviqjut
+
+4
+AGXVZgDaFE9hmQp4C7sHwvaqhVrwKZmpyYDPRMDZetnA
+
+http://localhost:3000/mint?candyMachineAddress=BkUZB6RzS4HV2mT1PsqLLER6a652x7ugmrdJG5XTDbFw
+
+
+nft:
+Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3

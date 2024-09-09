@@ -2,3 +2,48 @@ solana airdrop 10
 
 solana address
 
+anchor deploy --provider.cluster localnet
+anchor deploy --provider.cluster devnet
+
+anchor idl init --provider.cluster localnet --filepath target/idl/poap_alyra.json 2zk7q3iwcty9gZBfzQhTa7Z8ktyvjiz4gTPjRRBAT5Vp
+
+
+curl https://api.devnet.solana.com -X POST -H "Content-Type: application/json" -d '
+  {
+    "id":1,
+    "jsonrpc":"2.0",
+    "method":"getLatestBlockhash",
+    "params":[
+      {
+        "commitment":"processed"
+      }
+    ]
+  }
+'
+
+curl https://api.devnet.solana.com -X POST -H "Content-Type: application/json" -d '
+  {"jsonrpc":"2.0","id":1, "method":"getRecentBlockhash"}
+'
+
+
+run tests:
+
+  - start local validator
+    app/scripts
+      ./LOCALNET_SWITCH.sh 
+      ./RESET-programs-solana-START.sh 
+
+  - Anchor.toml : set to localnet
+    ...
+    [provider]
+    cluster = "localnet"
+
+deploy program to validator
+  anchor deploy
+
+run tests
+  anchor run test-init-0
+  anchor run test-init-1
+  anchor run test-init-2-plus
+  anchor run test-init-1-mint-1-plus
+  anchor run test-init-0-mint-2-plus-delete-all-mint-2-plus

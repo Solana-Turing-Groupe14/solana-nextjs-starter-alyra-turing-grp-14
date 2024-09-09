@@ -1,0 +1,217 @@
+{
+  "version": "0.1.0",
+  "name": "poap_alyra",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "userData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMints",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userBurns",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "userMintsBump",
+          "type": "u8"
+        },
+        {
+          "name": "userBurnsBump",
+          "type": "u8"
+        },
+        {
+          "name": "newMints",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "addMints",
+      "accounts": [
+        {
+          "name": "userData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userMints",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "newMints",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "burnMints",
+      "accounts": [
+        {
+          "name": "userData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userMints",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userBurns",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "mintsToDelete",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "UserBurns",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "lastBurned",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalCountBurned",
+            "type": "u32"
+          },
+          {
+            "name": "maxCurrentSize",
+            "type": "u32"
+          },
+          {
+            "name": "listBurned",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserMints",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "lastMinted",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalCountMinted",
+            "type": "u32"
+          },
+          {
+            "name": "maxCurrentSize",
+            "type": "u32"
+          },
+          {
+            "name": "listMinted",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "OnlyOwner",
+      "msg": "Only owner can call"
+    },
+    {
+      "code": 6001,
+      "name": "AtLeastOneNftAdd",
+      "msg": "At least one Nft address to add must be provided"
+    },
+    {
+      "code": 6002,
+      "name": "AtLeastOneNftDel",
+      "msg": "At least one Nft address to delete must be provided"
+    }
+  ],
+  "metadata": {
+    "address": "Chwos3p7sWSZZToE5HCe7RQLiinB2i7uvy6u9jRTReVd"
+  }
+}

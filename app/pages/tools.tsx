@@ -7,7 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import { ExternalLinkIcon, SendIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { ERROR_DELAY, SUCCESS_DELAY, WARN_DELAY } from '@consts/client'
+import { TOAST_ERROR_DELAY, TOAST_SUCCESS_DELAY, TOAST_WARN_DELAY, TOAST_POSITION } from '@consts/client'
 import { AIRDROP_DEFAULT_AMOUNT, AIRDROP_MAX_AMOUNT } from '@consts/commons'
 import { getAddressUri, shortenAddress } from "@helpers/solana.helper"
 import { AirdropResponseData } from "types"
@@ -15,27 +15,25 @@ import { AirdropResponseData } from "types"
 const FILEPATH = 'app/pages/tools.tsx'
 
 export default function ToolsPage() {
+  const { connected, publicKey: connectedWalletPublicKey } = useWallet();
+  const [isProcessingConnectedWalletAirdrop, setIsProcessingConnectedWalletAirdrop] = useState(false);
+  const [isProcessingApp1AddressAirdrop, setIsProcessingApp1AddressAirdrop] = useState(false);
+  const [isProcessingApp2AddressAirdrop, setIsProcessingApp2AddressAirdrop] = useState(false);
+  const [isProcessingAppDefaultAddressAirdrop, setIsProcessingAppDefaultAddressAirdrop] = useState(false);
+  const [airdropAmount, setAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT);
 
-  const { connected, publicKey: connectedWalletPublicKey } = useWallet()
-  const [isProcessingConnectedWalletAirdrop, setIsProcessingConnectedWalletAirdrop] = useState(false)
-  const [isProcessingApp1AddressAirdrop, setIsProcessingApp1AddressAirdrop] = useState(false)
-  const [isProcessingApp2AddressAirdrop, setIsProcessingApp2AddressAirdrop] = useState(false)
-  const [isProcessingAppDefaultAddressAirdrop, setIsProcessingAppDefaultAddressAirdrop] = useState(false)
+  const toast = useToast();
+  
+  const bgColor = useColorModeValue("purple.50", "gray.800");
+  const cardBgColor = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const headingColor = useColorModeValue("purple.600", "purple.300");
+  const buttonColorScheme = "purple";
+  const inputBgColor = useColorModeValue("gray.100", "gray.600");
+  const toastSuccessBgColor = useColorModeValue("green.500", "green.200");
+  const toastTextColor = useColorModeValue("white", "gray.800");
 
-  const [airdropAmount, setAirdropAmount] = useState<number>(AIRDROP_DEFAULT_AMOUNT)
-
-  const isConnected = useMemo(() => {
-    // console.debug(`${FILEPATH}:isConnected: ${ connected && connectedWalletPublicKey}`)
-    return connected && connectedWalletPublicKey
-  }, [connected, connectedWalletPublicKey]);
-
-  const toast = useToast()
-  const toastSuccessBgColor = useColorModeValue("green.600", "green.200")
-  const toastTestColor = useColorModeValue("white", "black")
-
-  const bgColor = useColorModeValue("gray.50", "gray.800")
-  const cardBgColor = useColorModeValue("white", "gray.700")
-  const buttonTextColor = useColorModeValue("gray.800", "white")
+  const isConnected = useMemo(() => connected && connectedWalletPublicKey, [connected, connectedWalletPublicKey]);
 
   const warnIsNotConnected = () => {
     console.warn(`${FILEPATH}:  Wallet not connected`)
@@ -44,9 +42,9 @@ export default function ToolsPage() {
       title: 'Wallet not connected.',
       description: "Please connect to an account.",
       status: 'warning',
-      duration: WARN_DELAY,
+      duration: TOAST_WARN_DELAY,
       isClosable: true,
-      position: 'top-right',
+      position: TOAST_POSITION,
     })
   }
 
@@ -89,12 +87,12 @@ export default function ToolsPage() {
         const addressUri = getAddressUri(address)
         const shortenedAddress = shortenAddress(address)
         toast({
-          duration: SUCCESS_DELAY,
-          position: 'top-right',
+          duration: TOAST_SUCCESS_DELAY,
+          position: TOAST_POSITION,
           render: ({ onClose }) => (
             <Box
               bg={toastSuccessBgColor}
-              color={toastTestColor}
+              color={toastTextColor}
               borderRadius='lg'
               p={4}
             >
@@ -147,9 +145,9 @@ export default function ToolsPage() {
           title: 'Airdrop failed',
           description: error,
           status: 'error',
-          duration: ERROR_DELAY,
+          duration: TOAST_ERROR_DELAY,
           isClosable: true,
-          position: 'top-right',
+          position: TOAST_POSITION,
         })
       }
 
@@ -235,9 +233,9 @@ export default function ToolsPage() {
             title: 'Airdrop amount too high',
             description: `Airdrop amount must be at most ${AIRDROP_MAX_AMOUNT}`,
             status: 'warning',
-            duration: WARN_DELAY,
+            duration: TOAST_WARN_DELAY,
             isClosable: true,
-            position: 'top-right',
+            position: TOAST_POSITION,
           })
           value = AIRDROP_MAX_AMOUNT
         }
@@ -251,91 +249,99 @@ export default function ToolsPage() {
   // ----------------------------
 
   return (
-    <Container maxW="container.md" py={10}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <VStack spacing={8}>
-          <Heading as="h1" size="2xl" textAlign="center" mb={6}>
-            Airdrop Tools
-          </Heading>
+    <Box minH="100vh" bg={bgColor}>
+      <Container maxW="container.xl" py={10}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <VStack spacing={8} align="stretch">
+            <Box textAlign="center" mb={6}>
+              <Heading as="h1" size="2xl" mb={4} color={headingColor}>
+                Airdrop Tools
+              </Heading>
+              <Text fontSize="xl" color={textColor}>
+                Easily airdrop SOL to various wallets
+              </Text>
+            </Box>
 
-          <Box bg={cardBgColor} w='100%' p={8} borderRadius="lg" boxShadow="md">
-            <Center w='100%' h='100%' mb={6}>
-              <SendIcon size={64} />
-            </Center>
+            <Box bg={cardBgColor} boxShadow="xl" borderRadius="xl" p={8}>
+              <Center w="100%" h="100%" mb={6}>
+                <SendIcon size={64} color={headingColor} />
+              </Center>
 
-            <SimpleGrid columns={[1, 2]} spacing={4}>
-              <Button
-                isDisabled={!connected || !isValidAirdropAmount}
-                isLoading={isProcessingConnectedWalletAirdrop}
-                onClick={airdropConnectedWallet}
-                colorScheme='green'
-                variant='outline'
-                size="lg"
-                color={buttonTextColor}
-              >
-                Airdrop Connected Wallet
-              </Button>
+              <SimpleGrid columns={[1, 2]} spacing={6}>
+                <Button
+                  isDisabled={!connected || !isValidAirdropAmount}
+                  isLoading={isProcessingConnectedWalletAirdrop}
+                  onClick={airdropConnectedWallet}
+                  colorScheme={buttonColorScheme}
+                  size="lg"
+                  width="full"
+                >
+                  Airdrop Connected Wallet
+                </Button>
 
-              <Button
-                isDisabled={!connected || !isValidAirdropAmount}
-                isLoading={isProcessingApp1AddressAirdrop}
-                onClick={airdropApp1Wallet}
-                colorScheme='orange'
-                variant='outline'
-                size="lg"
-                color={buttonTextColor}
-              >
-                Airdrop APP 1 Wallet
-              </Button>
+                <Button
+                  isDisabled={!connected || !isValidAirdropAmount}
+                  isLoading={isProcessingApp1AddressAirdrop}
+                  onClick={airdropApp1Wallet}
+                  colorScheme={buttonColorScheme}
+                  variant="outline"
+                  size="lg"
+                  width="full"
+                >
+                  Airdrop APP 1 Wallet
+                </Button>
 
-              <Button
-                isDisabled={!connected || !isValidAirdropAmount}
-                isLoading={isProcessingApp2AddressAirdrop}
-                onClick={airdropApp2Wallet}
-                colorScheme='purple'
-                variant='outline'
-                size="lg"
-                color={buttonTextColor}
-              >
-                Airdrop APP 2 Wallet
-              </Button>
+                <Button
+                  isDisabled={!connected || !isValidAirdropAmount}
+                  isLoading={isProcessingApp2AddressAirdrop}
+                  onClick={airdropApp2Wallet}
+                  colorScheme={buttonColorScheme}
+                  variant="outline"
+                  size="lg"
+                  width="full"
+                >
+                  Airdrop APP 2 Wallet
+                </Button>
 
-              <Button
-                isDisabled={!connected || !isValidAirdropAmount}
-                isLoading={isProcessingAppDefaultAddressAirdrop}
-                onClick={airdropAppDefaultWallet}
-                colorScheme='red'
-                variant='outline'
-                size="lg"
-                color={buttonTextColor}
-              >
-                Airdrop APP Default Wallet
-              </Button>
-            </SimpleGrid>
+                <Button
+                  isDisabled={!connected || !isValidAirdropAmount}
+                  isLoading={isProcessingAppDefaultAddressAirdrop}
+                  onClick={airdropAppDefaultWallet}
+                  colorScheme={buttonColorScheme}
+                  variant="outline"
+                  size="lg"
+                  width="full"
+                >
+                  Airdrop APP Default Wallet
+                </Button>
+              </SimpleGrid>
 
-            <form onSubmit={handleDefaultSubmit} className="mt-6">
-              <FormControl>
-                <FormLabel>Airdrop Amount</FormLabel>
-                <InputGroup>
-                  <Input
-                    type='number'
-                    min={0}
-                    max={AIRDROP_MAX_AMOUNT}
-                    value={airdropAmount}
-                    onChange={handleChangeAirdropAmount}
-                    placeholder='Airdrop amount'
-                    bg={bgColor}
-                  />
-                </InputGroup>
-              </FormControl>
-            </form>
-          </Box>
-        </VStack>
-      </motion.div>
-    </Container>
-  )
+              <form onSubmit={handleDefaultSubmit} style={{ marginTop: "2rem" }}>
+                <FormControl>
+                  <FormLabel color={textColor}>Airdrop Amount</FormLabel>
+                  <InputGroup>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={AIRDROP_MAX_AMOUNT}
+                      value={airdropAmount}
+                      onChange={handleChangeAirdropAmount}
+                      placeholder="Enter airdrop amount"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderRadius="md"
+                    />
+                  </InputGroup>
+                </FormControl>
+              </form>
+            </Box>
+          </VStack>
+        </motion.div>
+      </Container>
+    </Box>
+  );
 }

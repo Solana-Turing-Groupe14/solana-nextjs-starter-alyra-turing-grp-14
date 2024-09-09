@@ -1,3 +1,5 @@
+import { PublicKey } from "@solana/web3.js"
+
 export type SiteConfig = {
   name: string
   description: string
@@ -321,4 +323,40 @@ export type CreateCompleteCollectionCmConfigResponseData =
 interface I_QrCode {
   text: string,
   id: string, 
+}
+
+
+
+
+
+export type pa_help_T_poapAlyraAccounts =
+// {
+//   userAccount: any,
+//   userMintsAccount: any,
+//   userBurnsAccount: any,
+// }
+{
+  userAccount?: pa_help_T_poapAlyraAccount_User,
+  userMintsAccount?: pa_help_T_poapAlyraAccount_UserMints,
+  userBurnsAccount?: pa_help_T_poapAlyraAccount_UserBurns,
+}
+
+type pa_help_T_poapAlyraAccount_User = {
+  owner: PublicKey,
+}
+
+type pa_help_T_poapAlyraAccount_UserMints = {
+  bump: number,
+  lastMinted: PublicKey,
+  maxCurrentSize: number,
+  totalCountMinted: number,
+  listMinted: PublicKey[],
+}
+
+type pa_help_T_poapAlyraAccount_UserBurns = {
+  bump: number,
+  lastBurned: PublicKey,
+  maxCurrentSize: number,
+  totalCountBurned: number,
+  listBurned: PublicKey[],
 }
