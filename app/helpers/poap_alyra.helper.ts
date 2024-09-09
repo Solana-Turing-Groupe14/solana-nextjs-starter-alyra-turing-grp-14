@@ -241,7 +241,7 @@ const showPoapAlyraUserAccounts = (poapAlyraUserAccounts:any) => {
 }
 
 export const deleteMints = async (wallet: WalletContextState, mints: string[]): Promise<string | null> => {
-  const LOGPREFIX = `${FILEPATH}:saveMints: `
+  const LOGPREFIX = `${FILEPATH}:deleteMints: `
     try {
       console.debug(`${LOGPREFIX} mints:${mints}`);
 
@@ -255,7 +255,9 @@ export const deleteMints = async (wallet: WalletContextState, mints: string[]): 
         console.error(`${LOGPREFIX}no existing account not found`)
         return null
       }
-      deleteMintAlyraPoap( wallet, mints )
+      const deleteRes = await deleteMintAlyraPoap( wallet, mints )
+      console.debug(`${LOGPREFIX}deleteRes:${deleteRes}`);
+      return deleteRes
 
     } catch (error) {
       console.error(error);
