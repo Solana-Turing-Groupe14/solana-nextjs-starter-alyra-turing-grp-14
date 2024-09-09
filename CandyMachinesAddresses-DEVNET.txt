@@ -74,5 +74,8 @@ EmEeRoFC8TBaB9t3nKHfdTCRoi8nLAWUgqHiSTviqjut
 4
 AGXVZgDaFE9hmQp4C7sHwvaqhVrwKZmpyYDPRMDZetnA
 
+http://localhost:3000/mint?candyMachineAddress=BkUZB6RzS4HV2mT1PsqLLER6a652x7ugmrdJG5XTDbFw
+
+
 nft:
 Hy23e4zuQds7Yh1VL7aZKdAaLyGcRFxKSYioKK74B6t3
